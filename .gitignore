@@ -1,0 +1,6 @@
+.env
+.vscode/
+db.json
+__pycache__/
+test_msg/
+
