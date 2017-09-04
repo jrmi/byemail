@@ -11,70 +11,19 @@ import email
 from email import policy
 from email.parser import BytesParser
 
-from aiosmtpd.handlers import Message
-from aiosmtpd.controller import Controller
 
-from tinydb import TinyDB, Query
-from tinydb.storages import JSONStorage
-from tinydb_serialization import Serializer, SerializationMiddleware
+from tinydb import Query
 
-import arrow
-
-import settings
-
-class DateTimeSerializer(Serializer):
-    OBJ_CLASS = datetime.datetime  # The class this serializer handles
-
-    def encode(self, obj):
-        return arrow.get(obj).for_json()
-
-    def decode(self, s):
-        return arrow.get(s).datetime
-
-class AddressSerializer(Serializer):
-    OBJ_CLASS = email.headerregistry.Address  # The class this serializer handles
-
-    def encode(self, obj):
-        return "__|__".join([obj.addr_spec, obj.display_name])
-
-    def decode(self, s):
-        addr_spec, display_name = s.split('__|__')
-
-        return email.headerregistry.Address(display_name=display_name, addr_spec=addr_spec)
-
-
-class DoesntExists(Exception):
-    pass
-
-class MultipleResults(Exception):
-    pass
-
-async def get(db, filter):
-    results = db.search(filter)
-    if len(results) < 1:
-        raise DoesntExists()
-    if len(results) > 1:
-        raise MultipleResults()
-    return results[0]
-
-async def get_or_create(db, filter, default):
-    try:
-        result = await get(db, filter)
-        return result
-    except DoesntExists:
-        db.insert(default)
-        return default
+from leefmail import settings, store
 
 class MSGHandler:
 
     def __init__(self):
         super().__init__()
-        
-        serialization = SerializationMiddleware()
-        serialization.register_serializer(DateTimeSerializer(), 'TinyDate')
-        serialization.register_serializer(AddressSerializer(), 'TinyAddress')
 
-        self.db = TinyDB('db.json', storage=serialization)
+        loop = asyncio.get_event_loop()
+
+        self.db = loop.run_until_complete(store.get_db())
 
     async def handle_RCPT(self, server, session, envelope, address, rcpt_options):
         for suffix in settings.ACCEPT:
@@ -156,7 +105,7 @@ class MSGHandler:
         msg_from = msg['from'].addr_spec
 
         # Get mailbox if exists
-        mailbox = await get_or_create(self.db, (Mailbox.type == 'mailbox') & (Mailbox['from'] == msg_from), {
+        mailbox = await store.get_or_create((Mailbox.type == 'mailbox') & (Mailbox['from'] == msg_from), {
             'type': 'mailbox',
             'from': msg_from,
             'last_message': msg['date'],
@@ -204,18 +153,3 @@ class MSGHandler:
             await self.update_mailbox(msg)
 
         return '250 Message accepted for delivery'
-
-
-
-if __name__ == "__main__":
-    controller = Controller(MSGHandler())
-    controller.start()
-
-    loop = asyncio.get_event_loop()
-    try:
-        print("Server started on %s:%d" % (controller.hostname, controller.port))
-        loop.run_forever()
-    except KeyboardInterrupt:
-        print("Stopping")
-
-    controller.stop()
