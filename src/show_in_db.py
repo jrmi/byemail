@@ -1,47 +1,54 @@
 #!/bin/env python
 
-from tinydb import TinyDB, Query
-import email
-from datetime import datetime
-
 import base64
+import datetime
 
+import email
+from email import policy
+from email.parser import BytesParser
 
-def decode_header(text):
-    """Decode a header value and return the value as a unicode string."""
-    if not text:
-        return text
-    res = []
-    for part, charset in email.header.decode_header(text):
-        if isinstance(part, str):
-            res.append(part)
-        else:
-            try:
-                res.append(part.decode(charset or 'latin1', 'replace'))
-            except LookupError:
-                res.append(part.decode('utf-8', 'replace'))
-    return ' '.join(res)
+from tinydb import TinyDB, Query
+from tinydb.storages import JSONStorage
+from tinydb_serialization import Serializer, SerializationMiddleware
 
-def parse_rfc2822_date(text):
-    """Parse an rfc2822 date string into a datetime object."""
-    t = email.utils.mktime_tz(email.utils.parsedate_tz(text))
-    return datetime.utcfromtimestamp(t)
+import arrow
+
+class DateTimeSerializer(Serializer):
+    OBJ_CLASS = datetime.datetime  # The class this serializer handles
+
+    def encode(self, obj):
+        return arrow.get(obj).for_json()
+
+    def decode(self, s):
+        return arrow.get(s).datetime
+
+class AddressSerializer(Serializer):
+    OBJ_CLASS = email.headerregistry.Address  # The class this serializer handles
+
+    def encode(self, obj):
+        return "__|__".join([obj.addr_spec, obj.display_name])
+
+    def decode(self, s):
+        addr_spec, display_name = s.split('__|__')
+
+        return email.headerregistry.Address(display_name=display_name, addr_spec=addr_spec)
 
 
 def handle_part(part):
     charset = part.get_content_charset('latin1')
-    print(charset)
     ctype = part.get_content_type()
     mainctype = part.get_content_maintype()
 
+    print(ctype, charset, part.get_content_disposition())
+
     if ctype == 'text/plain':
         print('Text alternative')
-        print(part.get_content())
+        #print(part.get_content())
         return
 
     if ctype == 'text/html':
         print('Html alternative')
-        #print(part.get_payload(decode=True).decode(charset, 'replace'))
+        #print(part.get_content())
         return
     
     if mainctype == 'image':
@@ -62,37 +69,71 @@ def handle_part(part):
     print('Not handled type "%s"' % ctype)
 
 if __name__ == "__main__":
-    db = TinyDB('db.json')
+        
+    serialization = SerializationMiddleware()
+    serialization.register_serializer(DateTimeSerializer(), 'TinyDate')
+    serialization.register_serializer(AddressSerializer(), 'TinyAddress')
 
-    for mail in db.all()[11:13]:
-        #print(base64.b64decode(mail['data']).decode('utf-8'))
-        msg = email.message_from_string(base64.b64decode(mail['data']).decode('utf-8'))
+    db = TinyDB('db.json', storage=serialization)
+
+    Message = Query()
+    Mailbox = Query()
+
+
+    for mail in db.search(Message.type=='mail' and Message.status=='delivered')[:1]:
+        msg = BytesParser(policy=policy.default).parsebytes(base64.b64decode(mail['data']))
 
         print('----------')
-        #print(mail['received'])
-        print(decode_header(msg['Subject']))
-        #print(decode_header(msg['From']))
-        #print(msg['Return-Path'])
-        #print(msg['To'])
-        #print(msg['X-Original-To'])
-        #print(parse_rfc2822_date(msg['Date']))
-        #print(decode_header(msg['Thread-Topic']) or '')
-        #print(msg['Thread-Index'] or '')
+        print(mail['received'])
+        print("Subject:", mail['subject'])
+        print("From:", mail['from'])
+        print("Return:", mail['return'])
+        print("To:", mail['tos'])
+        print("Orig-To:", mail['original-to'])
+        print("Date:", mail['date'])
+        if mail['in-thread']:
+            print("Thread-Topic:", (mail['thread-topic']))
+            print("Thread-Index:", (mail['thread-index']))
 
-        try:
-            if msg.is_multipart():
-                for part in msg.walk():
-                    handle_part(part)
-                    
-            else:
-                handle_part(msg)
-        except :
-            print(msg)
-            raise
+        print("Body type:", mail['main-body-type'])
+        print("Attachements count:", len(mail['attachments']))
+
+        for att in mail['attachments']:
+            print("    - Att:", att['type'], att['filename'])
 
         print('---\n\n\n')
 
-            
 
+    for mail in db.search(Message.type=='mail' and Message.status=='error')[:1]:
+        msg = BytesParser(policy=policy.default).parsebytes(base64.b64decode(mail['data']))
+
+        print("Subject:", msg['Subject'])
+
+        '''try:
+            print("From:", msg['From'])
+            print("Tos:", msg.get('To'))
+        except email.errors.HeaderParseError:
+            print('Missing header as error')'''
+            
+        print("-BODY")
+        #body = msg.get_body()
+
+        #handle_part(body)
+
+        print("-ATTACHMENTS")
+        for att in msg.iter_attachments():
+            handle_part(att)
+
+    print("---- Mailbox ----")
+    mailboxes = list(db.search(Mailbox.type=='mailbox'))
+
+    sorted_mailboxes = sorted(mailboxes, key=lambda x: x['last_message'], reverse=True)
     
+    for mailbox in sorted_mailboxes:
+        print('Mailbox for %s - last message: %s (#%d messages)' % (mailbox['from'], mailbox['last_message'], len(mailbox['messages'])))
+        sorted_messages = sorted(mailbox['messages'], key=lambda x : x['date'], reverse=True)
+        for msg in sorted_messages:
+            message = db.search( (Mailbox.type == 'mail') & (Mailbox.status == 'delivered') & (Mailbox['id'] == msg['id']) )[0]
+            print('    ', message['date'], message['subject'] )
+        print('-')
 

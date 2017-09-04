@@ -20,7 +20,7 @@ if __name__ == "__main__":
     # envelope header.
     
     for arg in sys.argv[1:]:
-        print arg
+        print(arg)
         #message_file = codecs.open( arg, "r", "utf-8" )
         try:
             with open(arg, 'r') as in_file:

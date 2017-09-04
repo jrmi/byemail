@@ -2,3 +2,8 @@ pylint
 aiosmtpd
 CodernityDB
 tinydb
+ipdb
+tinydb-serialization
+arrow
+sanic
+begins
