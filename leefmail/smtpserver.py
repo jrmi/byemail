@@ -11,10 +11,11 @@ import email
 from email import policy
 from email.parser import BytesParser
 
-
 from tinydb import Query
 
-from leefmail import settings, store
+from leefmail import settings
+from leefmail.mailstore import storage
+
 
 class MSGHandler:
 
@@ -22,8 +23,6 @@ class MSGHandler:
         super().__init__()
 
         loop = asyncio.get_event_loop()
-
-        self.db = loop.run_until_complete(store.get_db())
 
     async def handle_RCPT(self, server, session, envelope, address, rcpt_options):
         for suffix in settings.ACCEPT:
@@ -94,33 +93,7 @@ class MSGHandler:
             'data': base64.b64encode(envelope.content).decode('utf-8'),
         }
 
-        self.db.insert(to_save)
-
-    async def save_in_db(self, msg):
-        eid = self.db.insert(msg)
-
-        Mailbox = Query()
-        msg_from = msg['from'].addr_spec
-
-        # Get mailbox if exists
-        mailbox = await store.get_or_create((Mailbox.type == 'mailbox') & (Mailbox['from'] == msg_from), {
-            'type': 'mailbox',
-            'from': msg_from,
-            'last_message': msg['date'],
-            'messages': [],
-        })
-
-        # Update last_message date
-        if mailbox['last_message'] < msg ['date']:
-            mailbox['last_message'] = msg['date']
-
-        mailbox['messages'].append({
-            'id': eid,
-            'date': msg['date'],
-            'subject': msg['subject']
-        })
-
-        self.db.update(mailbox, (Mailbox.type == 'mailbox') & (Mailbox['from'] == msg_from))
+        await storage.store_bad_msg(to_save)
 
     async def handle_DATA(self, server, session, envelope):
         
@@ -134,9 +107,7 @@ class MSGHandler:
             await self.save_failed_msg(session,envelope)
             print('Error for this message')
         else:
-            try:
-                await self.save_in_db(msg)
-            except:
-                
+            await storage.store_msg(msg)
+
 
         return '250 Message accepted for delivery'

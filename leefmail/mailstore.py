@@ -5,7 +5,6 @@ import asyncio
 import arrow
 
 from tinydb import TinyDB, Query
-from tinydb.storages import JSONStorage
 from tinydb_serialization import Serializer, SerializationMiddleware
 
 
@@ -65,7 +64,7 @@ class DbBackend():
 
     async def store_bad_msg(self, bad_msg):
         """ To handle msg that failed to parse """
-        
+
         self.db.insert(bad_msg)
 
     async def store_msg(self, msg):

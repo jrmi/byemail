@@ -7,3 +7,5 @@ tinydb-serialization
 arrow
 sanic
 begins
+uvloop
+ujson

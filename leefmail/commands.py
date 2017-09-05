@@ -9,6 +9,7 @@ import os
 import sys
 import asyncio
 
+import uvloop
 import begin
 
 import leefmail
@@ -32,6 +33,7 @@ def start(reload: 'Make server autoreload (Dev only)'=False,):
     controller = Controller(smtpserver.MSGHandler())
     controller.start()
 
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     loop = asyncio.get_event_loop()
 
     server = httpserver.app.create_server(host="0.0.0.0", port=8000)
