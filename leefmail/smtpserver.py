@@ -40,7 +40,6 @@ class MSGHandler:
         body = msg.get_body()
 
         msg_out = {
-            'id': uuid.uuid4().hex,
             'type': 'mail',
             'status': 'delivered',
             'peer': session.peer,
@@ -98,9 +97,8 @@ class MSGHandler:
         self.db.insert(to_save)
 
     async def save_in_db(self, msg):
-        self.db.insert(msg)
+        eid = self.db.insert(msg)
 
-    async def update_mailbox(self, msg):
         Mailbox = Query()
         msg_from = msg['from'].addr_spec
 
@@ -112,25 +110,12 @@ class MSGHandler:
             'messages': [],
         })
 
-        '''results = self.db.search((Mailbox.type == 'mailbox') & (Mailbox['from'] == msg_from))
-        if len(results) < 1: # Doesn't exists
-            # Let's create one
-            mailbox = {
-                'type': 'mailbox',
-                'from': msg_from,
-                'last_message': msg['date'],
-                'messages': [],
-            }
-            self.db.insert(mailbox)
-        else:
-            mailbox = results[0]'''
-
         # Update last_message date
         if mailbox['last_message'] < msg ['date']:
             mailbox['last_message'] = msg['date']
 
         mailbox['messages'].append({
-            'id': msg['id'],
+            'id': eid,
             'date': msg['date'],
             'subject': msg['subject']
         })
@@ -145,11 +130,13 @@ class MSGHandler:
             msg = await self.parse_msg(session, envelope)
         except:
             import traceback; traceback.print_exc()
-            import ipdb; ipdb.set_trace()
+            #import ipdb; ipdb.set_trace()
             await self.save_failed_msg(session,envelope)
             print('Error for this message')
         else:
-            await self.save_in_db(msg)
-            await self.update_mailbox(msg)
+            try:
+                await self.save_in_db(msg)
+            except:
+                
 
         return '250 Message accepted for delivery'

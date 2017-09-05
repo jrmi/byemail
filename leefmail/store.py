@@ -28,10 +28,10 @@ class AddressSerializer(Serializer):
     OBJ_CLASS = email.headerregistry.Address  # The class this serializer handles
 
     def encode(self, obj):
-        return "__|__".join([obj.addr_spec, obj.display_name])
+        return "(_|_)".join([obj.addr_spec, obj.display_name])
 
     def decode(self, s):
-        addr_spec, display_name = s.split('__|__')
+        addr_spec, display_name = s.split('(_|_)')
 
         return email.headerregistry.Address(display_name=display_name, addr_spec=addr_spec)
 
@@ -62,3 +62,16 @@ async def get_db():
         local_db = TinyDB('db.json', storage=serialization)
 
     return local_db
+
+async def get_mailboxes():
+    mailboxes = list(local_db.search(Mailbox.type=='mailbox'))
+
+    sorted_mailboxes = sorted(mailboxes, key=lambda x: x['last_message'], reverse=True)
+    
+    for mailbox in sorted_mailboxes:
+        #print('Mailbox for %s - last message: %s (#%d messages)' % (mailbox['from'], mailbox['last_message'], len(mailbox['messages'])))
+        sorted_messages = sorted(mailbox['messages'], key=lambda x : x['date'], reverse=True)
+        for msg in sorted_messages:
+            message = db.search( (Mailbox.type == 'mail') & (Mailbox.status == 'delivered') & (Mailbox['id'] == msg['id']) )[0]
+            #print('    ', message['date'], message['subject'] )
+        #print('-')

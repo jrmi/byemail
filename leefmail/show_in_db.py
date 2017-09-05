@@ -2,37 +2,15 @@
 
 import base64
 import datetime
+import asyncio
 
 import email
 from email import policy
 from email.parser import BytesParser
 
-from tinydb import TinyDB, Query
-from tinydb.storages import JSONStorage
-from tinydb_serialization import Serializer, SerializationMiddleware
+from tinydb import Query
 
 import arrow
-
-class DateTimeSerializer(Serializer):
-    OBJ_CLASS = datetime.datetime  # The class this serializer handles
-
-    def encode(self, obj):
-        return arrow.get(obj).for_json()
-
-    def decode(self, s):
-        return arrow.get(s).datetime
-
-class AddressSerializer(Serializer):
-    OBJ_CLASS = email.headerregistry.Address  # The class this serializer handles
-
-    def encode(self, obj):
-        return "__|__".join([obj.addr_spec, obj.display_name])
-
-    def decode(self, s):
-        addr_spec, display_name = s.split('__|__')
-
-        return email.headerregistry.Address(display_name=display_name, addr_spec=addr_spec)
-
 
 def handle_part(part):
     charset = part.get_content_charset('latin1')
@@ -70,11 +48,10 @@ def handle_part(part):
 
 if __name__ == "__main__":
         
-    serialization = SerializationMiddleware()
-    serialization.register_serializer(DateTimeSerializer(), 'TinyDate')
-    serialization.register_serializer(AddressSerializer(), 'TinyAddress')
+    loop = asyncio.get_event_loop()
 
-    db = TinyDB('db.json', storage=serialization)
+    from leefmail import store
+    db = loop.run_until_complete(store.get_db())
 
     Message = Query()
     Mailbox = Query()
