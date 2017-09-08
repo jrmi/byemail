@@ -3,4 +3,5 @@
 db.json
 __pycache__/
 test_msg/
+node_modules/
 
