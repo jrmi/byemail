@@ -103,12 +103,26 @@ class DbBackend():
         sorted_mailboxes = sorted(mailboxes, key=lambda x: x['last_message'], reverse=True)
         
         for mailbox in sorted_mailboxes:
-            sorted_messages = sorted(mailbox['messages'], key=lambda x : x['date'], reverse=True)
-            mailbox['messages'] = []
+            mailbox['eid'] = mailbox.eid
+
+            '''mailbox['messages'] = []
             for msg in sorted_messages:
-                mailbox['messages'].append(self.db.get(eid=msg['id']))
+                if 'id' in msg: # Hack to avoid strange fail on second query 
+                    mailbox['messages'].append(self.db.get(eid=msg['id']))'''
 
         return sorted_mailboxes
 
+    async def get_mailbox(self, mailbox_eid):
+        Mailbox = Query()
+        
+        mailbox = self.db.get(eid=mailbox_eid)
+
+        sorted_messages = sorted(mailbox['messages'], key=lambda x: x['date'], reverse=True)
+        mailbox['messages'] = []
+        for msg in sorted_messages:
+            if 'id' in msg: # Hack to avoid strange fail on second query 
+                mailbox['messages'].append(self.db.get(eid=msg['id']))
+
+        return mailbox
 
 storage = DbBackend()

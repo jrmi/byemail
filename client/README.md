@@ -1,14 +1,10 @@
 # leefmail-client
 
-> Leefmail web client
+> A Leefmail web client
 
 ## Build Setup
 
 ``` bash
-# Install node
-nvm install
-nvm use
-
 # install dependencies
 npm install
 
