@@ -3,7 +3,7 @@ import asyncio
 import datetime
 
 from sanic import Sanic
-from sanic.response import json
+from sanic.response import json, redirect
 
 from tinydb import Query
 
@@ -13,9 +13,12 @@ app = Sanic(__name__)
 
 BASE_DIR = os.path.dirname(__file__)
 
-app.static('/static', os.path.join(BASE_DIR, 'client/dist/static'))
-app.static('/', os.path.join(BASE_DIR, 'client/dist/index.html'))
-app.static('/index.html', os.path.join(BASE_DIR, 'client/dist/index.html'))
+app.static('/static', os.path.join(BASE_DIR, '../client/dist/static'))
+app.static('/index.html', os.path.join(BASE_DIR, '../client/dist/index.html'))
+
+@app.route('/')
+async def index(request):
+    return redirect('/index.html')
 
 @app.route("/api/mailboxes")
 async def mailboxes(request):
