@@ -1,9 +1,9 @@
 <template>
   <div id="app" class="container">
-    <md-toolbar>
+    <md-toolbar id="topbar">
       <h1 class="md-title">Leefmail</h1>
     </md-toolbar>
-    <router-view class="main-content"></router-view>
+    <router-view></router-view>
   </div>
 </template>
 
@@ -20,5 +20,12 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: left;
   color: #2c3e50;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+#topbar{
+  flex: 0;
+  background-color: #0072C6;
 }
 </style>

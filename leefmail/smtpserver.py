@@ -36,7 +36,9 @@ class MSGHandler:
 
         msg = BytesParser(policy=policy.default).parsebytes(envelope.content)
 
-        body = msg.get_body()
+        body = msg.get_body(('html', 'plain',))
+
+        #import ipdb; ipdb.set_trace()
 
         msg_out = {
             'type': 'mail',
@@ -58,14 +60,17 @@ class MSGHandler:
             'date': msg['Date'].datetime,
             'return': msg['Return-Path'] or msg['Reply-To'],
             'in-thread': False,
-            'main-body-type': body.get_content_type(),
+            'body-type': body.get_content_type(),
+            'body-charset': body.get_content_charset(),
+            'body': body.get_content(),
             'attachments': []
         }
 
         #import ipdb; ipdb.set_trace()
 
-        for att in msg.iter_attachments():
+        for ind, att in enumerate(msg.iter_attachments()):
             msg_out['attachments'].append({
+                'index': ind,
                 'type': att.get_content_type(),
                 'filename': att.get_filename()
             })
@@ -96,9 +101,9 @@ class MSGHandler:
         await storage.store_bad_msg(to_save)
 
     async def handle_DATA(self, server, session, envelope):
-        
+
         print('Message From: %s, To: %s' % (envelope.mail_from, envelope.rcpt_tos))
-        
+
         try:
             msg = await self.parse_msg(session, envelope)
         except:

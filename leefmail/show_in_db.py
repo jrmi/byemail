@@ -50,14 +50,13 @@ if __name__ == "__main__":
         
     loop = asyncio.get_event_loop()
 
-    from leefmail import store
-    db = loop.run_until_complete(store.get_db())
+    from leefmail import mailstore
 
     Message = Query()
     Mailbox = Query()
 
 
-    for mail in db.search(Message.type=='mail' and Message.status=='delivered')[:1]:
+    for mail in mailstore.search(Message.type=='mail' and Message.status=='delivered')[:1]:
         msg = BytesParser(policy=policy.default).parsebytes(base64.b64decode(mail['data']))
 
         print('----------')
@@ -81,7 +80,7 @@ if __name__ == "__main__":
         print('---\n\n\n')
 
 
-    for mail in db.search(Message.type=='mail' and Message.status=='error')[:1]:
+    '''for mail in db.search(Message.type=='mail' and Message.status=='error')[:1]:
         msg = BytesParser(policy=policy.default).parsebytes(base64.b64decode(mail['data']))
 
         print("Subject:", msg['Subject'])
@@ -99,10 +98,10 @@ if __name__ == "__main__":
 
         print("-ATTACHMENTS")
         for att in msg.iter_attachments():
-            handle_part(att)
+            handle_part(att)'''
 
     print("---- Mailbox ----")
-    mailboxes = list(db.search(Mailbox.type=='mailbox'))
+    '''mailboxes = list(await mailstore.get_mailboxes())
 
     sorted_mailboxes = sorted(mailboxes, key=lambda x: x['last_message'], reverse=True)
     
@@ -112,5 +111,5 @@ if __name__ == "__main__":
         for msg in sorted_messages:
             message = db.search( (Mailbox.type == 'mail') & (Mailbox.status == 'delivered') & (Mailbox['id'] == msg['id']) )[0]
             print('    ', message['date'], message['subject'] )
-        print('-')
+        print('-')'''
 

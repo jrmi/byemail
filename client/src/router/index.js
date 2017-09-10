@@ -1,10 +1,12 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Hello from '@/components/Hello'
 import Mailboxes from '@/components/Mailboxes'
+import Mailbox from '@/components/Mailbox'
+import Mail from '@/components/Mail'
 import VueResource from 'vue-resource'
 import VueMaterial from 'vue-material'
 import 'vue-material/dist/vue-material.css'
+import 'material-icons/css/material-icons.css'
 
 Vue.use(Router)
 Vue.use(VueResource)
@@ -14,18 +16,26 @@ export default new Router({
   routes: [
     {
       path: '/',
-      name: 'Hello',
-      component: Hello
+      redirect: { name: 'mailboxes' }
     },
     {
       path: '/mailboxes/',
-      name: 'Mailboxes',
-      component: Mailboxes
-    },
-    {
-      path: '/mailbox/:name',
-      name: 'Mailbox',
-      component: Mailboxes
+      name: 'mailboxes',
+      component: Mailboxes,
+      children: [
+        {
+          path: 'show_mailbox/:id',
+          name: 'mailbox',
+          component: Mailbox,
+          children: [
+            {
+              path: 'show_mail/:mail_id',
+              name: 'mail',
+              component: Mail
+            }
+          ]
+        }
+      ]
     }
   ]
 })
