@@ -1,3 +1,4 @@
+import os
 import asyncio
 import datetime
 
@@ -10,8 +11,11 @@ from leefmail.mailstore import storage
 
 app = Sanic(__name__)
 
-app.static('/static', './client/dist/static')
-app.static('/index.html', './client/dist/index.html')
+BASE_DIR = os.path.dirname(__file__)
+
+app.static('/static', os.path.join(BASE_DIR, 'client/dist/static'))
+app.static('/', os.path.join(BASE_DIR, 'client/dist/index.html'))
+app.static('/index.html', os.path.join(BASE_DIR, 'client/dist/index.html'))
 
 @app.route("/api/mailboxes")
 async def mailboxes(request):
