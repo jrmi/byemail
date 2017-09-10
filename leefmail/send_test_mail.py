@@ -50,7 +50,7 @@ if __name__ == "__main__":
             print('File %r failed to convert' % arg)
             #import ipdb; ipdb.set_trace()
         else:
-            r = client.sendmail('test@localhost', ['toto@localhost'], msg.as_string().encode('utf-8'))
+            r = client.sendmail('from@localhost', ['to@localhost'], msg.as_string().encode('utf-8'))
 
         
 

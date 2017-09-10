@@ -13,6 +13,7 @@ import uvloop
 import begin
 
 import leefmail
+from leefmail.conf import settings
 from leefmail import smtpserver, httpserver
 from aiosmtpd.controller import Controller
 
@@ -25,18 +26,19 @@ if len(sys.argv) == 1:
 # Keep this import
 sys.path.insert(0, os.getcwd())
 
-
 @begin.subcommand
 def start(reload: 'Make server autoreload (Dev only)'=False,):
     """ Start leefmail """
 
-    controller = Controller(smtpserver.MSGHandler())
+    settings.init_settings()
+
+    controller = Controller(smtpserver.MSGHandler(), **settings.SMTP_CONF)
     controller.start()
 
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     loop = asyncio.get_event_loop()
 
-    server = httpserver.app.create_server(host="0.0.0.0", port=8000)
+    server = httpserver.app.create_server(**settings.HTTP_CONF)
     task = asyncio.ensure_future(server)
 
     try:

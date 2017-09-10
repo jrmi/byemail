@@ -30,10 +30,10 @@ module.exports = {
     proxyTable: {
       '/api': {
         target: 'http://localhost:8000',
-        changeOrigin: true,
-        pathRewrite: {
+        changeOrigin: true
+        /*pathRewrite: {
           '^/api': ''
-        }
+        }*/
       }
     },
     // CSS Sourcemaps off by default because relative paths are "buggy"

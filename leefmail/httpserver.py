@@ -10,7 +10,10 @@ from leefmail.mailstore import storage
 
 app = Sanic(__name__)
 
-@app.route("/mailboxes")
+app.static('/static', './client/dist/static')
+app.static('/index.html', './client/dist/index.html')
+
+@app.route("/api/mailboxes")
 async def mailboxes(request):
     mbxs = await storage.get_mailboxes()
     for m in mbxs:
@@ -18,7 +21,7 @@ async def mailboxes(request):
             m['last_message'] = m['last_message'].isoformat()
     return json(mbxs)
 
-@app.route("/mailbox/<mailbox_id>")
+@app.route("/api/mailbox/<mailbox_id>")
 async def mailbox(request, mailbox_id):
     mailbox_to_return = await storage.get_mailbox(mailbox_id)
     for m in mailbox_to_return['messages']:
@@ -26,7 +29,7 @@ async def mailbox(request, mailbox_id):
             m['date'] = m['date'].isoformat()
     return json(mailbox_to_return)
 
-@app.route("/mail/<mail_id>")
+@app.route("/api/mail/<mail_id>")
 async def mailb(request, mail_id):
     mail_to_return = await storage.get_mail(mail_id)
     if isinstance(mail_to_return['date'], datetime.datetime): # Also strange hack

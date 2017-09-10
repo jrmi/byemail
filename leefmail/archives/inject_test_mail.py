@@ -30,8 +30,8 @@ if __name__ == "__main__":
                 ff = file.read().decode('ISO-8859-1')
                 msg = email.message_from_string(ff)
     
-        me = "jrmi@localhost"
-        you = "jrmi@localhost"
+        me = "test@localhost"
+        you = "test@localhost"
         #msg['From'] = me
         msg['To'] = you
         s = smtplib.SMTP("::1", 8025, "localhost", 10)

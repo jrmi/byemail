@@ -1,3 +1,0 @@
-""" Configuration file """
-
-ACCEPT = ['@localhost']

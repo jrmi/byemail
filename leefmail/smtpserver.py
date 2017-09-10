@@ -12,7 +12,7 @@ from email.parser import BytesParser
 
 from tinydb import Query
 
-from leefmail import settings
+from leefmail.conf import settings
 from leefmail.mailstore import storage
 
 
@@ -29,11 +29,6 @@ class MSGHandler:
                 envelope.rcpt_tos.append(address)
                 return '250 OK'
         return '550 not relaying to that domain'
-
-    async def store_raw_msg(self, session, envelope):
-        """ Save message for further replay or attachment access"""
-        pass
-
 
     async def parse_msg(self, session, envelope):
         """ Parse message and envelope to extract maximum of metadata. """
@@ -105,11 +100,6 @@ class MSGHandler:
     async def handle_DATA(self, server, session, envelope):
 
         print('Message From: %s, To: %s' % (envelope.mail_from, envelope.rcpt_tos))
-
-        try:
-            await self.store_raw_msg(session, envelope)
-        except:
-            return "500 Message error while saving"
 
         try:
             msg = await self.parse_msg(session, envelope)
