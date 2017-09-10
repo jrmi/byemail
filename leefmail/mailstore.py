@@ -1,6 +1,11 @@
 import email
 import datetime
 import asyncio
+import base64
+import uuid
+
+from email import policy
+from email.parser import BytesParser
 
 import arrow
 
@@ -45,6 +50,7 @@ class DbBackend():
         serialization.register_serializer(AddressSerializer(), 'TinyAddress')
 
         self.db = TinyDB('db.json', storage=serialization)
+        self.maildb = TinyDB('maildb.json')
 
     async def get(self, filter):
         results = self.db.search(filter)
@@ -67,17 +73,48 @@ class DbBackend():
 
         self.db.insert(bad_msg)
 
+    async def store_content(self, uid, content):
+        """ Store raw content """
+        b64_content = base64.b64encode(content).decode('utf-8'),
+        return self.maildb.insert({'uid': uid, 'content': b64_content})
+
+    async def get_content_msg(self, uid):
+        """ Return EmailMessage instance for this message uid """
+        Mail = Query()
+
+        results = self.maildb.search(Mail.uid == uid)
+        if len(results) < 1:
+            raise DoesntExists()
+        if len(results) > 1:
+            raise MultipleResults()
+        b64_content = results[0]['content']
+
+        msg = BytesParser(policy=policy.default).parsebytes(base64.b64decode(b64_content))
+
+        return msg
+
     async def store_msg(self, msg):
         """ Store message """
+        # First define uid
+        msg['uid'] = uuid.uuid4().hex
+
+        # Then save data in maildb
+        await self.store_content(msg['uid'], msg['content'])
+
+        del(msg['content'])
+
+
         eid = self.db.insert(msg)
 
         Mailbox = Query()
         msg_from = msg['from'].addr_spec
 
-        # Get mailbox if exists
+        # Get mailbox if exists or create it
         mailbox = await self.get_or_create((Mailbox.type == 'mailbox') & (Mailbox['from'] == msg_from), {
+            'uid': uuid.uuid4().hex,
             'type': 'mailbox',
             'from': msg_from,
+            'display_name': msg['from'].display_name,
             'last_message': msg['date'],
             'messages': [],
         })
@@ -88,54 +125,34 @@ class DbBackend():
 
         mailbox['messages'].append({
             'id': eid,
+            'uid': msg['uid'],
             'date': msg['date'],
-            'subject': msg['subject']
+            'subject': msg['subject'],
+            'attachment_count': len(msg['attachments'])
         })
 
-        self.db.update(mailbox, (Mailbox.type == 'mailbox') & (Mailbox['from'] == msg_from))
+        mailbox['messages'] = sorted(mailbox['messages'], key=lambda x: x['date'], reverse=True)
 
+        self.db.update(mailbox, (Mailbox.type == 'mailbox') & (Mailbox['from'] == msg_from))
 
     async def get_mailboxes(self):
         Mailbox = Query()
 
         mailboxes = list(self.db.search(Mailbox.type=='mailbox'))
-
         sorted_mailboxes = sorted(mailboxes, key=lambda x: x['last_message'], reverse=True)
-
-        for mailbox in sorted_mailboxes:
-            mailbox['eid'] = mailbox.eid
-
-            '''mailbox['messages'] = []
-            for msg in sorted_messages:
-                if 'id' in msg: # Hack to avoid strange fail on second query
-                    mailbox['messages'].append(self.db.get(eid=msg['id']))'''
 
         return sorted_mailboxes
 
-    async def get_mailbox(self, mailbox_eid):
+    async def get_mailbox(self, mailbox_id):
         Mailbox = Query()
-
-        mailbox = self.db.get(eid=mailbox_eid)
-        mailbox['id'] = mailbox.eid
-
-        sorted_messages = sorted(mailbox['messages'], key=lambda x: x['date'], reverse=True)
-        mailbox['messages'] = []
-        for msg in sorted_messages:
-            if 'id' in msg: # Hack to avoid strange fail on second query
-                msg = self.db.get(eid=msg['id'])
-                msg['id'] = msg.eid
-                del(msg['data'])
-                mailbox['messages'].append(msg)
+        mailbox = await self.get(Mailbox.uid==mailbox_id)
 
         return mailbox
 
-    async def get_mail(self, mail_eid):
-        Mailbox = Query()
+    async def get_mail(self, mail_uid):
+        Message = Query()
 
-        mail = self.db.get(eid=mail_eid)
-        mail['id'] = mail.eid
-
-        # parse mail content
+        mail = await self.get(Message.uid==mail_uid)
 
         return mail
 

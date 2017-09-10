@@ -1,14 +1,15 @@
 <template>
   <div v-if="!loading" class="webmail">
     <md-list class="mailboxes">
-      <md-list-item v-for="mailbox in mailboxes" :key="mailbox.eid">
-        <router-link :to="{ name: 'mailbox', params: { id: mailbox.eid }}">
+      <md-list-item v-for="mailbox in mailboxes" :key="mailbox.uid">
+        <router-link :to="{ name: 'mailbox', params: { id: mailbox.uid }}">
           <md-avatar>
             <img :src="gravatarUrl(mailbox)" alt="People">
           </md-avatar>
           <div class="md-list-text-container">
-            <span>{{mailbox.from}}</span>
-            <span>{{mailbox.last_message.fromNow()}}</span>
+            <span v-if="mailbox.display_name">{{mailbox.display_name}}</span>
+            <span v-if="!mailbox.display_name">{{mailbox.from}}</span>
+            <span>{{mailbox.last_message.fromNow()}} - {{mailbox.messages.length}} msgs</span>
           </div>
           <md-button class="md-icon-button md-list-action">
             <md-icon :class="'md-primary'">chat_bubble</md-icon>
@@ -44,7 +45,7 @@ export default {
     gravatarUrl (mailbox) {
       let email = mailbox.from
       let hash = md5(email)
-      return 'https://www.gravatar.com/avatar/' + hash
+      return 'https://www.gravatar.com/avatar/' + hash + '?d=identicon'
     }
   },
   data () {

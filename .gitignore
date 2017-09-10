@@ -1,7 +1,9 @@
 .env
 .vscode/
 db.json
+maildb.json
 __pycache__/
 test_msg/
 node_modules/
+*.egg-info/
 

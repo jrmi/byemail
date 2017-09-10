@@ -15,18 +15,20 @@ async def mailboxes(request):
     mbxs = await storage.get_mailboxes()
     for m in mbxs:
         if isinstance(m['last_message'], datetime.datetime): # Also strange hack
-          m['last_message'] = m['last_message'].isoformat()
+            m['last_message'] = m['last_message'].isoformat()
     return json(mbxs)
 
-@app.route("/mailbox/<mailbox_eid>")
-async def mailbox(request, mailbox_eid):
-    mailbox_to_return = await storage.get_mailbox(int(mailbox_eid))
+@app.route("/mailbox/<mailbox_id>")
+async def mailbox(request, mailbox_id):
+    mailbox_to_return = await storage.get_mailbox(mailbox_id)
     for m in mailbox_to_return['messages']:
-        m['date'] = m['date'].isoformat()
+        if isinstance(m['date'], datetime.datetime): # Also strange hack
+            m['date'] = m['date'].isoformat()
     return json(mailbox_to_return)
 
-@app.route("/mail/<mail_eid>")
-async def mailb(request, mail_eid):
-    mail_to_return = await storage.get_mail(int(mail_eid))
-    mail_to_return['date'] = mail_to_return['date'].isoformat()
+@app.route("/mail/<mail_id>")
+async def mailb(request, mail_id):
+    mail_to_return = await storage.get_mail(mail_id)
+    if isinstance(mail_to_return['date'], datetime.datetime): # Also strange hack
+        mail_to_return['date'] = mail_to_return['date'].isoformat()
     return json(mail_to_return)

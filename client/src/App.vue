@@ -26,6 +26,5 @@ export default {
 }
 #topbar{
   flex: 0;
-  background-color: #0072C6;
 }
 </style>

@@ -7,6 +7,11 @@
     <iframe class="htmlMail" v-if="currentMail['body-type'] == 'text/html'" :src="iframeSrc">
       {{currentMail.body}}
     </iframe>
+    <div class="mail-attachments" v-if="currentMail.attachments">
+      <span v-for="att of currentMail.attachments" :key="att.filename">
+        {{att.filename}} |
+      </span>
+    </div>
   </div>
 </template>
 
@@ -72,6 +77,11 @@ export default {
   overflow: hidden;
 }
 .mail-title{
+  background-color: #258097;
+  color: #eee;
+  padding-left: 10px;
+}
+.mail-attachments{
   background-color: #258097;
   color: #eee;
   padding-left: 10px;

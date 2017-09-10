@@ -5,7 +5,6 @@ import asyncio
 import base64
 import datetime
 import mimetypes
-import uuid
 
 import email
 from email import policy
@@ -31,6 +30,11 @@ class MSGHandler:
                 return '250 OK'
         return '550 not relaying to that domain'
 
+    async def store_raw_msg(self, session, envelope):
+        """ Save message for further replay or attachment access"""
+        pass
+
+
     async def parse_msg(self, session, envelope):
         """ Parse message and envelope to extract maximum of metadata. """
 
@@ -49,7 +53,7 @@ class MSGHandler:
             'envelope_tos': envelope.rcpt_tos,
             'subject': msg['Subject'],
             'received': datetime.datetime.now().isoformat(),
-            'data': base64.b64encode(envelope.content).decode('utf-8'),
+            'content': envelope.content,
             'from': msg['From'].addresses[0],
             'tos': list(msg['To'].addresses),
             'original-to': msg['X-Original-To'],
@@ -65,8 +69,6 @@ class MSGHandler:
             'body': body.get_content(),
             'attachments': []
         }
-
-        #import ipdb; ipdb.set_trace()
 
         for ind, att in enumerate(msg.iter_attachments()):
             msg_out['attachments'].append({
@@ -103,6 +105,11 @@ class MSGHandler:
     async def handle_DATA(self, server, session, envelope):
 
         print('Message From: %s, To: %s' % (envelope.mail_from, envelope.rcpt_tos))
+
+        try:
+            await self.store_raw_msg(session, envelope)
+        except:
+            return "500 Message error while saving"
 
         try:
             msg = await self.parse_msg(session, envelope)
