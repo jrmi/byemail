@@ -3,14 +3,24 @@
     <div class="mail-title">
       <h2 md-title>{{currentMail.subject}} ({{currentMail['body-type']}})</h2>
     </div>
-    <p class="textMail" v-if="currentMail['body-type'] == 'text/plain'" v-html="currentMail.body"></p>
-    <iframe class="htmlMail" v-if="currentMail['body-type'] == 'text/html'" :src="iframeSrc">
-      {{currentMail.body}}
-    </iframe>
-    <div class="mail-attachments" v-if="currentMail.attachments">
-      <span v-for="att of currentMail.attachments" :key="att.filename">
-        {{att.filename}} |
-      </span>
+    <div class="mail-content">
+      <p class="text" v-if="currentMail['body-type'] == 'text/plain'" v-html="currentMail.body"></p>
+      <iframe class="html" v-if="currentMail['body-type'] == 'text/html'" :src="iframeSrc">
+        {{currentMail.body}}
+      </iframe>
+      <div class="mail-attachments" v-if="currentMail.attachments.length">
+        <h3>{{currentMail.attachments.length}} attachment(s)</h3>
+        <ul v-for="att of currentMail.attachments" :key="att.filename">
+          <li>{{att.filename}}</li>
+        </ul>
+      </div>
+    </div>
+    <div class="mail-actions">
+      <md-button @click="showCompose = ! showCompose">Reply</md-button>
+      <div class="mail-compose" v-if="showCompose">
+        <textarea v-model="composeContent"></textarea>
+        <md-button @click="send()">Send</md-button>
+      </div>
     </div>
   </div>
 </template>
@@ -55,6 +65,14 @@ export default {
           }
         })
       }
+    },
+    send () {
+      console.log(this.composeContent)
+      this.$http.post('/api/sendmail/',
+        {content: this.composeContent, to: this.currentMail.from}).then(function (response) {
+          this.showCompose = false
+          this.composeContent = ''
+        })
     }
   },
   data () {
@@ -62,7 +80,9 @@ export default {
       loading: false,
       error: null,
       currentMail: null,
-      iframeSrc: null
+      iframeSrc: null,
+      showCompose: false,
+      composeContent: ''
     }
   }
 }
@@ -85,16 +105,35 @@ export default {
   background-color: #258097;
   color: #eee;
   padding-left: 10px;
+  flex: 0;
+  max-width: 30%;
+  //overflow-x: scroll;
 }
-.textMail{
-  flex: 1;
-  overflow-y: scroll;
-  text-overflow: wrap;
-  width: 100%;
-}
-.htmlMail{
+.mail-content{
   border: none;
   flex: 1;
-  overflow-y: scroll;
+  overflow-y: hidden;
+  display: flex;
+  .text, .html{
+    flex: 1;
+    overflow-y: scroll;
+    padding: 5px;
+    border: none;
+  }
+}
+.mail-actions{
+  background-color: #258097;
+  color: #eee;
+  padding: 5px;
+}
+.mail-compose{
+  display: flex;
+  flex-flow: row;
+  textarea{
+    font-size: 1.2em;
+    width: 100%;
+    min-height: 100px;
+    margin: 5px;
+  }
 }
 </style>

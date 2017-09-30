@@ -8,7 +8,7 @@ HTTP_CONF = {
 }
 
 SMTP_CONF = {
-    'hostname': None, # None for default
+    'hostname': 'localhost', # None for default
     'port': 8025,
     'ssl_context': None, # For enabling SSL provide context
 }

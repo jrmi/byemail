@@ -1,6 +1,7 @@
 import os
 import asyncio
 import datetime
+import logging
 
 from sanic import Sanic
 from sanic.response import json, redirect
@@ -8,6 +9,10 @@ from sanic.response import json, redirect
 from tinydb import Query
 
 from leefmail.mailstore import storage
+
+from leefmail.smtpserver import MailSender
+
+logger = logging.getLogger(__name__)
 
 app = Sanic(__name__)
 
@@ -42,3 +47,59 @@ async def mailb(request, mail_id):
     if isinstance(mail_to_return['date'], datetime.datetime): # Also strange hack
         mail_to_return['date'] = mail_to_return['date'].isoformat()
     return json(mail_to_return)
+
+
+@app.route("/api/sendmail/", methods=['POST'])
+async def sendmail(request):
+    data = request.json
+    print(data)
+
+    # Message construction
+    from email.message import EmailMessage
+    from email import policy
+    from email.headerregistry import Address
+    from email.utils import localtime
+
+    from email.policy import EmailPolicy
+    from email.headerregistry import HeaderRegistry
+    from email.headerregistry import AddressHeader
+
+    content = data['content']
+    subject = "Un sujet pour les rois"
+
+    to = Address(addr_spec=data['to']['addr_spec'])
+    # TODO remove when tested
+
+    to_addrs = [
+        Address(display_name="Jrmi sur jeremiez", addr_spec="jrmi@jeremiez.net"),
+        Address(display_name="Jeremie sur jeremiez", addr_spec="jeremie@jeremiez.net"),
+        Address(display_name="Jeremie sur jeremiez", addr_spec="titi@mailtest.jeremiez.net"),
+        Address(display_name="Jeremie sur free", addr_spec="jrmi@free.fr"),
+        #Address(display_name="Toto", addr_spec="toto@localhost")
+    ]
+
+    from_addr = Address(display_name="Test", addr_spec="test@mailtest.jeremiez.net")
+
+    header_registry = HeaderRegistry()
+
+    header_registry.map_to_type('To', AddressHeader)
+
+    mypolicy = EmailPolicy(header_factory=header_registry)
+
+    msg = EmailMessage(mypolicy)
+
+    msg.set_content(content)
+    msg['From'] = from_addr
+    msg['Subject'] = subject
+    msg['To'] = to_addrs
+    msg['Date'] = localtime()
+
+    mail_sender = MailSender()
+    result = await mail_sender.send(msg, from_addr=from_addr.addr_spec, to_addrs=[a.addr_spec for a in addresses])
+
+    response = {'Ok'}
+    return json(response)
+
+
+
+

@@ -9,3 +9,4 @@ sanic
 begins
 uvloop
 ujson
+aiodns
