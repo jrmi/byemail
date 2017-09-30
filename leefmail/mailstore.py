@@ -1,4 +1,3 @@
-import email
 import datetime
 import asyncio
 import base64
@@ -6,6 +5,7 @@ import uuid
 
 from email import policy
 from email.parser import BytesParser
+from email.headerregistry import Address
 
 import arrow
 
@@ -29,7 +29,7 @@ class DateTimeSerializer(Serializer):
         return arrow.get(s).datetime
 
 class AddressSerializer(Serializer):
-    OBJ_CLASS = email.headerregistry.Address  # The class this serializer handles
+    OBJ_CLASS = Address  # The class this serializer handles
 
     def encode(self, obj):
         return "(_|_)".join([obj.addr_spec, obj.display_name])
@@ -37,7 +37,7 @@ class AddressSerializer(Serializer):
     def decode(self, s):
         addr_spec, display_name = s.split('(_|_)')
 
-        return email.headerregistry.Address(display_name=display_name, addr_spec=addr_spec)
+        return Address(display_name=display_name, addr_spec=addr_spec)
 
 class DbBackend():
     def __init__(self):
@@ -93,49 +93,110 @@ class DbBackend():
 
         return msg
 
-    async def store_msg(self, msg):
-        """ Store message """
+    async def extract_data_from_msg(self, msg):
+        """ Extract data from a message to save it """
+
+        body = msg.get_body(('html', 'plain',))
+
+        msg_out = {
+            'type': 'mail',
+            'status': 'delivered',
+            'subject': msg['Subject'],
+            'received': datetime.datetime.now().isoformat(),
+            'from': msg['From'].addresses[0],
+            'recipients': list(msg['To'].addresses),
+            'original-to': msg['X-Original-To'],
+            'delivered-to': msg['Delivered-To'],
+            'dkim-signature': msg['DKIM-Signature'],
+            'message-id': msg['Message-ID'],
+            'domain-signature': msg['DomainKey-Signature'],
+            'date': msg['Date'].datetime,
+            'return': msg['Return-Path'] or msg['Reply-To'],
+            'in-thread': False,
+            'body-type': body.get_content_type(),
+            'body-charset': body.get_content_charset(),
+            'body': body.get_content(),
+            'attachments': []
+        }
+
+        for ind, att in enumerate(msg.iter_attachments()):
+            msg_out['attachments'].append({
+                'index': ind,
+                'type': att.get_content_type(),
+                'filename': att.get_filename()
+            })
+
+        if msg['Thread-Topic']:
+            msg_out['in_thread'] = True
+            msg_out['thread-topic'] = msg['Thread-Topic']
+            msg_out['thread-index'] = msg['Thread-index']
+
+        return msg_out
+
+    async def store_msg(self, emailmsg, from_addr, to_addrs, mailbox_id=None, extra_data=None, extra_mailbox_data=None):
+        """ Store EmailMessage in database """
+
+        msg = await storage.extract_data_from_msg(emailmsg)
+
+        msg['original-sender'] = from_addr
+        msg['original-recipients'] = to_addrs
+
         # First define uid
         msg['uid'] = uuid.uuid4().hex
 
+        if extra_data:
+            msg.update(extra_data)
+
         # Then save data in maildb
-        await self.store_content(msg['uid'], msg['content'])
-
-        del(msg['content'])
-
+        await self.store_content(msg['uid'], emailmsg.as_bytes())
 
         eid = self.db.insert(msg)
 
         Mailbox = Query()
-        msg_from = msg['from'].addr_spec
 
-        # Get mailbox if exists or create it
-        mailbox = await self.get_or_create((Mailbox.type == 'mailbox') & (Mailbox['from'] == msg_from), {
-            'uid': uuid.uuid4().hex,
-            'type': 'mailbox',
-            'from': msg_from,
-            'display_name': msg['from'].display_name,
-            'last_message': msg['date'],
-            'messages': [],
-        })
+        if mailbox_id:
+            mailbox = await self.get(Mailbox.uid == mailbox_id)
+            print("Found mailbox", mailbox)
+        else:
+            mailbox_id = uuid.uuid4().hex
+            mailbox_address = msg['from'].addr_spec
+            mailbox_name = msg['from'].display_name
+
+            # Get mailbox if exists or create it
+            mailbox = await self.get_or_create((Mailbox.type == 'mailbox') & (Mailbox['address'] == mailbox_address), {
+                'uid': mailbox_id,
+                'type': 'mailbox',
+                'address': mailbox_address,
+                'name': mailbox_name,
+                'last_message': msg['date'],
+                'messages': [],
+            })
 
         # Update last_message date
-        if mailbox['last_message'] < msg ['date']:
+        if mailbox['last_message'] < msg['date']:
             mailbox['last_message'] = msg['date']
 
-        mailbox['messages'].append({
+        mailbox_data = {
             'id': eid,
             'uid': msg['uid'],
             'date': msg['date'],
             'subject': msg['subject'],
             'attachment_count': len(msg['attachments'])
-        })
+        }
+
+        if extra_mailbox_data:
+            mailbox_data.update(extra_mailbox_data)
+
+        mailbox['messages'].append(mailbox_data)
 
         mailbox['messages'] = sorted(mailbox['messages'], key=lambda x: x['date'], reverse=True)
 
-        self.db.update(mailbox, (Mailbox.type == 'mailbox') & (Mailbox['from'] == msg_from))
+        self.db.update(mailbox, (Mailbox.type == 'mailbox') & (Mailbox.uid == mailbox_id))
+
+        return msg
 
     async def get_mailboxes(self):
+        """ Return all mailboxes in db """
         Mailbox = Query()
 
         mailboxes = list(self.db.search(Mailbox.type=='mailbox'))

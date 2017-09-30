@@ -1,11 +1,11 @@
 <template>
   <div class="mailbox">
     <div class="mailbox-title" v-if="currentMailbox">
-      <h2 md-title>Messages from {{currentMailbox.from}}</h2>
+      <h2 md-title>Mailbox for {{currentMailbox.name}}<{{currentMailbox.address}}></h2>
     </div>
     <div class="maillist" v-if="currentMailbox">
-      <ul >
-        <li v-for="message in currentMailbox.messages" :key="message.uid">
+      <ul>
+        <li v-for="message in currentMailbox.messages" :key="message.uid" :class="{'reply': message.reply}">
           <router-link :to="{ name: 'mail', params: {mail_id: message.uid}}">
             {{message.subject}} - {{message.date.fromNow()}}
             <span v-if="message.attachment_count">
@@ -75,5 +75,8 @@ export default {
   flex: 30;
   overflow-y: scroll;
   border-bottom: 1px solid #ddd;
+  li.reply{
+    background-color: #ccc;
+  }
 }
 </style>

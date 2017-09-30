@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/usr/bin/env python
 
 import sys
 import email
@@ -37,7 +37,7 @@ def mail_from_file(mail_path):
 if __name__ == "__main__":
     from smtplib import SMTP as Client
 
-    client = Client('::1', 8025)
+    client = Client('localhost', 8025)
 
     for arg in sys.argv[1:]:
         print(arg)

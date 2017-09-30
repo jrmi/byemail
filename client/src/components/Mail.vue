@@ -70,13 +70,13 @@ export default {
       }
     },
     reply () {
-      console.log(this.composeContent)
       let data = {
+        mailbox_id: this.currentMailbox.uid,
         subject: 'Re: ' + this.currentMail.subject,
         to_addrs: [
           {
-            addr_spec: this.currentMailbox.from,
-            display_name: this.currentMailbox.display_name
+            addr_spec: this.currentMailbox.address,
+            display_name: this.currentMailbox.name
           }
         ],
         from: {

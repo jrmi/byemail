@@ -7,8 +7,8 @@
             <img :src="gravatarUrl(mailbox)" alt="People">
           </md-avatar>
           <div class="md-list-text-container">
-            <span v-if="mailbox.display_name">{{mailbox.display_name}}</span>
-            <span v-if="!mailbox.display_name">{{mailbox.from}}</span>
+            <span v-if="mailbox.name">{{mailbox.name}}</span>
+            <span v-if="!mailbox.name">{{mailbox.address}}</span>
             <span>{{mailbox.last_message.fromNow()}} - {{mailbox.messages.length}} msgs</span>
           </div>
           <md-button class="md-icon-button md-list-action">
@@ -43,7 +43,7 @@ export default {
       })
     },
     gravatarUrl (mailbox) {
-      let email = mailbox.from
+      let email = mailbox.address
       let hash = md5(email)
       return 'https://www.gravatar.com/avatar/' + hash + '?d=identicon'
     }
