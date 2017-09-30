@@ -19,7 +19,7 @@
       <md-button @click="showCompose = ! showCompose">Reply</md-button>
       <div class="mail-compose" v-if="showCompose">
         <textarea v-model="composeContent"></textarea>
-        <md-button @click="send()">Send</md-button>
+        <md-button @click="reply()">Send</md-button>
       </div>
     </div>
   </div>
@@ -40,6 +40,9 @@ function sanitizeText (str) {
 
 export default {
   name: 'mail',
+  props: {
+    'currentMailbox': Object
+  },
   created () {
     this.fetchData()
   },
@@ -66,13 +69,26 @@ export default {
         })
       }
     },
-    send () {
+    reply () {
       console.log(this.composeContent)
-      this.$http.post('/api/sendmail/',
-        {content: this.composeContent, to: this.currentMail.from}).then(function (response) {
-          this.showCompose = false
-          this.composeContent = ''
-        })
+      let data = {
+        subject: 'Re: ' + this.currentMail.subject,
+        to_addrs: [
+          {
+            addr_spec: this.currentMailbox.from,
+            display_name: this.currentMailbox.display_name
+          }
+        ],
+        from: {
+          addr_spec: 'test@testmail.jeremiez.net',
+          display_name: 'JRM sur mailtest'
+        },
+        content: this.composeContent
+      }
+      this.$http.post('/api/sendmail/', data).then(function (response) {
+        this.showCompose = false
+        this.composeContent = ''
+      })
     }
   },
   data () {

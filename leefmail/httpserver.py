@@ -65,27 +65,33 @@ async def sendmail(request):
     from email.headerregistry import AddressHeader
 
     content = data['content']
-    subject = "Un sujet pour les rois"
+    subject = data['subject']
 
-    to = Address(addr_spec=data['to']['addr_spec'])
+    to_addrs = []
+    for to in data['to_addrs']:
+        to_addrs.append(Address(display_name=to['display_name'], addr_spec=to['addr_spec']))
+
+    from_addr = Address(display_name=data['from']['display_name'], addr_spec=data['from']['addr_spec'])
+
+    #subject = "Un sujet pour les rois"
+
+
     # TODO remove when tested
 
-    to_addrs = [
+    '''to_addrs = [
         Address(display_name="Jrmi sur jeremiez", addr_spec="jrmi@jeremiez.net"),
         Address(display_name="Jeremie sur jeremiez", addr_spec="jeremie@jeremiez.net"),
         Address(display_name="Jeremie sur jeremiez", addr_spec="titi@mailtest.jeremiez.net"),
         Address(display_name="Jeremie sur free", addr_spec="jrmi@free.fr"),
         #Address(display_name="Toto", addr_spec="toto@localhost")
-    ]
+    ]'''
 
-    from_addr = Address(display_name="Test", addr_spec="test@mailtest.jeremiez.net")
+    #from_addr = Address(display_name="Test", addr_spec="test@mailtest.jeremiez.net")
 
+    # To have a correct address header
     header_registry = HeaderRegistry()
-
     header_registry.map_to_type('To', AddressHeader)
-
     mypolicy = EmailPolicy(header_factory=header_registry)
-
     msg = EmailMessage(mypolicy)
 
     msg.set_content(content)
@@ -95,7 +101,12 @@ async def sendmail(request):
     msg['Date'] = localtime()
 
     mail_sender = MailSender()
-    result = await mail_sender.send(msg, from_addr=from_addr.addr_spec, to_addrs=[a.addr_spec for a in addresses])
+
+    result = await mail_sender.send(
+        msg,
+        from_addr=from_addr.addr_spec,
+        to_addrs=[a.addr_spec for a in to_addrs]
+    )
 
     response = {'Ok'}
     return json(response)

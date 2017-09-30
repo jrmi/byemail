@@ -15,7 +15,7 @@
         </li>
       </ul>
     </div>
-    <router-view></router-view>
+    <router-view :current-mailbox="currentMailbox"></router-view>
   </div>
 </template>
 

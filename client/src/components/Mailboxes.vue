@@ -2,7 +2,7 @@
   <div v-if="!loading" class="webmail">
     <md-list class="mailboxes">
       <md-list-item v-for="mailbox in mailboxes" :key="mailbox.uid">
-        <router-link :to="{ name: 'mailbox', params: { id: mailbox.uid }}">
+        <router-link :to="{name: 'mailbox', params: { id: mailbox.uid }}">
           <md-avatar>
             <img :src="gravatarUrl(mailbox)" alt="People">
           </md-avatar>
