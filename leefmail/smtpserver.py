@@ -29,8 +29,6 @@ class MSGHandler:
         loop = asyncio.get_event_loop()
 
     async def handle_RCPT(self, server, session, envelope, address, rcpt_options):
-        print(session.peer)
-        print(address)
 
         if account_manager.is_local_address(address):
             envelope.rcpt_tos.append(address)
@@ -65,17 +63,18 @@ class MSGHandler:
 
     async def local_delivery(self, rcpt_tos, server, session, envelope):
         for to in rcpt_tos:
-            print('Local delivery for %s' % to)
+            logger.info('Local delivery for %s' % to)
 
             try:
                 #msg = await self.parse_msg(session, envelope)
                 msg = BytesParser(policy=policy.default).parsebytes(envelope.content)
                 account = account_manager.get_account_for_address(envelope.mail_from)
+                logger.info('Message delivered to account %s', account.name)
                 msg_data = await storage.store_msg(msg, account=account, from_addr=envelope.mail_from, to_addrs=envelope.rcpt_tos)
             except:
                 import traceback; traceback.print_exc()
                 #import ipdb; ipdb.set_trace()
                 await self.save_failed_msg(session, envelope) # TODO handle multiple toos
-                print('Error for this message')
+                print('Error for current message')
 
             return '250 Message accepted for delivery'

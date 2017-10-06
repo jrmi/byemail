@@ -59,6 +59,8 @@ export default {
             mb.last_message = Moment(mb.last_message)
           }
         })
+      }, response => {
+        this.$router.push({ name: 'login' })
       })
     },
     gravatarUrl (mailbox) {

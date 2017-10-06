@@ -91,34 +91,41 @@ async def index(request):
     return redirect('/index.html')
 
 @app.route("/api/mailboxes")
-@auth.login_required(handle_no_auth=handle_no_auth)
-async def mailboxes(request):
-    mbxs = await storage.get_mailboxes()
+@auth.login_required(user_keyword='account', handle_no_auth=handle_no_auth)
+async def mailboxes(request, account):
+    mbxs = await storage.get_mailboxes(account)
     for m in mbxs:
         if isinstance(m['last_message'], datetime.datetime): # Also strange hack
             m['last_message'] = m['last_message'].isoformat()
     return json(mbxs)
 
 @app.route("/api/mailbox/<mailbox_id>")
-@auth.login_required(handle_no_auth=handle_no_auth)
-async def mailbox(request, mailbox_id):
+@auth.login_required(user_keyword='account', handle_no_auth=handle_no_auth)
+async def mailbox(request, mailbox_id, account):
     mailbox_to_return = await storage.get_mailbox(mailbox_id)
+    if mailbox_to_return['account'] != account.name:
+        raise Forbidden("You don't have permission to see this mailbox.")
     for m in mailbox_to_return['messages']:
         if isinstance(m['date'], datetime.datetime): # Also strange hack
             m['date'] = m['date'].isoformat()
     return json(mailbox_to_return)
 
 @app.route("/api/mail/<mail_id>")
-@auth.login_required(handle_no_auth=handle_no_auth)
-async def mailb(request, mail_id):
+@auth.login_required(user_keyword='account', handle_no_auth=handle_no_auth)
+async def mail(request, mail_id, account):
     mail_to_return = await storage.get_mail(mail_id)
+
+    if mail_to_return['account'] != account.name:
+        raise Forbidden("You don't have permission to see this mail.")
+
     if isinstance(mail_to_return['date'], datetime.datetime): # Also strange hack
         mail_to_return['date'] = mail_to_return['date'].isoformat()
     return json(mail_to_return)
 
 @app.route("/api/sendmail/", methods=['POST'])
-@auth.login_required(handle_no_auth=handle_no_auth)
-async def sendmail(request):
+@auth.login_required(user_keyword='account', handle_no_auth=handle_no_auth)
+async def sendmail(request, account):
+    print(type(account))
     data = request.json
 
     mail_sender = MailSender()
@@ -127,8 +134,6 @@ async def sendmail(request):
 
     from_addr = data['from']['addr_spec']
     to_addrs = [a['addr_spec'] for a in data['to_addrs']]
-
-    account = account_manager.get_account_for_address(from_addr)
 
     # First we store it
     await storage.store_msg(

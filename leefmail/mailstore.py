@@ -144,6 +144,8 @@ class DbBackend():
         # First define uid
         msg['uid'] = uuid.uuid4().hex
 
+        msg['account'] = account.name
+
         if extra_data:
             msg.update(extra_data)
 
@@ -163,8 +165,9 @@ class DbBackend():
             mailbox_name = msg['from'].display_name
 
             # Get mailbox if exists or create it
-            mailbox = await self.get_or_create((Mailbox.type == 'mailbox') & (Mailbox['address'] == mailbox_address), {
+            mailbox = await self.get_or_create((Mailbox.type == 'mailbox') & (Mailbox['address'] == mailbox_address) & (Mailbox['account'] == account.name), {
                 'uid': mailbox_id,
+                'account': account.name,
                 'type': 'mailbox',
                 'address': mailbox_address,
                 'name': mailbox_name,
@@ -195,11 +198,11 @@ class DbBackend():
 
         return msg
 
-    async def get_mailboxes(self):
+    async def get_mailboxes(self, account):
         """ Return all mailboxes in db """
         Mailbox = Query()
 
-        mailboxes = list(self.db.search(Mailbox.type=='mailbox'))
+        mailboxes = list(self.db.search((Mailbox.type=='mailbox') & (Mailbox['account'] == account.name)))
         sorted_mailboxes = sorted(mailboxes, key=lambda x: x['last_message'], reverse=True)
 
         return sorted_mailboxes

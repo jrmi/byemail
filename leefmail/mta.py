@@ -150,6 +150,5 @@ class MailSender():
     def _sendmsg(self, host, port, msg, from_addr, to_addrs):
         logger.info("Send mail from %s to %s", from_addr, to_addrs)
         with smtplib.SMTP(host=host, port=port) as smtp:
-            #smtp.login('jrmi', 'password') # TODO Auth not supported for now.
+            logger.debug("DRY-RUN: Should send mail here !!!")
             #smtp.send_message(msg, from_addr=from_addr, to_addrs=to_addrs)
-            print("DRY-RUN: Should send mail here !!!")

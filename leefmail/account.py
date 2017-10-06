@@ -69,7 +69,7 @@ class AccountManager():
         return self.get_account_for_address(address) is not None
 
     def get_account_for_address(self, address):
-        for name, account in self.accounts:
+        for name, account in self.accounts.items():
             if account.match_address(address):
                 return account
 
