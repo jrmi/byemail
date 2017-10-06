@@ -10,3 +10,4 @@ begins
 uvloop
 ujson
 aiodns
+sanic_auth

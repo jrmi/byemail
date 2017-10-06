@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import Login from '@/components/Login'
 import Mailboxes from '@/components/Mailboxes'
 import Mailbox from '@/components/Mailbox'
 import Mail from '@/components/Mail'
@@ -16,7 +17,12 @@ export default new Router({
   routes: [
     {
       path: '/',
-      redirect: { name: 'mailboxes' }
+      redirect: { name: 'login' }
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: Login
     },
     {
       path: '/mailboxes/',

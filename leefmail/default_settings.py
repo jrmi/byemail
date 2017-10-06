@@ -2,6 +2,8 @@
 
 ACCEPT = ['@localhost']
 
+ACCOUNTS = []
+
 HTTP_CONF = {
     'host': 'localhost',
     'port': 8000

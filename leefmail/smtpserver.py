@@ -11,6 +11,7 @@ from email.parser import BytesParser
 
 from leefmail.conf import settings
 from leefmail.mailstore import storage
+from leefmail.account import account_manager
 
 
 logger = logging.getLogger(__name__)
@@ -31,7 +32,7 @@ class MSGHandler:
         print(session.peer)
         print(address)
 
-        if self.is_local_address(address):
+        if account_manager.is_local_address(address):
             envelope.rcpt_tos.append(address)
             return '250 OK'
 
@@ -62,9 +63,6 @@ class MSGHandler:
 
         return '250 Message accepted for delivery'
 
-    def is_local_address(self, address):
-        return any((address.endswith(suffix) for suffix in settings.ACCEPT))
-
     async def local_delivery(self, rcpt_tos, server, session, envelope):
         for to in rcpt_tos:
             print('Local delivery for %s' % to)
@@ -72,7 +70,8 @@ class MSGHandler:
             try:
                 #msg = await self.parse_msg(session, envelope)
                 msg = BytesParser(policy=policy.default).parsebytes(envelope.content)
-                msg_data = await storage.store_msg(msg, from_addr=envelope.mail_from, to_addrs=envelope.rcpt_tos)
+                account = account_manager.get_account_for_address(envelope.mail_from)
+                msg_data = await storage.store_msg(msg, account=account, from_addr=envelope.mail_from, to_addrs=envelope.rcpt_tos)
             except:
                 import traceback; traceback.print_exc()
                 #import ipdb; ipdb.set_trace()

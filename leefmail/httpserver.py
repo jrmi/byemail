@@ -2,30 +2,96 @@ import os
 import asyncio
 import datetime
 import logging
+import uuid
+from collections import defaultdict
 
 from sanic import Sanic
 from sanic.response import json, redirect
+from sanic_auth import Auth
+from sanic.exceptions import Forbidden
 
 from tinydb import Query
 
 from leefmail.mailstore import storage
-
 from leefmail.mta import MailSender
+from leefmail.account import account_manager
 
 logger = logging.getLogger(__name__)
 
 app = Sanic(__name__)
+app.config.log_config = None
+app.config.AUTH_LOGIN_ENDPOINT = 'login'
 
 BASE_DIR = os.path.dirname(__file__)
 
 app.static('/static', os.path.join(BASE_DIR, '../client/dist/static'))
 app.static('/index.html', os.path.join(BASE_DIR, '../client/dist/index.html'))
 
+sessions = defaultdict(dict)
+
+auth = Auth(app)
+auth.user_loader(account_manager.get)
+
+def handle_no_auth(request):
+    raise Forbidden("This route need authentification")
+
+@app.middleware('request')
+async def add_session_to_request(request):
+    # setup session
+    session_key = request.cookies.get('session_key')
+
+    if session_key:
+        request['session'] = sessions[session_key]
+    else:
+        request['session'] = {}
+
+@app.middleware('response')
+async def add_session_key_to_response(request, response):
+    # add default session key if not existing
+    auth_key = request.cookies.get('session_key')
+    if auth_key is None:
+        session_key = uuid.uuid4().hex
+        response.cookies['session_key'] = session_key
+
+@app.route('/login', methods=['POST'])
+async def login(request):
+    credentials = request.json
+    # get user account
+    account = account_manager.authenticate(credentials)
+
+    if account:
+        session_key = uuid.uuid4().hex
+        session = sessions[session_key]
+        session[auth.auth_session_key] = account.name
+
+        response = json(account.to_json())
+        # Add session key to response
+        response.cookies['session_key'] = session_key
+
+        return response
+
+    raise Forbidden("Authentification failed. Check your credentials.")
+
+@app.route('/logout')
+@auth.login_required(handle_no_auth=handle_no_auth)
+async def logout(request):
+    auth.logout_user(request)
+    request['session'] = {}
+    response = json('Ok')
+    response.cookies['session_key'] = uuid.uuid4().hex
+    return response
+
+@app.route('/api/account')
+@auth.login_required(user_keyword='account', handle_no_auth=handle_no_auth)
+async def account(request, account):
+    return json(account.to_json())
+
 @app.route('/')
 async def index(request):
     return redirect('/index.html')
 
 @app.route("/api/mailboxes")
+@auth.login_required(handle_no_auth=handle_no_auth)
 async def mailboxes(request):
     mbxs = await storage.get_mailboxes()
     for m in mbxs:
@@ -34,6 +100,7 @@ async def mailboxes(request):
     return json(mbxs)
 
 @app.route("/api/mailbox/<mailbox_id>")
+@auth.login_required(handle_no_auth=handle_no_auth)
 async def mailbox(request, mailbox_id):
     mailbox_to_return = await storage.get_mailbox(mailbox_id)
     for m in mailbox_to_return['messages']:
@@ -42,14 +109,15 @@ async def mailbox(request, mailbox_id):
     return json(mailbox_to_return)
 
 @app.route("/api/mail/<mail_id>")
+@auth.login_required(handle_no_auth=handle_no_auth)
 async def mailb(request, mail_id):
     mail_to_return = await storage.get_mail(mail_id)
     if isinstance(mail_to_return['date'], datetime.datetime): # Also strange hack
         mail_to_return['date'] = mail_to_return['date'].isoformat()
     return json(mail_to_return)
 
-
 @app.route("/api/sendmail/", methods=['POST'])
+@auth.login_required(handle_no_auth=handle_no_auth)
 async def sendmail(request):
     data = request.json
 
@@ -60,9 +128,12 @@ async def sendmail(request):
     from_addr = data['from']['addr_spec']
     to_addrs = [a['addr_spec'] for a in data['to_addrs']]
 
+    account = account_manager.get_account_for_address(from_addr)
+
     # First we store it
     await storage.store_msg(
         msg,
+        account=account,
         from_addr=from_addr,
         to_addrs=to_addrs,
         mailbox_id=data['mailbox_id'],

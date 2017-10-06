@@ -48,7 +48,7 @@ def start(reload: 'Make server autoreload (Dev only)'=False,):
     loop = asyncio.get_event_loop()
 
     server = httpserver.app.create_server(**settings.HTTP_CONF)
-    task = asyncio.ensure_future(server)
+    asyncio.ensure_future(server)
 
     try:
         print("Server started on %s:%d" % (controller.hostname, controller.port))

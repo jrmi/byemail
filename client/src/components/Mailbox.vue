@@ -1,7 +1,7 @@
 <template>
   <div class="mailbox">
     <div class="mailbox-title" v-if="currentMailbox">
-      <h2 md-title>Mailbox for {{currentMailbox.name}}<{{currentMailbox.address}}></h2>
+      <h2 md-title>Mailbox for {{currentMailbox.name}} {{currentMailbox.address}}></h2>
     </div>
     <div class="maillist" v-if="currentMailbox">
       <ul>
