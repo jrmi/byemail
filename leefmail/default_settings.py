@@ -1,7 +1,5 @@
 """ Configuration file """
 
-ACCEPT = ['@localhost']
-
 ACCOUNTS = []
 
 HTTP_CONF = {
