@@ -71,18 +71,14 @@ export default {
     },
     reply () {
       let data = {
-        mailbox_id: this.currentMailbox.uid,
         subject: 'Re: ' + this.currentMail.subject,
-        to_addrs: [
+        reply_to: this.currentMail.id,
+        recipients: [
           {
-            addr_spec: this.currentMailbox.address,
-            display_name: this.currentMailbox.name
+            address: this.currentMailbox.name + ' <' + this.currentMailbox.address + '>',
+            type: 'to'
           }
         ],
-        from: {
-          addr_spec: 'test@testmail.jeremiez.net',
-          display_name: 'JRM sur mailtest'
-        },
         content: this.composeContent
       }
       this.$http.post('/api/sendmail/', data).then(function (response) {

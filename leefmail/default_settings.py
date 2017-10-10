@@ -1,5 +1,13 @@
 """ Configuration file """
 
+# Account list
+# example :
+# {
+#     'name': 'myname', # For login
+#     'password': 'test', # Password
+#     'address': 'my super mail <mysupermail@example.com>' # The from address
+#     'accept': ['@example.com'], # All accepted email address suffixes
+# }
 ACCOUNTS = []
 
 HTTP_CONF = {

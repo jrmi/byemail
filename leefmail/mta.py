@@ -15,6 +15,7 @@ import aiodns
 from aiodns.error import DNSError
 
 from leefmail.mailstore import storage
+from leefmail import mailutils
 
 logger = logging.getLogger(__name__)
 
@@ -89,15 +90,15 @@ class MailSender():
 
         return result
 
-    async def make_msg_from_data(self, data):
+    '''async def make_msg_from_data(self, account, data):
         content = data['content']
         subject = data['subject']
 
-        to_addrs = []
-        for to in data['to_addrs']:
-            to_addrs.append(Address(display_name=to['display_name'], addr_spec=to['addr_spec']))
+        tos = [mailutils.parse_email(a['address']) for a in data['recipients'] if a['type'] == 'to']
+        ccs = [mailutils.parse_email(a['address']) for a in data['recipients'] if a['type'] == 'cc']
 
-        from_addr = Address(display_name=data['from']['display_name'], addr_spec=data['from']['addr_spec'])
+        #from_addr = Address(display_name=data['from']['display_name'], addr_spec=data['from']['addr_spec'])
+        from_addr = mailutils.parse_email(account.address)
 
         # To have a correct address header
         header_registry = HeaderRegistry()
@@ -107,17 +108,21 @@ class MailSender():
         msg.set_content(content)
         msg['From'] = from_addr
         msg['Subject'] = subject
-        msg['To'] = to_addrs
+
+        if tos:
+            msg['To'] = tos
+        if ccs:
+            msg['Cc'] = ccs
+
         msg['Date'] = localtime()
 
-        return msg
+        return msg'''
+
 
     async def send(self, msg, from_addr, to_addrs):
         """ Relay message to other party """
         for fqdn, addresses in self.group_by_fqdn(to_addrs).items():
-            print('fqdn:', fqdn)
             mxs = await MxRecord(fqdn).get()
-            print('Mx found', mxs)
             for _, mx in mxs:
                 try:
                     await self._relay_to(mx, from_addr, addresses, msg)

@@ -3,12 +3,13 @@ from tinydb import TinyDB, Query
 from leefmail.conf import settings
 
 class Account():
-    def __init__(self, id, name, password, accept):
+    def __init__(self, id, name, password, accept, address):
         self.id = id
         self.name = name
         self.password = password
         self.accept = accept
         self.session = {}
+        self.address = address
 
     def check_credentials(self, credentials):
         return credentials['password'] == self.password
@@ -46,7 +47,8 @@ class AccountManager():
                 'id': settings_account['name'],
                 'name': settings_account['name'],
                 'password': settings_account['password'],
-                'accept': settings_account['accept']
+                'accept': settings_account['accept'],
+                'address': settings_account['address'],
             })
             result[settings_account['name']] = account
 

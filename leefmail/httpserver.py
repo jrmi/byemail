@@ -15,6 +15,7 @@ from tinydb import Query
 from leefmail.mailstore import storage
 from leefmail.mta import MailSender
 from leefmail.account import account_manager
+from leefmail import mailutils
 
 logger = logging.getLogger(__name__)
 
@@ -125,36 +126,32 @@ async def mail(request, mail_id, account):
 @app.route("/api/sendmail/", methods=['POST'])
 @auth.login_required(user_keyword='account', handle_no_auth=handle_no_auth)
 async def sendmail(request, account):
-    print(type(account))
     data = request.json
 
     mail_sender = MailSender()
 
-    msg = await mail_sender.make_msg_from_data(data)
+    from_addr = mailutils.parse_email(account.address)
+    all_addrs = [mailutils.parse_email(a['address']) for a in data['recipients']]
+    tos = [mailutils.parse_email(a['address']) for a in data['recipients'] if a['type'] == 'to']
+    ccs = [mailutils.parse_email(a['address']) for a in data['recipients'] if a['type'] == 'cc']
 
-    from_addr = data['from']['addr_spec']
-    to_addrs = [a['addr_spec'] for a in data['to_addrs']]
+    msg = mailutils.make_msg(data['subject'], data['content'], from_addr, tos, ccs)
 
     # First we store it
     await storage.store_msg(
         msg,
         account=account,
         from_addr=from_addr,
-        to_addrs=to_addrs,
-        mailbox_id=data['mailbox_id'],
-        extra_data={'reply': True},
-        extra_mailbox_data={'reply': True}
+        to_addrs=all_addrs,
+        incoming=False
     )
 
     result = await mail_sender.send(
         msg,
-        from_addr=from_addr,
-        to_addrs=to_addrs
+        from_addr=from_addr.addr_spec,
+        to_addrs=[a.addr_spec for a in all_addrs]
     )
 
+    print(msg)
     response = {'Ok'}
     return json(response)
-
-
-
-

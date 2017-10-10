@@ -66,9 +66,8 @@ class MSGHandler:
             logger.info('Local delivery for %s' % to)
 
             try:
-                #msg = await self.parse_msg(session, envelope)
                 msg = BytesParser(policy=policy.default).parsebytes(envelope.content)
-                account = account_manager.get_account_for_address(envelope.mail_from)
+                account = account_manager.get_account_for_address(to)
                 logger.info('Message delivered to account %s', account.name)
                 msg_data = await storage.store_msg(msg, account=account, from_addr=envelope.mail_from, to_addrs=envelope.rcpt_tos)
             except:
