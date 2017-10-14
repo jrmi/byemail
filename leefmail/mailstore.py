@@ -109,6 +109,7 @@ class DbBackend():
         msg['account'] = account.name
 
         msg['incoming'] = incoming
+        msg['unread'] = incoming
 
         if extra_data:
             msg.update(extra_data)
@@ -153,7 +154,8 @@ class DbBackend():
                 'date': msg['date'],
                 'subject': msg['subject'],
                 'attachment_count': len(msg['attachments']),
-                'incoming': incoming
+                'incoming': incoming,
+                'unread': incoming
             }
 
             if extra_mailbox_data:
@@ -173,9 +175,9 @@ class DbBackend():
         Mailbox = Query()
 
         mailboxes = list(self.db.search((Mailbox.type=='mailbox') & (Mailbox['account'] == account.name)))
-        sorted_mailboxes = sorted(mailboxes, key=lambda x: x['last_message'], reverse=True)
+        mailboxes = sorted(mailboxes, key=lambda x: x['last_message'], reverse=True)
 
-        return sorted_mailboxes
+        return mailboxes
 
     async def get_mailbox(self, mailbox_id):
         Mailbox = Query()
@@ -189,6 +191,15 @@ class DbBackend():
         mail = await self.get(Message.uid==mail_uid)
 
         return mail
+
+    async def update_mail(self, mail):
+        Message = Query()
+
+        self.db.update(mail, Message.uid==mail['uid'])
+
+        return mail
+
+
 
 
 storage = DbBackend()

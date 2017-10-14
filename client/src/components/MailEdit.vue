@@ -96,8 +96,8 @@ export default {
       }
       console.log(data)
       this.$http.post('/api/sendmail/', data).then(function (response) {
-        console.log('Mail sent')
-        // this.$router.go(-1)
+        console.log('Mail sent !')
+        this.$router.go(-1)
       })
     }
   }

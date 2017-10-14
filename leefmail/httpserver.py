@@ -123,6 +123,20 @@ async def mail(request, mail_id, account):
         mail_to_return['date'] = mail_to_return['date'].isoformat()
     return json(mail_to_return)
 
+@app.route("/api/mail/<mail_id>/mark_read", methods=['POST'])
+@auth.login_required(user_keyword='account', handle_no_auth=handle_no_auth)
+async def mail_mark_read(request, mail_id, account):
+    mail_to_mark = await storage.get_mail(mail_id)
+
+    if mail_to_mark['account'] != account.name:
+        raise Forbidden("You don't have permission to see this mail.")
+
+    mail_to_mark['unread'] = False
+
+    await storage.update_mail(mail_to_mark)
+
+    return json(mail_to_mark)
+
 @app.route("/api/sendmail/", methods=['POST'])
 @auth.login_required(user_keyword='account', handle_no_auth=handle_no_auth)
 async def sendmail(request, account):

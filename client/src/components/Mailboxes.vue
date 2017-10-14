@@ -1,6 +1,7 @@
 <template>
   <div v-if="!loading" class="webmail">
     <md-list class="mailboxes">
+      <md-subheader>Mailboxes</md-subheader>
       <md-list-item v-for="mailbox in mailboxes" :key="mailbox.uid">
 
         <router-link :to="{name: 'mailbox', params: { id: mailbox.uid }}">

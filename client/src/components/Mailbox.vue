@@ -1,8 +1,16 @@
 <template>
   <div class="mailbox">
-    <div class="mailbox-title" v-if="currentMailbox">
-      <h2 md-title>Mailbox for: {{currentMailbox.name}} &lt;{{currentMailbox.address}}&gt;</h2>
-    </div>
+
+    <md-toolbar class="md-dense md-warn" v-if="currentMailbox">
+      <md-button class="md-icon-button">
+        <md-icon>menu</md-icon>
+      </md-button>
+      <h2 class="md-title" style="flex: 1">Mailbox: {{currentMailbox.name}} &lt;{{currentMailbox.address}}&gt;</h2>
+      <md-button class="md-icon-button">
+        <md-icon>email</md-icon>
+      </md-button>
+    </md-toolbar>
+
     <div class="maillist" v-if="currentMailbox">
       <ul>
         <li v-for="message in currentMailbox.messages" :key="message.uid" :class="{'incoming': message.incoming}">
@@ -12,10 +20,13 @@
               - {{message.attachment_count}} attachments
             </span>
           </router-link>
+          <md-icon v-if="message.unread">visibility</md-icon>
         </li>
       </ul>
     </div>
+
     <router-view :current-mailbox="currentMailbox"></router-view>
+
   </div>
 </template>
 
@@ -66,10 +77,10 @@ export default {
   overflow: hidden;
   background-color: #F4F4F4;
 }
-.mailbox-title{
-  background-color: #258097;
-  color: #eee;
-  padding-left: 10px;
+.md-toolbar{
+  .md-title{
+    flex: 1;
+  }
 }
 .maillist{
   flex: 30;

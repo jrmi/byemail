@@ -1,8 +1,18 @@
 <template>
-  <div class="mail" v-if="currentMail">
-    <div class="mail-title">
-      <h2 md-title>{{currentMail.subject}} ({{currentMail['body-type']}})</h2>
-    </div>
+  <div class="mail" v-if="currentMail && showMail">
+    <md-toolbar class="md-dense md-warn">
+      <h2 class="md-title">{{currentMail.subject}} ({{currentMail['body-type']}})</h2>
+      <md-button @click="showCompose = ! showCompose" class="md-icon-button">
+        <md-icon>reply</md-icon>
+      </md-button>
+      <md-button @click="showMail = ! showMail" class="md-icon-button">
+        <md-icon>close</md-icon>
+      </md-button>
+      <md-button v-if="currentMail.unread" @click="markRead()" class="md-icon-button">
+        <md-icon>visibility</md-icon>
+      </md-button>
+    </md-toolbar>
+
     <div class="mail-content">
       <p class="text" v-if="currentMail['body-type'] == 'text/plain'" v-html="currentMail.body"></p>
       <iframe class="html" v-if="currentMail['body-type'] == 'text/html'" :src="iframeSrc">
@@ -15,13 +25,15 @@
         </ul>
       </div>
     </div>
+
     <div class="mail-actions">
-      <md-button @click="showCompose = ! showCompose">Reply</md-button>
       <div class="mail-compose" v-if="showCompose">
         <textarea v-model="composeContent"></textarea>
-        <md-button @click="reply()">Send</md-button>
+        <md-button @click="reply()"><md-icon>send</md-icon></md-button>
       </div>
+
     </div>
+
   </div>
 </template>
 
@@ -52,6 +64,7 @@ export default {
   },
   methods: {
     fetchData () {
+      this.showMail = true
       let currentMail = this.$route.params.mail_id
       if (!this.currentMail || this.currentMail.id !== currentMail) {
         this.currentMail = null
@@ -85,6 +98,11 @@ export default {
         this.showCompose = false
         this.composeContent = ''
       })
+    },
+    markRead () {
+      this.$http.post('/api/mail/' + this.currentMail.uid + '/mark_read').then(function (response) {
+        this.currentMail.unread = false
+      })
     }
   },
   data () {
@@ -94,6 +112,7 @@ export default {
       currentMail: null,
       iframeSrc: null,
       showCompose: false,
+      showMail: true,
       composeContent: ''
     }
   }
@@ -108,10 +127,10 @@ export default {
   flex-direction: column;
   overflow: hidden;
 }
-.mail-title{
-  background-color: #258097;
-  color: #eee;
-  padding-left: 10px;
+.md-toolbar{
+  .md-title{
+    flex: 1;
+  }
 }
 .mail-attachments{
   background-color: #258097;
