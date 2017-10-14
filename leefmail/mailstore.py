@@ -100,6 +100,8 @@ class DbBackend():
 
         msg = await mailutils.extract_data_from_msg(emailmsg)
 
+        msg['type'] = 'mail'
+
         msg['original-sender'] = from_addr
         msg['original-recipients'] = to_addrs
 
@@ -151,11 +153,7 @@ class DbBackend():
             mailbox_data = {
                 'id': eid,
                 'uid': msg['uid'],
-                'date': msg['date'],
-                'subject': msg['subject'],
-                'attachment_count': len(msg['attachments']),
-                'incoming': incoming,
-                'unread': incoming
+                'date': msg['date']
             }
 
             if extra_mailbox_data:
@@ -163,25 +161,42 @@ class DbBackend():
 
             mailbox['messages'].append(mailbox_data)
 
-            # TODO temporaly sort hack
-            mailbox['messages'] = sorted(mailbox['messages'], key=lambda x: x['date'], reverse=True)
-
             self.db.update(mailbox, (Mailbox.type == 'mailbox') & (Mailbox.uid == mailbox['uid']))
 
         return msg
 
     async def get_mailboxes(self, account):
-        """ Return all mailboxes in db """
+        """ Return all mailboxes in db with unread message count and total """
         Mailbox = Query()
+        Message = Query()
 
         mailboxes = list(self.db.search((Mailbox.type=='mailbox') & (Mailbox['account'] == account.name)))
-        mailboxes = sorted(mailboxes, key=lambda x: x['last_message'], reverse=True)
+        for mailbox in mailboxes:
+            mailbox['total'] = len(mailbox['messages'])
+            mailbox['unreads'] = 0
+            for message in mailbox['messages']:
+                msg = await self.get(Message.uid==message['uid'])
+                mailbox['unreads']  += 1 if msg['unread'] else 0
 
         return mailboxes
 
     async def get_mailbox(self, mailbox_id):
         Mailbox = Query()
+        Message = Query()
+
         mailbox = await self.get(Mailbox.uid==mailbox_id)
+
+        messages = []
+        mailbox['total'] = len(mailbox['messages'])
+        mailbox['unreads'] = 0
+        for message in mailbox['messages']:
+            msg = await self.get(Message.uid==message['uid'])
+            msg = dict(msg)
+            del msg['body']
+            mailbox['unreads']  += 1 if msg['unread'] else 0
+            messages.append(msg)
+
+        mailbox['messages'] = messages
 
         return mailbox
 

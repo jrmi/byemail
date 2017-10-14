@@ -176,5 +176,5 @@ async def sendmail(request, account):
     )
 
     print(msg)
-    response = {'Ok'}
-    return json(response)
+    # TODO handle message return form client
+    return json(msg)

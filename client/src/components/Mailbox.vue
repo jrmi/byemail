@@ -6,8 +6,8 @@
         <md-icon>menu</md-icon>
       </md-button>
       <h2 class="md-title" style="flex: 1">Mailbox: {{currentMailbox().name}} &lt;{{currentMailbox().address}}&gt;</h2>
-      <md-button class="md-icon-button">
-        <md-icon>email</md-icon>
+      <md-button v-if="currentMailbox().unreads" @click="markAllMailRead()" class="md-icon-button">
+        <md-icon>visibility_off</md-icon>
       </md-button>
     </md-toolbar>
 
@@ -25,13 +25,13 @@
       </ul>
     </div>
 
-    <router-view :current-mailbox="currentMailbox()"></router-view>
+    <router-view></router-view>
 
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'mailbox',
@@ -52,6 +52,9 @@ export default {
     },
     ...mapGetters([
       'currentMailbox'
+    ]),
+    ...mapActions([
+      'markAllMailRead'
     ])
   },
   data () {

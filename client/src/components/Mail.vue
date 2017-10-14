@@ -13,6 +13,10 @@
       </md-button>
     </md-toolbar>
 
+    <div class="mail-header">
+      <span v-for="to of currentMail().recipients" :key="to.addr_spec">To: {{to.addr_spec}}</span>
+    </div>
+
     <div class="mail-content">
       <p class="text" v-if="currentMail()['body-type'] == 'text/plain'" v-html="currentMail().body"></p>
       <iframe class="html" v-if="currentMail()['body-type'] == 'text/html'" :src="currentMail().iframeSrc">
@@ -43,9 +47,6 @@ import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'mail',
-  props: {
-    'currentMailbox': Object
-  },
   created () {
     this.fetchData()
   },
@@ -64,11 +65,11 @@ export default {
     },
     reply () {
       let data = {
-        subject: 'Re: ' + this.currentMail.subject,
-        reply_to: this.currentMail.id,
+        subject: 'Re: ' + this.currentMail().subject,
+        reply_to: this.currentMail().id,
         recipients: [
           {
-            address: this.currentMailbox.name + ' <' + this.currentMailbox.address + '>',
+            address: this.currentMailbox().name + ' <' + this.currentMailbox().address + '>',
             type: 'to'
           }
         ],
@@ -80,7 +81,8 @@ export default {
       })
     },
     ...mapGetters([
-      'currentMail'
+      'currentMail',
+      'currentMailbox'
     ]),
     ...mapActions([
       'markMailRead'
@@ -119,9 +121,15 @@ export default {
   max-width: 30%;
   //overflow-x: scroll;
 }
+.mail-header{
+  flex: 0;
+  overflow-y: scroll;
+  min-height: 1.5em;
+  border-bottom: 1px solid #ccc;
+}
 .mail-content{
   border: none;
-  flex: 1;
+  flex: 9;
   overflow-y: hidden;
   display: flex;
   .text, .html{

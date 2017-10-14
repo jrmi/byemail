@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Moment from 'moment'
+import _ from 'lodash'
 import * as types from '../mutation-types'
 
 var tagsToReplace = {
@@ -21,7 +22,7 @@ const state = {
 
 // getters
 const getters = {
-  allMailboxes: state => state.all,
+  allMailboxes: state => _.orderBy(state.all, 'last_message', 'desc'),
   currentMailbox: state => state.current,
   currentMail: state => state.mail
 }
@@ -43,6 +44,7 @@ const actions = {
       for (let msg of mailbox.messages) {
         msg.date = Moment(msg.date)
       }
+      mailbox.messages = _.orderBy(mailbox.messages, 'date', 'desc')
       commit({ type: types.SET_CURRENT_MAILBOX, mailbox })
     })
   },
@@ -58,8 +60,19 @@ const actions = {
       commit({ type: types.SET_CURRENT_MAIL, mail })
     })
   },
+  markAllMailRead ({commit}) {
+    let promises = []
+    for (let msg of state.current.messages) {
+      if (msg.unread) {
+        promises.push(Vue.http.post('/api/mail/' + msg.uid + '/mark_read'))
+      }
+    }
+    return Promise.all(promises).then(() => {
+      commit({ type: types.SET_ALL_MAIL_READ })
+    })
+  },
   markMailRead ({commit}) {
-    return Vue.http.post('/api/mail/' + state.mail.uid + '/mark_read').then(function (response) {
+    return Vue.http.post('/api/mail/' + state.mail.uid + '/mark_read').then((response) => {
       commit({ type: types.SET_CURRENT_MAIL_READ })
     })
   }
@@ -77,7 +90,21 @@ const mutations = {
   [types.SET_CURRENT_MAIL] (state, { mail }) {
     state.mail = mail
   },
-  [types.SET_CURRENT_MAIL_READ] (state, { mailbox }) {
+  [types.SET_ALL_MAIL_READ] (state) {
+    for (let msg of state.current.messages) {
+      if (msg.unread) {
+        msg.unread = false
+      }
+    }
+    if (state.mail) {
+      state.mail.unread = false
+    }
+    state.current.unreads = 0
+    state.all.find(mb => mb.uid === state.current.uid).unreads = 0
+  },
+  [types.SET_CURRENT_MAIL_READ] (state) {
+    state.all.find(m => m.uid === state.current.uid).unreads--
+    state.current.unreads--
     state.current.messages.find(m => m.uid === state.mail.uid).unread = false
     state.mail.unread = false
   }

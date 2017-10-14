@@ -43,7 +43,6 @@ async def extract_data_from_msg(msg):
     body = msg.get_body(('html', 'plain',))
 
     msg_out = {
-        'type': 'mail',
         'status': 'delivered',
         'subject': msg['Subject'],
         'received': datetime.datetime.now().isoformat(),

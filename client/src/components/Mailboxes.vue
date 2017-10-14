@@ -13,8 +13,10 @@
             <span v-if="!mailbox.name">{{mailbox.address}}</span>
             <span>{{mailbox.last_message.fromNow()}} - {{mailbox.messages.length}} msgs</span>
           </div>
-          <md-button class="md-icon-button md-list-action">
-            <md-icon :class="'md-primary'">chat_bubble</md-icon>
+          <md-button v-if="mailbox.unreads" class="md-icon-button md-list-action">
+            <md-icon class="md-primary">chat_bubble</md-icon>
+            <span v-if="mailbox.unreads <= 9" class="unread-count">{{mailbox.unreads}}</span>
+            <span v-if="mailbox.unreads > 9" class="unread-count">9+</span>
           </md-button>
           <md-divider class="md-inset"></md-divider>
         </router-link>
@@ -80,6 +82,16 @@ export default {
 
 .filler{
   flex: 8;
+}
+
+.unread-count{
+  position: absolute;
+  top: 7px;
+  left: 8px;
+  color: white;
+  text-align: center;
+  width: 2em;
+  font-size: 0.9em;
 }
 
 </style>
