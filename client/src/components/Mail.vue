@@ -1,26 +1,26 @@
 <template>
-  <div class="mail" v-if="currentMail && showMail">
+  <div class="mail" v-if="currentMail() && showMail">
     <md-toolbar class="md-dense md-warn">
-      <h2 class="md-title">{{currentMail.subject}} ({{currentMail['body-type']}})</h2>
+      <h2 class="md-title">{{currentMail().subject}} ({{currentMail()['body-type']}})</h2>
       <md-button @click="showCompose = ! showCompose" class="md-icon-button">
         <md-icon>reply</md-icon>
       </md-button>
       <md-button @click="showMail = ! showMail" class="md-icon-button">
         <md-icon>close</md-icon>
       </md-button>
-      <md-button v-if="currentMail.unread" @click="markRead()" class="md-icon-button">
+      <md-button v-if="currentMail().unread" @click="markMailRead()" class="md-icon-button">
         <md-icon>visibility</md-icon>
       </md-button>
     </md-toolbar>
 
     <div class="mail-content">
-      <p class="text" v-if="currentMail['body-type'] == 'text/plain'" v-html="currentMail.body"></p>
-      <iframe class="html" v-if="currentMail['body-type'] == 'text/html'" :src="iframeSrc">
-        {{currentMail.body}}
+      <p class="text" v-if="currentMail()['body-type'] == 'text/plain'" v-html="currentMail().body"></p>
+      <iframe class="html" v-if="currentMail()['body-type'] == 'text/html'" :src="currentMail().iframeSrc">
+        {{currentMail().body}}
       </iframe>
-      <div class="mail-attachments" v-if="currentMail.attachments.length">
-        <h3>{{currentMail.attachments.length}} attachment(s)</h3>
-        <ul v-for="att of currentMail.attachments" :key="att.filename">
+      <div class="mail-attachments" v-if="currentMail().attachments.length">
+        <h3>{{currentMail().attachments.length}} attachment(s)</h3>
+        <ul v-for="att of currentMail().attachments" :key="att.filename">
           <li>{{att.filename}}</li>
         </ul>
       </div>
@@ -38,17 +38,8 @@
 </template>
 
 <script>
-import Moment from 'moment'
-
-var tagsToReplace = {
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;'
-}
-
-function sanitizeText (str) {
-  return str.replace(/[&<>]/g, (tag) => { return tagsToReplace[tag] || tag })
-}
+// import Moment from 'moment'
+import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'mail',
@@ -65,22 +56,11 @@ export default {
   methods: {
     fetchData () {
       this.showMail = true
-      let currentMail = this.$route.params.mail_id
-      if (!this.currentMail || this.currentMail.id !== currentMail) {
-        this.currentMail = null
-
-        this.loading = true
-        this.$http.get('/api/mail/' + currentMail, { responseType: 'json' }).then(function (response) {
-          this.loading = false
-          this.currentMail = response.body
-          this.currentMail.date = Moment(this.currentMail.date)
-          if (this.currentMail['body-type'] === 'text/html') {
-            this.iframeSrc = 'data:text/html;charset=' + this.currentMail['body-charset'] + ',' + escape(this.currentMail.body)
-          } else {
-            this.currentMail.body = sanitizeText(this.currentMail.body).replace(/\n/g, '<br />')
-          }
-        })
-      }
+      this.loading = true
+      let mailId = this.$route.params.mail_id
+      this.$store.dispatch({ type: 'getMail', mailId }).then(() => {
+        this.loading = false
+      })
     },
     reply () {
       let data = {
@@ -99,18 +79,17 @@ export default {
         this.composeContent = ''
       })
     },
-    markRead () {
-      this.$http.post('/api/mail/' + this.currentMail.uid + '/mark_read').then(function (response) {
-        this.currentMail.unread = false
-      })
-    }
+    ...mapGetters([
+      'currentMail'
+    ]),
+    ...mapActions([
+      'markMailRead'
+    ])
   },
   data () {
     return {
       loading: false,
       error: null,
-      currentMail: null,
-      iframeSrc: null,
       showCompose: false,
       showMail: true,
       composeContent: ''

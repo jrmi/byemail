@@ -21,6 +21,7 @@
 export default {
   name: 'hello',
   data () {
+    console.log(this.$store.state.mailboxes)
     return {
       password: '',
       name: '',

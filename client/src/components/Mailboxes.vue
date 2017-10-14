@@ -2,7 +2,7 @@
   <div v-if="!loading" class="webmail">
     <md-list class="mailboxes">
       <md-subheader>Mailboxes</md-subheader>
-      <md-list-item v-for="mailbox in mailboxes" :key="mailbox.uid">
+      <md-list-item v-for="mailbox in allMailboxes()" :key="mailbox.uid">
 
         <router-link :to="{name: 'mailbox', params: { id: mailbox.uid }}">
           <md-avatar>
@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import Moment from 'moment'
+import { mapGetters } from 'vuex'
 import md5 from 'crypto-js/md5'
 
 export default {
@@ -38,24 +38,22 @@ export default {
   methods: {
     fetchData () {
       this.loading = true
-      this.$http.get('/api/mailboxes', {responseType: 'json'}).then(function (response) {
+      this.$store.dispatch('getAllMailboxes').then(() => {
         this.loading = false
-        this.mailboxes = response.body
-        for (let mb of this.mailboxes) {
-          mb.last_message = Moment(mb.last_message)
-        }
       })
     },
     gravatarUrl (mailbox) {
       let email = mailbox.address
       let hash = md5(email)
       return 'https://www.gravatar.com/avatar/' + hash + '?d=identicon'
-    }
+    },
+    ...mapGetters([
+      'allMailboxes'
+    ])
   },
   data () {
     return {
-      loading: false,
-      mailboxes: null
+      loading: false
     }
   }
 }

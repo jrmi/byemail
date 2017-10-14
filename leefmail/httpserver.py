@@ -33,6 +33,15 @@ sessions = defaultdict(dict)
 auth = Auth(app)
 auth.user_loader(account_manager.get)
 
+DEBUG = True
+if DEBUG:
+    def gen_session_key():
+        return '1'
+else:
+    def gen_session_key():
+        return uuid.uuid4().hex
+
+
 def handle_no_auth(request):
     raise Forbidden("This route need authentification")
 
@@ -51,7 +60,7 @@ async def add_session_key_to_response(request, response):
     # add default session key if not existing
     auth_key = request.cookies.get('session_key')
     if auth_key is None:
-        session_key = uuid.uuid4().hex
+        session_key = gen_session_key()
         response.cookies['session_key'] = session_key
 
 @app.route('/login', methods=['POST'])
@@ -61,7 +70,7 @@ async def login(request):
     account = account_manager.authenticate(credentials)
 
     if account:
-        session_key = uuid.uuid4().hex
+        session_key = gen_session_key()
         session = sessions[session_key]
         session[auth.auth_session_key] = account.name
 
@@ -79,7 +88,7 @@ async def logout(request):
     auth.logout_user(request)
     request['session'] = {}
     response = json('Ok')
-    response.cookies['session_key'] = uuid.uuid4().hex
+    response.cookies['session_key'] = gen_session_key()
     return response
 
 @app.route('/api/account')

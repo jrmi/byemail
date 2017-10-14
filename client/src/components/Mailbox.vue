@@ -1,19 +1,19 @@
 <template>
   <div class="mailbox">
 
-    <md-toolbar class="md-dense md-warn" v-if="currentMailbox">
+    <md-toolbar class="md-dense md-warn" v-if="currentMailbox()">
       <md-button class="md-icon-button">
         <md-icon>menu</md-icon>
       </md-button>
-      <h2 class="md-title" style="flex: 1">Mailbox: {{currentMailbox.name}} &lt;{{currentMailbox.address}}&gt;</h2>
+      <h2 class="md-title" style="flex: 1">Mailbox: {{currentMailbox().name}} &lt;{{currentMailbox().address}}&gt;</h2>
       <md-button class="md-icon-button">
         <md-icon>email</md-icon>
       </md-button>
     </md-toolbar>
 
-    <div class="maillist" v-if="currentMailbox">
+    <div class="maillist" v-if="currentMailbox()">
       <ul>
-        <li v-for="message in currentMailbox.messages" :key="message.uid" :class="{'incoming': message.incoming}">
+        <li v-for="message in currentMailbox().messages" :key="message.uid" :class="{'incoming': message.incoming}">
           <router-link :to="{ name: 'mail', params: {mail_id: message.uid}}">
             {{message.subject}} - {{message.date.fromNow()}}
             <span v-if="message.attachment_count">
@@ -25,13 +25,13 @@
       </ul>
     </div>
 
-    <router-view :current-mailbox="currentMailbox"></router-view>
+    <router-view :current-mailbox="currentMailbox()"></router-view>
 
   </div>
 </template>
 
 <script>
-import Moment from 'moment'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'mailbox',
@@ -44,25 +44,20 @@ export default {
   },
   methods: {
     fetchData () {
-      let currentMailbox = this.$route.params.id
-      if (!this.currentMailbox || this.currentMailbox.uid !== currentMailbox) {
-        this.currentMailbox = null
-        this.loading = true
-        this.$http.get('/api/mailbox/' + currentMailbox, {responseType: 'json'}).then(function (response) {
-          this.loading = false
-          this.currentMailbox = response.body
-          for (let msg of this.currentMailbox.messages) {
-            msg.date = Moment(msg.date)
-          }
-        })
-      }
-    }
+      this.loading = true
+      let mailboxId = this.$route.params.id
+      this.$store.dispatch({ type: 'getMailbox', mailboxId }).then(() => {
+        this.loading = false
+      })
+    },
+    ...mapGetters([
+      'currentMailbox'
+    ])
   },
   data () {
     return {
       loading: false,
-      error: null,
-      currentMailbox: null
+      error: null
     }
   }
 }
