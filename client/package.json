@@ -1,7 +1,7 @@
 {
-  "name": "leefmail-client",
+  "name": "byemail-client",
   "version": "1.0.0",
-  "description": "A Leefmail web client",
+  "description": "A byemail web client",
   "author": "Jeremie Pardou-Piquemal <jrmi@jeremiez.net>",
   "private": true,
   "scripts": {

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # ############################################################################
-# This is the code for THE leefmail command line program
+# This is the code for THE byemail command line program
 # and all it's related commands
 # ############################################################################
 
@@ -12,14 +12,14 @@ import asyncio
 import uvloop
 import begin
 
-import leefmail
-from leefmail.conf import settings
-from leefmail import smtpserver, httpserver
+import byemail
+from byemail.conf import settings
+from byemail import smtpserver, httpserver
 from aiosmtpd.controller import Controller
 
 
 # TODO: remove below if statement asap. This is a workaround for a bug in begins
-# TODO: which provokes an eception when calling command without parameters.
+# TODO: which provokes an exception when calling command without parameters.
 # TODO: more info at https://github.com/aliles/begins/issues/48
 if len(sys.argv) == 1:
     sys.argv.append('-h')
@@ -29,7 +29,7 @@ sys.path.insert(0, os.getcwd())
 
 @begin.subcommand
 def start(reload: 'Make server autoreload (Dev only)'=False,):
-    """ Start leefmail """
+    """ Start byemail """
 
     settings.init_settings()
 
@@ -52,9 +52,9 @@ def start(reload: 'Make server autoreload (Dev only)'=False,):
 
 @begin.start
 def run(version=False):
-    """ Leefmail """
+    """ byemail """
     if version:
-        print(leefmail.__version__)
+        print(byemail.__version__)
         sys.exit(0)
 
 

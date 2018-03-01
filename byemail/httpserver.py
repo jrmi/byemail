@@ -12,10 +12,10 @@ from sanic.exceptions import Forbidden
 
 from tinydb import Query
 
-from leefmail.mailstore import storage
-from leefmail.mta import MailSender
-from leefmail.account import account_manager
-from leefmail import mailutils
+from byemail.mailstore import storage
+from byemail.mta import MailSender
+from byemail.account import account_manager
+from byemail import mailutils
 
 logger = logging.getLogger(__name__)
 

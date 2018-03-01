@@ -3,7 +3,7 @@
 #
 
 from django.core.files.base import ContentFile
-from leefMail.smtp.util.msg import MessageRenderer
+from byemail.smtp.util.msg import MessageRenderer
 
 
 from smtpd import SMTPServer
@@ -19,7 +19,7 @@ import errno
 import mimetypes
 from datetime import datetime
 
-from leefMail.webmail.models import Message, Attachment, Tag
+from byemail.webmail.models import Message, Attachment, Tag
 
 messRend = MessageRenderer()
 

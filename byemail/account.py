@@ -1,6 +1,6 @@
 from tinydb import TinyDB, Query
 
-from leefmail.conf import settings
+from byemail.conf import settings
 
 class Account():
     def __init__(self, id, name, password, accept, address):

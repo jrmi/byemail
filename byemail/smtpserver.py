@@ -9,9 +9,9 @@ import logging
 from email import policy
 from email.parser import BytesParser
 
-from leefmail.conf import settings
-from leefmail.mailstore import storage
-from leefmail.account import account_manager
+from byemail.conf import settings
+from byemail.mailstore import storage
+from byemail.account import account_manager
 
 
 logger = logging.getLogger(__name__)

@@ -14,8 +14,8 @@ from email.headerregistry import Address, HeaderRegistry, AddressHeader
 import aiodns
 from aiodns.error import DNSError
 
-from leefmail.mailstore import storage
-from leefmail import mailutils
+from byemail.mailstore import storage
+from byemail import mailutils
 
 logger = logging.getLogger(__name__)
 

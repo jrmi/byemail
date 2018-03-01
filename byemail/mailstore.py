@@ -12,7 +12,7 @@ import arrow
 from tinydb import TinyDB, Query
 from tinydb_serialization import Serializer, SerializationMiddleware
 
-from leefmail import mailutils
+from byemail import mailutils
 
 
 class DoesntExists(Exception):

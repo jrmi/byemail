@@ -8,7 +8,7 @@ import sys
 import importlib
 import traceback
 import os
-import leefmail.default_settings as default_settings
+import byemail.default_settings as default_settings
 import logging
 import logging.config
 

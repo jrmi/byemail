@@ -1,12 +1,12 @@
 from setuptools import setup
 from importlib import import_module
 
-VERSION = import_module("leefmail").__version__
-URL = import_module("leefmail").__url__
+VERSION = import_module("byemail").__version__
+URL = import_module("byemail").__url__
 
-setup(name='leefmail',
+setup(name='byemail',
       version=VERSION,
-      description='Leefmail',
+      description='byemail',
       classifiers=[
           'Development Status :: 4 - Beta',
           'License :: OSI Approved :: Apache Software License',
@@ -24,11 +24,11 @@ setup(name='leefmail',
       author_email='jeremie.pardou@mhcomm.fr',
 
       license='Apache Software License',
-      packages=['leefmail'],
+      packages=['byemail'],
 
       entry_points={
           'console_scripts': [
-              'leefmail = leefmail.commands:run.start',
+              'byemail = byemail.commands:run.start',
           ]
       },
 

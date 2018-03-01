@@ -1,0 +1,27 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[dev-packages]
+
+[requires]
+python_version = "3.6"
+
+[packages]
+
+pylint = "*"
+aiosmtpd = "*"
+CodernityDB = "*"
+tinydb = "*"
+ipdb = "*"
+tinydb-serialization = "*"
+arrow = "*"
+Sanic = "*"
+begins = "*"
+uvloop = "*"
+ujson = "*"
+aiodns = "*"
+Sanic-Auth = "*"
