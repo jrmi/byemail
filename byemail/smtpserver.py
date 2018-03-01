@@ -13,7 +13,6 @@ from byemail.conf import settings
 from byemail.mailstore import storage
 from byemail.account import account_manager
 
-
 logger = logging.getLogger(__name__)
 
 EMPTYBYTES = b''

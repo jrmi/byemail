@@ -1,4 +1,5 @@
 """ Configuration file """
+import os
 
 # Account list
 # example :
@@ -9,6 +10,8 @@
 #     'accept': ['@example.com'], # All accepted email address suffixes
 # }
 ACCOUNTS = []
+
+DATADIR = "data/"
 
 HTTP_CONF = {
     'host': 'localhost',

@@ -1,7 +1,8 @@
+import os
+import uuid
+import base64
 import datetime
 import asyncio
-import base64
-import uuid
 
 from email import policy
 from email.parser import BytesParser
@@ -13,6 +14,7 @@ from tinydb import TinyDB, Query
 from tinydb_serialization import Serializer, SerializationMiddleware
 
 from byemail import mailutils
+from byemail.conf import settings
 
 
 class DoesntExists(Exception):
@@ -51,8 +53,8 @@ class DbBackend():
         serialization.register_serializer(DateTimeSerializer(), 'TinyDate')
         serialization.register_serializer(AddressSerializer(), 'TinyAddress')
 
-        self.db = TinyDB('db.json', storage=serialization)
-        self.maildb = TinyDB('maildb.json')
+        self.db = TinyDB(os.path.join(settings.DATADIR, 'db.json'), storage=serialization)
+        self.maildb = TinyDB(os.path.join(settings.DATADIR, 'maildb.json'))
 
     async def get(self, filter):
         results = self.db.search(filter)

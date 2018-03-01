@@ -7,16 +7,17 @@ name = "pypi"
 
 [dev-packages]
 
+pylint = "*"
+ipdb = "*"
+
 [requires]
 python_version = "3.6"
 
 [packages]
 
-pylint = "*"
 aiosmtpd = "*"
 CodernityDB = "*"
 tinydb = "*"
-ipdb = "*"
 tinydb-serialization = "*"
 arrow = "*"
 Sanic = "*"
@@ -25,3 +26,5 @@ uvloop = "*"
 ujson = "*"
 aiodns = "*"
 Sanic-Auth = "*"
+
+
