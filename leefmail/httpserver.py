@@ -161,7 +161,7 @@ async def sendmail(request, account):
     msg = mailutils.make_msg(data['subject'], data['content'], from_addr, tos, ccs)
 
     # First we store it
-    await storage.store_msg(
+    saved_msg = await storage.store_msg(
         msg,
         account=account,
         from_addr=from_addr,
@@ -169,12 +169,12 @@ async def sendmail(request, account):
         incoming=False
     )
 
-    result = await mail_sender.send(
+    await mail_sender.send(
         msg,
         from_addr=from_addr.addr_spec,
         to_addrs=[a.addr_spec for a in all_addrs]
     )
 
     print(msg)
-    # TODO handle message return form client
-    return json(msg)
+
+    return json(saved_msg)

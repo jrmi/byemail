@@ -15,14 +15,31 @@ function sanitizeText (str) {
 
 // initial state
 const state = {
-  all: [],
+  all: null,
   current: null,
-  mail: null
+  mail: null,
+  draft: {
+    mailContent: '',
+    mailSubject: '',
+    recipients: [
+      {
+        id: _.uniqueId(),
+        address: '',
+        type: 'to'
+      }
+    ]
+  }
 }
 
 // getters
 const getters = {
-  allMailboxes: state => _.orderBy(state.all, 'last_message', 'desc'),
+  allMailboxes: state => {
+    if (state.all !== null) {
+      return _.orderBy(state.all, 'last_message', 'desc')
+    } else {
+      return null
+    }
+  },
   currentMailbox: state => state.current,
   currentMail: state => state.mail
 }
@@ -75,8 +92,41 @@ const actions = {
     return Vue.http.post('/api/mail/' + state.mail.uid + '/mark_read').then((response) => {
       commit({ type: types.SET_CURRENT_MAIL_READ })
     })
-  }
+  },
+  sendMail ({dispatch, commit}, {recipients, subject, content, replyTo}) {
+    return Vue.http.post('/api/sendmail/', {recipients, subject, content, replyTo}).then(function (response) {
+      let promise = dispatch('getAllMailboxes')
+      if (state.current) {
+        promise = dispatch('getMailbox', {mailboxId: state.current.uid})
+      }
+      return promise
+    })
+  },
+  resetDraft ({commit}) {
+    let draft = {
+      mailContent: '',
+      mailSubject: '',
+      recipients: [
+        {
+          id: _.uniqueId(),
+          address: '',
+          type: 'to'
+        }
+      ]
+    }
+    commit({ type: types.SET_DRAFT }, draft)
+  },
+  addDraftReciptient ({commit}) {
+    let reciptient = {
+      id: _.uniqueId(),
+      address: '',
+      type: 'to'
+    }
+    let reciptients = state.draft.reciptients
+    recipients.push(reciptient)
 
+
+  }
 }
 
 // mutations
@@ -107,6 +157,17 @@ const mutations = {
     state.current.unreads--
     state.current.messages.find(m => m.uid === state.mail.uid).unread = false
     state.mail.unread = false
+  },
+  [types.SET_DRAFT] (state, { mailContent, mailSubject, recipients }) {
+    if (_.isDefined(mailContent)) {
+      state.draft.mailContent = mailContent
+    }
+    if (_.isDefined(mailSubject)) {
+      state.draft.mailSubject = mailSubject
+    }
+    if (_.isDefined(recipients)) {
+      state.draft.recipients = recipients
+    }
   }
 }
 

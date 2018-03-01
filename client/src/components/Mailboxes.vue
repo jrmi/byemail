@@ -1,7 +1,7 @@
 <template>
-  <div v-if="!loading" class="webmail">
+  <div class="webmail">
     <md-list class="mailboxes">
-      <md-subheader>Mailboxes</md-subheader>
+      <md-subheader>Mailboxes <md-button class="md-icon-button" @click="refreshMailboxes()"><md-icon>refresh</md-icon></md-button></md-subheader>
       <md-list-item v-for="mailbox in allMailboxes()" :key="mailbox.uid">
 
         <router-link :to="{name: 'mailbox', params: { id: mailbox.uid }}">
@@ -29,7 +29,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapGetters, mapActions } from 'vuex'
 import md5 from 'crypto-js/md5'
 
 export default {
@@ -39,9 +39,14 @@ export default {
   },
   methods: {
     fetchData () {
-      this.loading = true
-      this.$store.dispatch('getAllMailboxes').then(() => {
-        this.loading = false
+      if (this.allMailboxes() === null) {
+        this.refreshMailboxes()
+      }
+    },
+    refreshMailboxes () {
+      this.setLoading(true)
+      this.getAllMailboxes().then(() => {
+        this.setLoading(false)
       })
     },
     gravatarUrl (mailbox) {
@@ -51,11 +56,14 @@ export default {
     },
     ...mapGetters([
       'allMailboxes'
+    ]),
+    ...mapActions([
+      'getAllMailboxes',
+      'setLoading'
     ])
   },
   data () {
     return {
-      loading: false
     }
   }
 }
@@ -72,6 +80,9 @@ export default {
   flex: 1;
   display: flex;
   overflow: hidden;
+  &.loading {
+    display: none;
+  }
 }
 
 .mailboxes{

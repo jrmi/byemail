@@ -1,5 +1,5 @@
 <template>
-  <div class="login">
+  <div @keyup.enter="submit()" class="login">
     <md-whiteframe class="inside">
       <form novalidate @submit.stop.prevent="submit">
         <p v-if="loginFailed">Your username or password is incorrect. Please try again...</p>
@@ -21,7 +21,6 @@
 export default {
   name: 'hello',
   data () {
-    console.log(this.$store.state.mailboxes)
     return {
       password: '',
       name: '',

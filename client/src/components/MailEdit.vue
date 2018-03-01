@@ -51,6 +51,7 @@
 
 <script>
 import _ from 'lodash'
+import { mapActions } from 'vuex'
 
 export default {
   name: 'mailedit',
@@ -94,12 +95,16 @@ export default {
         subject: this.mailSubject,
         content: this.mailContent
       }
-      console.log(data)
-      this.$http.post('/api/sendmail/', data).then(function (response) {
-        console.log('Mail sent !')
+      this.setLoading(true)
+      this.sendMail(data).then(response => {
+        this.setLoading(false)
         this.$router.go(-1)
       })
-    }
+    },
+    ...mapActions([
+      'sendMail',
+      'setLoading'
+    ])
   }
 
 }

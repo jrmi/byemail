@@ -57,10 +57,10 @@ export default {
   methods: {
     fetchData () {
       this.showMail = true
-      this.loading = true
+      this.setLoading(true)
       let mailId = this.$route.params.mail_id
       this.$store.dispatch({ type: 'getMail', mailId }).then(() => {
-        this.loading = false
+        this.setLoading(false)
       })
     },
     reply () {
@@ -75,9 +75,11 @@ export default {
         ],
         content: this.composeContent
       }
-      this.$http.post('/api/sendmail/', data).then(function (response) {
+      this.setLoading(true)
+      this.sendMail(data).then(function (response) {
         this.showCompose = false
         this.composeContent = ''
+        this.setLoading(false)
       })
     },
     ...mapGetters([
@@ -85,13 +87,13 @@ export default {
       'currentMailbox'
     ]),
     ...mapActions([
-      'markMailRead'
+      'markMailRead',
+      'sendMail',
+      'setLoading'
     ])
   },
   data () {
     return {
-      loading: false,
-      error: null,
       showCompose: false,
       showMail: true,
       composeContent: ''

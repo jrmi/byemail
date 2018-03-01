@@ -6,6 +6,9 @@
         <md-icon>menu</md-icon>
       </md-button>
       <h2 class="md-title" style="flex: 1">Mailbox: {{currentMailbox().name}} &lt;{{currentMailbox().address}}&gt;</h2>
+      <md-button @click="writeMail()" class="md-icon-button">
+        <md-icon>email</md-icon>
+      </md-button>
       <md-button v-if="currentMailbox().unreads" @click="markAllMailRead()" class="md-icon-button">
         <md-icon>visibility_off</md-icon>
       </md-button>
@@ -44,22 +47,25 @@ export default {
   },
   methods: {
     fetchData () {
-      this.loading = true
+      this.setLoading(true)
       let mailboxId = this.$route.params.id
       this.$store.dispatch({ type: 'getMailbox', mailboxId }).then(() => {
-        this.loading = false
+        this.setLoading(false)
       })
+    },
+    writeMail () {
+      this.$router.push({ name: 'mailedit' })
     },
     ...mapGetters([
       'currentMailbox'
     ]),
     ...mapActions([
-      'markAllMailRead'
+      'markAllMailRead',
+      'setLoading'
     ])
   },
   data () {
     return {
-      loading: false,
       error: null
     }
   }
