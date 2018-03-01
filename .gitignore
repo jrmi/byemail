@@ -6,4 +6,5 @@ __pycache__/
 test_msg/
 node_modules/
 *.egg-info/
+site-packages/
 

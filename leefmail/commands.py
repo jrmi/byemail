@@ -19,7 +19,7 @@ from aiosmtpd.controller import Controller
 
 
 # TODO: remove below if statement asap. This is a workaround for a bug in begins
-# TODO: which provokes an eception when calling pypeman without parameters.
+# TODO: which provokes an eception when calling command without parameters.
 # TODO: more info at https://github.com/aliles/begins/issues/48
 if len(sys.argv) == 1:
     sys.argv.append('-h')
