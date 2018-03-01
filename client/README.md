@@ -1,6 +1,6 @@
-# leefmail-client
+# byemail-client
 
-> A Leefmail web client
+> The Byemail web client
 
 ## Build Setup
 
