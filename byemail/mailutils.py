@@ -14,7 +14,6 @@ def parse_email(email_str):
 
     return res['groups'][0].addresses[0]
 
-
 def make_msg(subject, content, from_addr, tos=None, ccs=None):
 
     from_addr = parse_email(from_addr)

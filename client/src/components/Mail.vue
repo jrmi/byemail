@@ -22,10 +22,10 @@
       <iframe class="html" v-if="currentMail()['body-type'] == 'text/html'" :src="currentMail().iframeSrc">
         {{currentMail().body}}
       </iframe>
-      <div class="mail-attachments" v-if="currentMail().attachments.length">
-        <h3>{{currentMail().attachments.length}} attachment(s)</h3>
+      <div class="mail-attachments" v-if="currentMail().attachments">
+        <h3>{{currentMail().attachments.length}} <md-icon>attachment</md-icon></h3>
         <ul v-for="att of currentMail().attachments" :key="att.filename">
-          <li>{{att.filename}}</li>
+          <li><a :href="att.url">{{att.filename}}</a></li>
         </ul>
       </div>
     </div>
@@ -122,6 +122,16 @@ export default {
   flex: 0;
   max-width: 30%;
   //overflow-x: scroll;
+  ul {
+    margin: 0 5px;
+    padding: 0;
+  }
+  li {
+    list-style-type: none;
+    overflow: hidden;
+    white-space:nowrap;
+    text-overflow: ellipsis;
+  }
 }
 .mail-header{
   flex: 0;

@@ -19,10 +19,10 @@
         <li v-for="message in currentMailbox().messages" :key="message.uid" :class="{'incoming': message.incoming}">
           <router-link :to="{ name: 'mail', params: {mail_id: message.uid}}">
             {{message.subject}} - {{message.date.fromNow()}}
-            <span v-if="message.attachment_count">
-              - {{message.attachment_count}} attachments
-            </span>
-          </router-link>
+          </router-link> 
+          <span v-if="message.attachments.length">
+             | {{message.attachments.length}} <md-icon>attachment</md-icon>
+          </span> |
           <md-icon v-if="message.unread">visibility</md-icon>
         </li>
       </ul>

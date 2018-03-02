@@ -91,7 +91,7 @@ class DbBackend():
             raise DoesntExists()
         if len(results) > 1:
             raise MultipleResults()
-        b64_content = results[0]['content']
+        b64_content = results[0]['content'][0]
 
         msg = BytesParser(policy=policy.default).parsebytes(base64.b64decode(b64_content))
 
@@ -208,6 +208,20 @@ class DbBackend():
         mail = await self.get(Message.uid==mail_uid)
 
         return mail
+
+    async def get_mail_attachment(self, mail_uid, att_index):
+        Message = Query()
+
+        mail = await self.get(Message.uid==mail_uid)
+        raw_mail = await self.get_content_msg(mail_uid)
+
+        attachment = mail['attachments'][att_index]
+
+        atts = list(raw_mail.iter_attachments())
+        stream = atts[att_index]
+
+        content = stream.get_content()
+        return attachment, content
 
     async def update_mail(self, mail):
         Message = Query()

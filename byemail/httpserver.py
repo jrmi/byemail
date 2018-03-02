@@ -6,7 +6,7 @@ import uuid
 from collections import defaultdict
 
 from sanic import Sanic
-from sanic.response import json, redirect
+from sanic.response import json, redirect, stream
 from sanic_auth import Auth
 from sanic.exceptions import Forbidden
 
@@ -128,6 +128,10 @@ async def mail(request, mail_id, account):
 
     if isinstance(mail_to_return['date'], datetime.datetime): # Also strange hack
         mail_to_return['date'] = mail_to_return['date'].isoformat()
+
+    for att in mail_to_return['attachments']:
+        att['url'] = "/api/mail/{}/attachment/{}/{}".format(mail_id, att['index'], att['filename'])
+
     return json(mail_to_return)
 
 @app.route("/api/mail/<mail_id>/mark_read", methods=['POST'])
@@ -143,6 +147,16 @@ async def mail_mark_read(request, mail_id, account):
     await storage.update_mail(mail_to_mark)
 
     return json(mail_to_mark)
+
+@app.route("/api/mail/<mail_id>/attachment/<att_index>/<filename>", methods=['GET'])
+@auth.login_required(user_keyword='account', handle_no_auth=handle_no_auth)
+async def mail_download_attachment(request, mail_id, att_index, filename, account):
+    attachment, att_content = await storage.get_mail_attachment(mail_id, int(att_index))
+
+    async def streaming_att(response):
+        response.write(att_content)
+
+    return stream(streaming_att, content_type=attachment['type'])
 
 @app.route("/api/sendmail/", methods=['POST'])
 @auth.login_required(user_keyword='account', handle_no_auth=handle_no_auth)
