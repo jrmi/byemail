@@ -117,15 +117,13 @@ const actions = {
     commit({ type: types.SET_DRAFT }, draft)
   },
   addDraftReciptient ({commit}) {
-    let reciptient = {
+    let recipient = {
       id: _.uniqueId(),
       address: '',
       type: 'to'
     }
-    let reciptients = state.draft.reciptients
-    recipients.push(reciptient)
-
-
+    let recipients = state.draft.recipients
+    recipients.push(recipient)
   }
 }
 

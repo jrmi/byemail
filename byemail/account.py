@@ -1,5 +1,3 @@
-from tinydb import TinyDB, Query
-
 from byemail.conf import settings
 
 class Account():

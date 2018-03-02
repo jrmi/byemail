@@ -10,8 +10,6 @@ from sanic.response import json, redirect
 from sanic_auth import Auth
 from sanic.exceptions import Forbidden
 
-from tinydb import Query
-
 from byemail.mailstore import storage
 from byemail.mta import MailSender
 from byemail.account import account_manager
