@@ -1,4 +1,6 @@
 import datetime
+import base64
+import magic
 
 from email import policy
 from email.utils import localtime
@@ -14,7 +16,7 @@ def parse_email(email_str):
 
     return res['groups'][0].addresses[0]
 
-def make_msg(subject, content, from_addr, tos=None, ccs=None):
+def make_msg(subject, content, from_addr, tos=None, ccs=None, attachments=None):
 
     from_addr = parse_email(from_addr)
 
@@ -31,6 +33,19 @@ def make_msg(subject, content, from_addr, tos=None, ccs=None):
         msg['To'] = tos
     if ccs:
         msg['Cc'] = ccs
+
+    if attachments:
+        for att in attachments:
+            filename = att['filename']
+            content = base64.b64decode(att['b64'])
+            # Guess type here
+            maintype, subtype = magic.from_buffer(content, mime=True).split('/')
+            msg.add_attachment(
+                content, 
+                maintype=maintype, 
+                subtype=subtype, 
+                filename=filename
+            )
 
     msg['Date'] = localtime()
 

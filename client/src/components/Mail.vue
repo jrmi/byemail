@@ -25,13 +25,13 @@
       <div class="mail-attachments" v-if="currentMail().attachments">
         <h3>{{currentMail().attachments.length}} <md-icon>attachment</md-icon></h3>
         <ul v-for="att of currentMail().attachments" :key="att.filename">
-          <li><a :href="att.url">{{att.filename}}</a></li>
+          <li><a :href="att.url" :download="att.filename">{{att.filename}}</a></li>
         </ul>
       </div>
     </div>
 
-    <div class="mail-actions">
-      <div class="mail-compose" v-if="showCompose">
+    <div class="mail-actions" v-if="showCompose">
+      <div class="mail-compose" >
         <textarea v-model="composeContent"></textarea>
         <md-button @click="reply()"><md-icon>send</md-icon></md-button>
       </div>

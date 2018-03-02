@@ -93,8 +93,8 @@ const actions = {
       commit({ type: types.SET_CURRENT_MAIL_READ })
     })
   },
-  sendMail ({dispatch, commit}, {recipients, subject, content, replyTo}) {
-    return Vue.http.post('/api/sendmail/', {recipients, subject, content, replyTo}).then(function (response) {
+  sendMail ({dispatch, commit}, {recipients, subject, content, attachments, replyTo}) {
+    return Vue.http.post('/api/sendmail/', {recipients, subject, content, attachments, replyTo}).then(function (response) {
       let promise = dispatch('getAllMailboxes')
       if (state.current) {
         promise = dispatch('getMailbox', {mailboxId: state.current.uid})

@@ -26,5 +26,7 @@ uvloop = "*"
 ujson = "*"
 aiodns = "*"
 Sanic-Auth = "*"
+python-magic = "*"
+
 
 

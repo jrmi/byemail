@@ -21,9 +21,11 @@
             {{message.subject}} - {{message.date.fromNow()}}
           </router-link> 
           <span v-if="message.attachments.length">
-             | {{message.attachments.length}} <md-icon>attachment</md-icon>
-          </span> |
-          <md-icon v-if="message.unread">visibility</md-icon>
+            | {{message.attachments.length}} <md-icon>attachment</md-icon>
+          </span>
+          <span  v-if="message.unread">
+            | <md-icon>visibility</md-icon>
+          </span>
         </li>
       </ul>
     </div>
@@ -100,7 +102,7 @@ export default {
   li{
     padding: 10px;
     margin: 2px;
-    width: 95%;
+    width: 100%;
     align-self: flex-end;
     background-color: #dad27e;
     border-radius: 2px;

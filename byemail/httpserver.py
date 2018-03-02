@@ -3,6 +3,7 @@ import asyncio
 import datetime
 import logging
 import uuid
+import mimetypes
 from collections import defaultdict
 
 from sanic import Sanic
@@ -130,6 +131,14 @@ async def mail(request, mail_id, account):
         mail_to_return['date'] = mail_to_return['date'].isoformat()
 
     for att in mail_to_return['attachments']:
+        if not att.get('filename'):
+            guessed_ext = mimetypes.guess_extension(att['type'])
+            if not guessed_ext:
+                guessed_ext = ".bin"
+            att['filename'] = 'file_{}{}'.format(
+                att['index'], 
+                guessed_ext
+            )
         att['url'] = "/api/mail/{}/attachment/{}/{}".format(mail_id, att['index'], att['filename'])
 
     return json(mail_to_return)
@@ -170,7 +179,9 @@ async def sendmail(request, account):
     tos = [mailutils.parse_email(a['address']) for a in data['recipients'] if a['type'] == 'to']
     ccs = [mailutils.parse_email(a['address']) for a in data['recipients'] if a['type'] == 'cc']
 
-    msg = mailutils.make_msg(data['subject'], data['content'], from_addr, tos, ccs)
+    attachments = data['attachments']
+
+    msg = mailutils.make_msg(data['subject'], data['content'], from_addr, tos, ccs, attachments)
 
     # First we store it
     saved_msg = await storage.store_msg(
@@ -186,7 +197,5 @@ async def sendmail(request, account):
         from_addr=from_addr.addr_spec,
         to_addrs=[a.addr_spec for a in all_addrs]
     )
-
-    print(msg)
 
     return json(saved_msg)
