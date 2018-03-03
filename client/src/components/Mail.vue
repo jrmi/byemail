@@ -22,7 +22,7 @@
       <iframe class="html" v-if="currentMail()['body-type'] == 'text/html'" :src="currentMail().iframeSrc">
         {{currentMail().body}}
       </iframe>
-      <div class="mail-attachments" v-if="currentMail().attachments">
+      <div class="mail-attachments" v-if="currentMail().attachments.length">
         <h3>{{currentMail().attachments.length}} <md-icon>attachment</md-icon></h3>
         <ul v-for="att of currentMail().attachments" :key="att.filename">
           <li><a :href="att.url" :download="att.filename">{{att.filename}}</a></li>

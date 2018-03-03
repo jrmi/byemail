@@ -7,6 +7,7 @@ import store from './store'
 import VueResource from 'vue-resource'
 import VueMaterial from 'vue-material'
 import 'vue-material/dist/vue-material.css'
+import 'vue-material/dist/theme/default.css'
 import 'material-icons/css/material-icons.css'
 
 Vue.use(VueResource)

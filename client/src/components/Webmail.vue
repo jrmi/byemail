@@ -1,6 +1,6 @@
 <template>
   <div class="content"  :class="{loading: isLoading()}" v-if="account">
-    <md-toolbar id="topbar">
+    <md-toolbar id="topbar" class="md-primary"> 
         <md-menu>
           <md-button md-menu-trigger class="md-icon-button"><md-icon>menu</md-icon></md-button>
           <md-menu-content>
@@ -8,10 +8,16 @@
             <md-menu-item @click="logout()">Log out</md-menu-item>
           </md-menu-content>
         </md-menu>
-        <h1 class="md-title"><router-link :to="{ name: 'mailboxes'}">Maiboxes for {{account.name}}</router-link></h1>
+        <h3 class="md-title">Maiboxes for {{account.name}}</h3>
+        <router-link :to="{ name: 'mailboxes'}"><md-icon>home</md-icon></router-link>
     </md-toolbar>
 
     <router-view></router-view>
+
+
+    <md-bottom-bar>
+      <h3 class="center">Byemail for your pleasure</h3>
+    </md-bottom-bar>
 
     <div class="waiter"><div class="signal"></div></div>
 

@@ -1,71 +1,93 @@
 <template>
-  <div class="mailedit">
+  <form class="md-layout mailedit">
+    <md-card class="md-layout-item">
+      <md-card-content>
+        <div class="recipients">
+          <ul>
+            <li v-for="(recipient, index) in recipients" :key="recipient.id" class="md-layout">
+              <md-field class="recipient-type md-layout-item">
+                <label>Type</label>
+                <md-select v-model="recipient.type">
+                  <md-option value="to">To</md-option>
+                  <md-option value="cc">Cc</md-option>
+                  <md-option value="bcc">Bcc</md-option>
+                </md-select>
+              </md-field>
 
-    <div class="reciptients">
-      <ul>
-        <li v-for="(recipient, index) in recipients" :key="recipient.id">
-          <md-input-container class="recipient-type">
-            <md-select v-model="recipient.type">
-              <md-option value="to">To</md-option>
-              <md-option value="cc">Cc</md-option>
-              <md-option value="bcc">Bcc</md-option>
-            </md-select>
-          </md-input-container>
+              <md-autocomplete class="recipient-address md-layout-item" 
+                  v-model="recipient.address" 
+                  :md-options="contacts"
+                  @md-changed="searchContacts" 
+                  @md-opened="searchContacts" 
+                  :debounce="500" 
+                  print-attribute="value"
+              >
+                <label>Recipient</label>
+                <template slot="md-autocomplete-item" slot-scope="{ item, term }">
+                  <md-highlight-text :md-term="term">{{ item.name }}</md-highlight-text>
+                </template>
 
-          <md-input-container class="recipient-address" >
-            <md-autocomplete v-model="recipient.address" :fetch="searchContact" :debounce="500" print-attribute="value"></md-autocomplete>
-          </md-input-container>
+                <template slot="md-autocomplete-empty" slot-scope="{ term }">
+                  No address matching "{{ term }}" were found.
+                </template>
+              </md-autocomplete>
 
-          <md-button class="md-icon-button md-raised md-accent recipient-remover" @click="recipients.splice(index, 1)">
-            <md-icon>remove</md-icon>
-          </md-button>
+              <md-button class="md-icon-button md-raised md-accent recipient-remover" @click="recipients.splice(index, 1)">
+                <md-icon>remove</md-icon>
+              </md-button>
 
-        </li>
-      </ul>
-      <div class="actions">
-        <md-button class="md-raised" @click="addReciptient()">Add recipient</md-button>
-      </div>
-    </div>
+            </li>
+          </ul>
+          <div class="actions">
+            <md-button class="md-raised" @click="addReciptient()">Add recipient</md-button>
+          </div>
+        </div>
 
-    <div class="attachments">
-      <ul>
-        <li v-for="(attachment, index) in attachments" :key="attachment.id">
+        <div class="attachments">
+          <ul>
+            <li v-for="(attachment, index) in attachments" :key="attachment.id">
 
-          <md-input-container class="attachment-file" >
-            <md-file v-model="attachment.filename" @selected="files => {attachment.files = files}"></md-file>
-          </md-input-container>
+              <md-field class="attachment-file" >
+                <md-file v-model="attachment.filename" @md-change="files => {attachment.files = files}">
+                </md-file>
+              </md-field>
 
-          <md-button class="md-icon-button md-raised md-accent attachment-remover" @click="attachments.splice(index, 1)">
-            <md-icon>remove</md-icon>
-          </md-button>
+              <md-button class="md-icon-button md-raised md-accent attachment-remover" @click="attachments.splice(index, 1)">
+                <md-icon>remove</md-icon>
+              </md-button>
 
-        </li>
-      </ul>
-      <div class="actions">
-        <md-button class="md-raised" @click="addAttachment()">Add attachment</md-button>
-      </div>
-    </div>
+            </li>
+          </ul>
+          <div class="actions">
+            <md-button class="md-raised" @click="addAttachment()">Add attachment</md-button>
+          </div>
+        </div>
 
-    <div class="mail-subject">
-      <label>Subject</label>
-      <md-input-container>
-        <md-input v-model.trim="mailSubject" required></md-input>
-      </md-input-container>
-    </div>
+        <div class="mail-subject">
+          <md-field>
+            <label>Subject</label>
+            <md-input v-model.trim="mailSubject" required>
+              <label>Subject</label>
+            </md-input>
+          </md-field>
+        </div>
 
-    <div class="attachement"></div>
+        <div class="attachement"></div>
 
-    <div class="mail-content">
-      <label>Message</label>
-      <md-input-container>
-        <md-textarea v-model="mailContent"></md-textarea>
-      </md-input-container>
-    </div>
-    <div class="actions">
-      <md-button class="md-raised" @click="goBack()">Cancel</md-button>
-      <md-button class="md-raised md-primary" @click="send()">Send</md-button>
-    </div>
-  </div>
+        <div class="mail-content">
+          <md-field>
+            <label>Message</label>
+            <md-textarea v-model="mailContent"></md-textarea>
+          </md-field>
+        </div>
+        <div class="actions">
+          <md-button class="md-raised" @click="goBack()">Cancel</md-button>
+          <md-button class="md-raised md-primary" @click="send()">Send</md-button>
+        </div>
+
+      </md-card-content>
+    </md-card>
+  </form>
 </template>
 
 <script>
@@ -79,6 +101,7 @@ export default {
       mailContent: '',
       mailSubject: '',
       attachments: [],
+      contacts: [],
       recipients: [
         {
           id: _.uniqueId(),
@@ -89,13 +112,11 @@ export default {
     }
   },
   methods: {
-    searchContact (search) {
-      // let query = search.q
-
-      let result = new Promise((resolve, reject) => {
-        resolve([])
+    searchContacts (search) {
+      return new Promise((resolve, reject) => {
+        this.contacts = [{id: 1, name: 'toto@localhost'}]
+        resolve(this.contacts)
       })
-      return result
     },
     addReciptient () {
       let reciptient = {
@@ -171,7 +192,7 @@ export default {
   padding: 10px 10%;
 }
 
-.reciptients ul{
+.recipients ul{
   list-style-type: none;
   li{
     display:flex;
@@ -206,17 +227,17 @@ export default {
 .recipient-type{
   //width: 5em;
   margin-right: 10px;
-  flex: 20;
+  //flex: 20;
 }
 .recipient-address{
   //width: 5em;
   padding-right: 10px;
-  flex: 80;
+  //flex: 80;
 }
 .recipient-type{
   //width: 5em;
   padding-right: 10px;
-  flex: 2;
+  //flex: 2;
 }
 
 .mail-subject{

@@ -1,26 +1,25 @@
 <template>
   <div class="webmail">
-    <md-list class="mailboxes">
+    <md-list class="mailboxes md-dense">
       <md-subheader>Mailboxes <md-button class="md-icon-button" @click="refreshMailboxes()"><md-icon>refresh</md-icon></md-button></md-subheader>
-      <md-list-item v-for="mailbox in allMailboxes()" :key="mailbox.uid">
-
-        <router-link :to="{name: 'mailbox', params: { id: mailbox.uid }}">
-          <md-avatar>
+      
+      <md-list-item v-for="mailbox in allMailboxes()" :key="mailbox.uid" :to="{name: 'mailbox', params: { id: mailbox.uid }}">
+          <md-avatar class="md-xsmall-hide">
             <img :src="gravatarUrl(mailbox)" alt="People">
           </md-avatar>
-          <div class="md-list-text-container">
+          <div class="md-list-item-text">
             <span v-if="mailbox.name">{{mailbox.name}}</span>
             <span v-if="!mailbox.name">{{mailbox.address}}</span>
             <span>{{mailbox.last_message.fromNow()}} - {{mailbox.messages.length}} msgs</span>
           </div>
+          <md-button v-if="!mailbox.unreads" class="md-icon-button md-list-action">
+            <md-icon class="">chat_bubble</md-icon>
+          </md-button>
           <md-button v-if="mailbox.unreads" class="md-icon-button md-list-action">
             <md-icon class="md-primary">chat_bubble</md-icon>
             <span v-if="mailbox.unreads <= 9" class="unread-count">{{mailbox.unreads}}</span>
             <span v-if="mailbox.unreads > 9" class="unread-count">9+</span>
           </md-button>
-          <md-divider class="md-inset"></md-divider>
-        </router-link>
-
       </md-list-item>
     </md-list>
     <div class="filler" v-if="$route.name === 'mailboxes'">Select a mailbox from left...</div>
@@ -86,7 +85,7 @@ export default {
 }
 
 .mailboxes{
-  flex: 2;
+  flex: 3;
   overflow-y: scroll;
   background-color: #DBE2E5;
 }
@@ -97,8 +96,8 @@ export default {
 
 .unread-count{
   position: absolute;
-  top: 7px;
-  left: 8px;
+  top: 2px;
+  left: 0px;
   color: white;
   text-align: center;
   width: 2em;
