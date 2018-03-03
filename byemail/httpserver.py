@@ -192,10 +192,12 @@ async def sendmail(request, account):
         incoming=False
     )
 
+    # Then we send it
     await mail_sender.send(
         msg,
         from_addr=from_addr.addr_spec,
         to_addrs=[a.addr_spec for a in all_addrs]
     )
 
+    # Finally we return it
     return json(saved_msg)

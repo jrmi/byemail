@@ -90,37 +90,9 @@ class MailSender():
 
         return result
 
-    '''async def make_msg_from_data(self, account, data):
-        content = data['content']
-        subject = data['subject']
-
-        tos = [mailutils.parse_email(a['address']) for a in data['recipients'] if a['type'] == 'to']
-        ccs = [mailutils.parse_email(a['address']) for a in data['recipients'] if a['type'] == 'cc']
-
-        #from_addr = Address(display_name=data['from']['display_name'], addr_spec=data['from']['addr_spec'])
-        from_addr = mailutils.parse_email(account.address)
-
-        # To have a correct address header
-        header_registry = HeaderRegistry()
-        header_registry.map_to_type('To', AddressHeader)
-        msg = EmailMessage(policy.EmailPolicy(header_factory=header_registry))
-
-        msg.set_content(content)
-        msg['From'] = from_addr
-        msg['Subject'] = subject
-
-        if tos:
-            msg['To'] = tos
-        if ccs:
-            msg['Cc'] = ccs
-
-        msg['Date'] = localtime()
-
-        return msg'''
-
-
     async def send(self, msg, from_addr, to_addrs):
         """ Relay message to other party """
+
         for fqdn, addresses in self.group_by_fqdn(to_addrs).items():
             mxs = await MxRecord(fqdn).get()
             for _, mx in mxs:
@@ -143,7 +115,7 @@ class MailSender():
             logger.exception('Timeout error')
         except (OSError, smtplib.SMTPException) as e:
             logger.exception('got %s', e.__class__)
-            # All recipients were refused.  If the exception had an associated
+            # All recipients were refused. If the exception had an associated
             # error code, use it.  Otherwise, fake it with a non-triggering
             # exception code.
             errcode = getattr(e, 'smtp_code', -1)
@@ -155,5 +127,5 @@ class MailSender():
     def _sendmsg(self, host, port, msg, from_addr, to_addrs):
         logger.info("Send mail from %s to %s", from_addr, to_addrs)
         with smtplib.SMTP(host=host, port=port) as smtp:
-            logger.debug("DRY-RUN: Should send mail here !!!")
-            #smtp.send_message(msg, from_addr=from_addr, to_addrs=to_addrs)
+            #logger.debug("DRY-RUN: Should send mail here !!!")
+            smtp.send_message(msg, from_addr=from_addr, to_addrs=to_addrs)

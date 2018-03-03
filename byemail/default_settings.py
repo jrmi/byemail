@@ -13,6 +13,13 @@ ACCOUNTS = []
 
 DATADIR = "data/"
 
+DKIM_CONFIG = {
+    'private_key': 'dkimprivatekey.pem',
+    'selector': 'dkim',
+    'domain': 'example.com',
+    'headers': ['From', 'To', 'Subject', 'Date', 'Message-Id']
+}
+
 HTTP_CONF = {
     'host': 'localhost',
     'port': 8000

@@ -178,7 +178,7 @@ class DbBackend():
             mailbox['unreads'] = 0
             for message in mailbox['messages']:
                 msg = await self.get(Message.uid==message['uid'])
-                mailbox['unreads']  += 1 if msg['unread'] else 0
+                mailbox['unreads']  += 1 if msg.get('unread') else 0
 
         return mailboxes
 
@@ -195,7 +195,7 @@ class DbBackend():
             msg = await self.get(Message.uid==message['uid'])
             msg = dict(msg)
             del msg['body']
-            mailbox['unreads']  += 1 if msg['unread'] else 0
+            mailbox['unreads']  += 1 if msg.get('unread') else 0
             messages.append(msg)
 
         mailbox['messages'] = messages

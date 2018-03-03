@@ -50,6 +50,10 @@ def start(reload: 'Make server autoreload (Dev only)'=False,):
 
     controller.stop()
 
+# TODO add command to generate keys
+# private: "openssl genrsa -out {} 1024".format("dkimprivatekey.pem")
+# public: "openssl rsa -in {} -out {} -pubout".format("dkimprivatekey.pem", "public.pem")
+
 @begin.start
 def run(version=False):
     """ byemail """

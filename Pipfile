@@ -27,6 +27,7 @@ ujson = "*"
 aiodns = "*"
 Sanic-Auth = "*"
 python-magic = "*"
+dkimpy = "*"
 
 
 

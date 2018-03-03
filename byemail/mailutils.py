@@ -1,12 +1,16 @@
-import datetime
+import time
 import base64
-import magic
+import datetime
 
 from email import policy
 from email.utils import localtime
 from email.message import EmailMessage
 from email.headerregistry import AddressHeader, HeaderRegistry
 
+import magic
+import dkim
+
+from byemail.conf import settings
 
 def parse_email(email_str):
     """ Helper to pars an email address from client """
@@ -28,6 +32,7 @@ def make_msg(subject, content, from_addr, tos=None, ccs=None, attachments=None):
     msg.set_content(content)
     msg['From'] = from_addr
     msg['Subject'] = subject
+    msg['Message-Id'] =  "<{}-{}>".format(time.time(), from_addr)
 
     if tos:
         msg['To'] = tos
@@ -48,6 +53,25 @@ def make_msg(subject, content, from_addr, tos=None, ccs=None, attachments=None):
             )
 
     msg['Date'] = localtime()
+
+    # TODO Open key one for all
+    with open(settings.DKIM_CONFIG['private_key']) as key:
+        private_key = key.read()
+
+    # Generate message signature
+    sig = dkim.sign(
+        msg.as_bytes(), 
+        settings.DKIM_CONFIG['selector'].encode(), 
+        settings.DKIM_CONFIG['domain'].encode(), 
+        private_key.encode(), 
+        identity=from_addr,
+        include_headers=[s.encode() for s in settings.DKIM_CONFIG['headers']]
+    )
+    # Clean de generated signature
+    sig = sig.decode().replace('\r\n ', '').replace('\r\n', '')
+
+    # Add the DKIM-Signature
+    msg['DKIM-Signature'] = sig[len("DKIM-Signature: "):]
 
     return msg
 
