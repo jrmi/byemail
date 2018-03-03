@@ -14,7 +14,7 @@
                 </md-select>
               </md-field>
 
-              <md-autocomplete class="recipient-address md-layout-item" 
+              <!-- md-autocomplete class="recipient-address md-layout-item" 
                   v-model="recipient.address" 
                   :md-options="contacts"
                   @md-changed="searchContacts" 
@@ -30,7 +30,13 @@
                 <template slot="md-autocomplete-empty" slot-scope="{ term }">
                   No address matching "{{ term }}" were found.
                 </template>
-              </md-autocomplete>
+              </md-autocomplete -->
+
+              <md-field class="recipient-address md-layout-item">
+                <label>Recipient</label>
+                <md-input v-model.trim="recipient.address" required>
+                </md-input>
+              </md-field>
 
               <md-button class="md-icon-button md-raised md-accent recipient-remover" @click="recipients.splice(index, 1)">
                 <md-icon>remove</md-icon>
