@@ -13,7 +13,7 @@ import dkim
 from byemail.conf import settings
 
 def parse_email(email_str):
-    """ Helper to pars an email address from client """
+    """ Helper to parse an email address from client """
     # TODO make a more reliable function
     res = {}
     AddressHeader.parse(email_str, res)

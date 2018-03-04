@@ -14,7 +14,8 @@ ACCOUNTS = []
 DATADIR = "data/"
 
 DKIM_CONFIG = {
-    'private_key': 'dkimprivatekey.pem',
+    'private_key': os.path.join(DATADIR, 'dkimprivatekey.pem'),
+    'public_key': os.path.join(DATADIR, 'dkimpublickey.pem'),
     'selector': 'dkim',
     'domain': 'example.com',
     'headers': ['From', 'To', 'Subject', 'Date', 'Message-Id']

@@ -36,7 +36,6 @@ class AccountManager():
     def __init__(self):
         # Load all accounts from configuration
         self.accounts = self.load_accounts()
-        print(self.accounts)
 
     def load_accounts(self):
         result = {}
