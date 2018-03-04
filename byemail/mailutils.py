@@ -3,7 +3,7 @@ import base64
 import datetime
 
 from email import policy
-from email.utils import localtime
+from email.utils import localtime, make_msgid
 from email.message import EmailMessage
 from email.headerregistry import AddressHeader, HeaderRegistry
 
@@ -32,7 +32,7 @@ def make_msg(subject, content, from_addr, tos=None, ccs=None, attachments=None):
     msg.set_content(content)
     msg['From'] = from_addr
     msg['Subject'] = subject
-    msg['Message-Id'] =  "<{}-{}>".format(time.time(), from_addr)
+    msg['Message-Id'] =  make_msgid()
 
     if tos:
         msg['To'] = tos
@@ -64,7 +64,7 @@ def make_msg(subject, content, from_addr, tos=None, ccs=None, attachments=None):
         settings.DKIM_CONFIG['selector'].encode(), 
         settings.DKIM_CONFIG['domain'].encode(), 
         private_key.encode(), 
-        identity=from_addr,
+        identity=from_addr.addr_spec.encode(),
         include_headers=[s.encode() for s in settings.DKIM_CONFIG['headers']]
     )
     # Clean de generated signature

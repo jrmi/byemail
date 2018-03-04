@@ -54,6 +54,8 @@ def start(reload: 'Make server autoreload (Dev only)'=False,):
 # private: "openssl genrsa -out {} 1024".format("dkimprivatekey.pem")
 # public: "openssl rsa -in {} -out {} -pubout".format("dkimprivatekey.pem", "public.pem")
 
+# TODO add a command to show DNS config to add
+
 @begin.start
 def run(version=False):
     """ byemail """
