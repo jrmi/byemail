@@ -16,6 +16,7 @@ from aiodns.error import DNSError
 
 from byemail.mailstore import storage
 from byemail import mailutils
+from byemail.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -126,6 +127,9 @@ class MailSender():
 
     def _sendmsg(self, host, port, msg, from_addr, to_addrs):
         logger.info("Send mail from %s to %s", from_addr, to_addrs)
-        with smtplib.SMTP(host=host, port=port) as smtp:
-            #logger.debug("DRY-RUN: Should send mail here !!!")
-            smtp.send_message(msg, from_addr=from_addr, to_addrs=to_addrs)
+        if settings.DEBUG:
+            print("Should send...")
+            print(msg)
+        else:
+            with smtplib.SMTP(host=host, port=port) as smtp:
+                smtp.send_message(msg, from_addr=from_addr, to_addrs=to_addrs)

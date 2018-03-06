@@ -11,6 +11,8 @@ import os
 # }
 ACCOUNTS = []
 
+DEBUG = True
+
 DATADIR = "data/"
 
 DKIM_CONFIG = {

@@ -83,7 +83,6 @@ DMARC_TPL = """_dmarc.{address_domain}. TXT \"v=DMARC1; p=none\""""
 
 @begin.subcommand
 def dnsconfig():
-    result = []
     context = {}
 
     print("# This is the guessed configuration for your domain.")
@@ -91,6 +90,7 @@ def dnsconfig():
     print("# you start byemail.")
 
     for account in settings.ACCOUNTS:
+        result = []
         context['externalip'] = request.urlopen('https://api.ipify.org/').read().decode('utf8')
         context['address_domain'] = mailutils.parse_email(account['address']).domain
         context['dkim_selector'] = settings.DKIM_CONFIG['selector']

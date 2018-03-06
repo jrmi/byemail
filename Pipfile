@@ -9,6 +9,7 @@ name = "pypi"
 
 pylint = "*"
 ipdb = "*"
+pytest = "*"
 
 [requires]
 python_version = "3.6"

@@ -7,4 +7,5 @@ test_msg/
 node_modules/
 *.egg-info/
 site-packages/
-
+data/
+.pytest_cache/
