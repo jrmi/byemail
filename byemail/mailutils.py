@@ -55,6 +55,18 @@ def make_msg(subject, content, from_addr, tos=None, ccs=None, attachments=None):
 
     msg['Date'] = localtime()
 
+    # TODO add html alternative
+    # See https://docs.python.org/3.6/library/email.examples.html
+
+    """msg.add_alternative("\
+    <html>
+    <head></head>
+    <body>
+        <p>{body}<p>
+    </body>
+    </html>
+    "".format(content, subtype='html')"""
+
     return msg
 
 def gen_dkim_sign(msg):

@@ -22,12 +22,12 @@ logger = logging.getLogger(__name__)
 
 class MxRecord(object):
 
-    def __init__(self, domain):
+    def __init__(self, domain, loop=None):
         self.domain = domain
         self._records = None
         self._expiration = 0
-        loop = asyncio.get_event_loop()
-        self.resolver = aiodns.DNSResolver(loop=loop)
+        self.loop = loop or asyncio.get_event_loop()
+        self.resolver = aiodns.DNSResolver(loop=self.loop)
 
     async def get(self):
         if self.expired:
@@ -66,7 +66,6 @@ class MxRecord(object):
         try:
             return await self._resolve_mx()
         except DNSError:
-            logger.exception('Error while resolving MX for %s', self.domain)
             try:
                 return await self._resolve_a()
             except DNSError as exc:
@@ -78,13 +77,13 @@ class MxRecord(object):
 
 class MailSender():
 
-    def __init__(self):
-        self.loop = asyncio.get_event_loop()
+    def __init__(self, loop=None):
+        self.loop = loop or asyncio.get_event_loop()
 
     def group_by_fqdn(self, address):
         """ Group mails by domains """
 
-        result = defaultdict(lambda: [])
+        result = defaultdict(list)
         for add in address:
             fqdn = add.split('@')[1]
             result[fqdn].append(add)
@@ -94,42 +93,88 @@ class MailSender():
     async def send(self, msg, from_addr, to_addrs):
         """ Relay message to other party """
 
+        status = {}
+
         for fqdn, addresses in self.group_by_fqdn(to_addrs).items():
-            mxs = await MxRecord(fqdn).get()
+            try:
+                mxs = await MxRecord(fqdn).get()
+            except DNSError as e:
+                logger.warning("MX for %s not found" % fqdn)
+                for addr in addresses:
+                    status[addr] = {
+                        'status': 'ERROR',
+                        'reason': 'MX_NOT_FOUND'
+                    }
+                continue
+
             for _, mx in mxs:
+                try_another_mx = False
                 try:
-                    await self._relay_to(mx, from_addr, addresses, msg)
-                    break
+                    result = await self._relay_to(mx, from_addr, addresses, msg)
+                    # Here result is good for at least one recipient
+                    for addr in addresses:
+                        addr_status = result[addr]
+                        if addr_status[0].startswith('25'):
+                            status[addr] = {
+                                'status': 'DELIVERED',
+                                'stmp_info': addr_status
+                            }
+                        else:
+                            status[addr] = {
+                                'status': 'ERROR',
+                                'reason': 'SMTP_ERROR',
+                                'smtp_info': addr_status
+                            }
+                except smtplib.SMTPException as e:
+                    # Failed for all recipients
+                    for addr in addresses:
+                        status[addr] = {
+                            'status': 'ERROR',
+                            'reason': 'SMTP_ERROR',
+                            'smtp_info': e.recipients[addr]
+                        }
+                except TimeoutError:
+                    # Can't connect
+                    try_another_mx = True
+                    for addr in addresses:
+                        status[addr] = {
+                            'status': 'ERROR',
+                            'reason': 'MX_TIMEOUT'
+                        }
+                    logger.exception('Timeout error')
                 except:
-                    logger.exception('Fail to connect to %s', mx)
+                    for addr in addresses:
+                        status[addr] = {
+                            'status': 'ERROR',
+                            'reason': 'UNKNOWN_ERROR'
+                        }
+                    logger.exception('Unknown error while sending to %s', mx)
+
+                if not try_another_mx:
+                    break
+        
+        return status
 
     async def _relay_to(self, hostname, from_addr, to_addrs, msg):
         logger.info("Try to relay mail to %s from %s to %s", hostname, from_addr, str(to_addrs))
-        port = 25
-        refused = {}
-        try:
-            await self.loop.run_in_executor(None, self._sendmsg, hostname, port, msg, from_addr, to_addrs)
-        except smtplib.SMTPRecipientsRefused as e:
-            logger.warning('got SMTPRecipientsRefused %s', e.recipients)
-            refused = e.recipients
-        except TimeoutError:
-            logger.exception('Timeout error')
-        except (OSError, smtplib.SMTPException) as e:
-            logger.exception('got %s', e.__class__)
-            # All recipients were refused. If the exception had an associated
-            # error code, use it.  Otherwise, fake it with a non-triggering
-            # exception code.
-            errcode = getattr(e, 'smtp_code', -1)
-            errmsg = getattr(e, 'smtp_error', 'ignore')
-            for r in to_addrs:
-                refused[r] = (errcode, errmsg)
-        return refused
+        return await self.loop.run_in_executor(
+            None, 
+            self._sendmsg, 
+            hostname, 
+            25, 
+            msg, 
+            from_addr, 
+            to_addrs
+        )
 
     def _sendmsg(self, host, port, msg, from_addr, to_addrs):
         logger.info("Send mail from %s to %s", from_addr, to_addrs)
         if settings.DEBUG:
             print("Should send...")
             print(msg)
+            result = {}
+            for addr in to_addrs:
+                result[addr] = ('250', 'Delivered')
         else:
             with smtplib.SMTP(host=host, port=port) as smtp:
-                smtp.send_message(msg, from_addr=from_addr, to_addrs=to_addrs)
+                return smtp.send_message(msg, from_addr=from_addr, to_addrs=to_addrs)

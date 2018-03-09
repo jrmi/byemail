@@ -179,7 +179,7 @@ async def sendmail(request, account):
     tos = [mailutils.parse_email(a['address']) for a in data['recipients'] if a['type'] == 'to']
     ccs = [mailutils.parse_email(a['address']) for a in data['recipients'] if a['type'] == 'cc']
 
-    attachments = data['attachments']
+    attachments = data.get('attachments', [])
 
     msg = mailutils.make_msg(data['subject'], data['content'], from_addr, tos, ccs, attachments)
 
