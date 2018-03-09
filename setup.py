@@ -32,9 +32,21 @@ setup(name='byemail',
           ]
       },
 
-      test_suite='nose.collector',
-      install_requires=['begins'],
+      test_suite='pytest',
+      install_requires=[
+          'begins', 
+          'python-magic',
+          'aiosmtpd',
+          'arrow',
+          'sanic',
+          'uvloop',
+          'ujson',
+          'aiodns',
+          'sanic-auth',
+      ],
       extras_require={
       },
-      tests_require=['nose', 'nose-cover3'],
+      setup_requires=['pytest-runner'],
+      tests_require=['pytest'],
 )
+

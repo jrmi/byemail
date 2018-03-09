@@ -1,9 +1,13 @@
 """ Tests for mailutils module """
 import os
+import pytest
+import asyncio
+from unittest import mock
+
+from email import policy
+from email.parser import BytesParser
 
 from byemail import mailutils
-from unittest import mock
-import dkim
 
 BASEDIR = os.path.dirname(__file__)
 DATADIR = os.path.join(BASEDIR, 'data')
@@ -16,7 +20,31 @@ We lost the game.  Are you hungry yet?
 
 Joe."""
 
-def test_make_msg():
+
+MAIL_TEST = b"""Content-Type: text/plain; charset="utf-8"\r
+Content-Transfer-Encoding: 7bit\r
+MIME-Version: 1.0\r
+From: Joe SixPack <joe@football.example.com>\r
+Subject: Is dinner ready?\r
+Message-Id: <152060134529.22888.2561159661807344297@emiter>\r
+To: Suzie Q <suzie@shopping.example.net>\r
+Date: Fri, 09 Mar 2017 14:15:45 +0100\r
+\r
+Hi.\r
+\r
+We lost the game.  Are you hungry yet?\r
+\r
+Joe.\r
+\r
+"""
+
+@pytest.fixture
+def loop():
+    asyncio.set_event_loop(None)
+    return asyncio.new_event_loop()
+
+def test_make_msg(loop):
+    """ Test message composition """
     from_address = mailutils.parse_email("Joe SixPack <joe@football.example.com>")
     to_address = mailutils.parse_email("Suzie Q <suzie@shopping.example.net>")
 
@@ -30,17 +58,27 @@ def test_make_msg():
         }
 
         msg = mailutils.make_msg(
-            "Is dinner ready?", 
+            "Is dinner ready?",
             message_content, 
             from_addr=from_address,
             tos=to_address
         )
+        
+        print(msg)
 
         assert msg['From'] == str(from_address)
 
 
+def test_extract_data(loop):
+    """ Test mail extraction data """
+    msg = BytesParser(policy=policy.default).parsebytes(MAIL_TEST)
 
-def test_msg_signing():
+    data = loop.run_until_complete(mailutils.extract_data_from_msg(msg))
+
+    assert data['from'].addr_spec == "joe@football.example.com"
+    
+
+def _test_msg_signing():
     from_address = mailutils.parse_email("Joe SixPack <joe@football.example.com>")
     to_address = mailutils.parse_email("Suzie Q <suzie@shopping.example.net>")
 
@@ -77,8 +115,6 @@ def test_msg_signing():
     def dnsfunc(*args):
         print("Called with ", *args)
         return DNS_DKIM_RESPONSE_TPL.format(publickey)
-
-    print(msg)
     
     assert dkim.verify(msg.as_string().encode(), dnsfunc=dnsfunc)
     

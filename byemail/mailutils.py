@@ -86,6 +86,7 @@ def gen_dkim_sign(msg):
 
 
 def gen_dkim_sign2(msg):
+    # Not working for now but I don't know why
     import hashlib
     import base64
     import rsa
@@ -148,7 +149,6 @@ def gen_dkim_sign2(msg):
 
 
     return "; ".join([ "%s=%s" % v for v in res.items()])
-
 
 async def extract_data_from_msg(msg):
     """ Extract data from a message to save it """

@@ -10,25 +10,28 @@ name = "pypi"
 pylint = "*"
 ipdb = "*"
 pytest = "*"
+tox = "*"
+tox-pipenv = "*"
+icecream = "*"
+
 
 [requires]
+
 python_version = "3.6"
+
 
 [packages]
 
 aiosmtpd = "*"
-CodernityDB = "*"
+codernitydb = "*"
 tinydb = "*"
 tinydb-serialization = "*"
 arrow = "*"
-Sanic = "*"
+sanic = "*"
 begins = "*"
 uvloop = "*"
 ujson = "*"
 aiodns = "*"
-Sanic-Auth = "*"
+sanic-auth = "*"
 python-magic = "*"
 dkimpy = "*"
-
-
-
