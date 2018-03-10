@@ -13,6 +13,7 @@ pytest = "*"
 tox = "*"
 tox-pipenv = "*"
 icecream = "*"
+aiohttp = "*"
 
 
 [requires]

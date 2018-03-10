@@ -42,7 +42,8 @@ def start(reload: 'Make server autoreload (Dev only)'=False,):
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     loop = asyncio.get_event_loop()
 
-    server = httpserver.app.create_server(**settings.HTTP_CONF)
+    app = httpserver.get_app()
+    server = app.create_server(**settings.HTTP_CONF)
     asyncio.ensure_future(server)
 
     try:

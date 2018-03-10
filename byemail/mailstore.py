@@ -231,6 +231,4 @@ class DbBackend():
         return mail
 
 
-
-
 storage = DbBackend()

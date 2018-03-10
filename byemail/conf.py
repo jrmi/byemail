@@ -12,8 +12,6 @@ import byemail.default_settings as default_settings
 import logging
 import logging.config
 
-NOT_FOUND = object() # sentinel object
-
 class ConfigError(ImportError):
     """ custom exception """
 
@@ -22,19 +20,18 @@ class Settings():
 
     def __init__(self):
         self.__dict__['_settings_mod'] = None
-        self.__dict__['SETTINGS_MODULE'] = os.environ.get('PYPEMAN_SETTINGS_MODULE', 'settings')
 
     def init_settings(self):
         try:
-            settings_module = self.__dict__['SETTINGS_MODULE']
+            settings_module = os.environ.get('BYEMAIL_SETTINGS_MODULE', 'settings')
             settings_mod = self.__dict__['_settings_mod'] = importlib.import_module(settings_module)
         except:
-            msg = "Can't import '%s' module !" % self.__dict__['SETTINGS_MODULE']
+            msg = "Can't import '%s' module !" % settings_module
             print(msg, file=sys.stderr)
             print(traceback.format_exc(), file=sys.stderr)
             raise ConfigError(msg)
 
-        # populate entire dict with values. helpful e.g. for ipython tab completion
+        # Populate entire dict with values. helpful e.g. for ipython tab completion
         default_vals = [ (key, val) for (key, val) in default_settings.__dict__.items()
                 if 'A' <= key[0] <= 'Z']
         self.__dict__.update(default_vals)

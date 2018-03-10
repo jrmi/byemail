@@ -13,12 +13,6 @@ BASEDIR = os.path.dirname(__file__)
 DATADIR = os.path.join(BASEDIR, 'data')
 
 
-@pytest.fixture
-def loop():
-    asyncio.set_event_loop(None)
-    return asyncio.new_event_loop()
-
-
 def test_send(loop):
 
     msend = mta.MailSender(loop)
