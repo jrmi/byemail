@@ -1,7 +1,7 @@
 # What is it ?
 
 Byyemail is a Complete stack for a personnal mail system including SMTP receiver, sender, webmail, 
-mailing list and more. Install only one tool only one tool to rules them all.
+mailing list and more. Install only one tool to rules them all.
 
 Nowadays, mail servers are difficult to install, configure and maintains because they can do a lot of things 
 that are unnecessary for most end users. We also need to add module like:
