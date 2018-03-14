@@ -2,6 +2,7 @@ import time
 import asyncio
 import smtplib
 import logging
+import importlib
 
 import email
 from collections import defaultdict
@@ -94,6 +95,18 @@ class MailSender():
         """ Relay message to other party """
 
         status = {}
+
+        for middleware in settings.MTA_MIDDLEWARES:
+            try:
+                module, _, func = middleware.rpartition(".")
+                print(func, module)
+            except ModuleNotFoundError:
+                logger.error("Module %s can't be loaded !", middleware)
+                raise
+            else:
+                mod = importlib.import_module(module)
+                getattr(mod, func)(msg, from_addr, to_addrs)
+
 
         for fqdn, addresses in self.group_by_fqdn(to_addrs).items():
             try:

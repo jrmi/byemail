@@ -34,6 +34,11 @@ SMTP_CONF = {
     'ssl_context': None, # For enabling SSL provide context
 }
 
+MTA_MIDDLEWARES = [
+    'byemail.middlewares.dkim.sign'
+]
+
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
