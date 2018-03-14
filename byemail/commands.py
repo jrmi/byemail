@@ -17,9 +17,8 @@ import begin
 import byemail
 from byemail.conf import settings
 from byemail import mailutils
-from byemail import smtpserver, httpserver
+from byemail import smtp, httpserver
 from aiosmtpd.controller import Controller
-
 
 # TODO: remove below if statement asap. This is a workaround for a bug in begins
 # TODO: which provokes an exception when calling command without parameters.
@@ -36,7 +35,7 @@ def start(reload: 'Make server autoreload (Dev only)'=False,):
 
     settings.init_settings()
 
-    controller = Controller(smtpserver.MSGHandler(), **settings.SMTP_CONF)
+    controller = Controller(smtp.MSGHandler(), **settings.SMTP_CONF)
     controller.start()
 
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())

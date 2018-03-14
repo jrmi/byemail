@@ -7,7 +7,6 @@ import asyncio
 import smtplib
 from unittest import mock
 
-from byemail import mta
 from byemail.conf import settings
 
 from . import commons

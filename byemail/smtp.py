@@ -1,11 +1,17 @@
+#!/bin/env python
+
+import re
 import time
-import asyncio
 import smtplib
+import asyncio
+import base64
+import datetime
 import logging
 import importlib
 
-import email
 from collections import defaultdict
+
+import email
 from email import policy
 from email.parser import BytesParser
 from email.message import EmailMessage
@@ -15,11 +21,76 @@ from email.headerregistry import Address, HeaderRegistry, AddressHeader
 import aiodns
 from aiodns.error import DNSError
 
-from byemail.mailstore import storage
 from byemail import mailutils
 from byemail.conf import settings
+from byemail.mailstore import storage
+from byemail.account import account_manager
 
 logger = logging.getLogger(__name__)
+
+
+EMPTYBYTES = b''
+COMMASPACE = ', '
+CRLF = b'\r\n'
+NLCRE = re.compile(br'\r\n|\r|\n')
+
+class MSGHandler:
+
+    def __init__(self, loop=None):
+        super().__init__()
+        self.loop = loop or asyncio.get_event_loop()
+
+    async def handle_RCPT(self, server, session, envelope, address, rcpt_options):
+
+        if account_manager.is_local_address(address):
+            envelope.rcpt_tos.append(address)
+            return '250 OK'
+
+        return '550 not relaying to that domain'
+
+    async def save_failed_msg(self, session, envelope):
+        """ To handle msg that failed to parse """
+        msg = BytesParser(policy=policy.default).parsebytes(envelope.content)
+
+        to_save = {
+            'type': 'mail',
+            'status': 'error',
+            'peer': session.peer,
+            'host_name': session.host_name,
+            'from': envelope.mail_from,
+            'tos': envelope.rcpt_tos,
+            'subject': msg['Subject'],
+            'received': datetime.datetime.now().isoformat(),
+            'data': base64.b64encode(envelope.content).decode('utf-8'),
+        }
+
+        await storage.store_bad_msg(to_save)
+
+    async def handle_DATA(self, server, session, envelope):
+        print('Message From: %s, To: %s' % (envelope.mail_from, envelope.rcpt_tos))
+
+        await self.local_delivery(envelope.rcpt_tos, server, session, envelope)
+
+        return '250 Message accepted for delivery'
+
+    async def local_delivery(self, rcpt_tos, server, session, envelope):
+        for to in rcpt_tos:
+            logger.info('Local delivery for %s' % to)
+
+            try:
+                msg = BytesParser(policy=policy.default).parsebytes(envelope.content)
+                account = account_manager.get_account_for_address(to)
+                logger.info('Message delivered to account %s', account.name)
+                msg_data = await storage.store_msg(msg, account=account, from_addr=envelope.mail_from, to_addrs=envelope.rcpt_tos)
+            except:
+                import traceback; traceback.print_exc()
+                #import ipdb; ipdb.set_trace()
+                await self.save_failed_msg(session, envelope) # TODO handle multiple toos
+                print('Error for current message')
+
+            return '250 Message accepted for delivery'
+
+
 
 class MxRecord(object):
 
@@ -76,7 +147,7 @@ class MxRecord(object):
     def expired(self):
         return not self._expiration or time.time() >= self._expiration
 
-class MailSender():
+class MsgSender():
 
     def __init__(self, loop=None):
         self.loop = loop or asyncio.get_event_loop()
@@ -105,7 +176,7 @@ class MailSender():
                 raise
             else:
                 mod = importlib.import_module(module)
-                getattr(mod, func)(msg, from_addr, to_addrs)
+                await getattr(mod, func)(msg, from_addr, to_addrs)
 
 
         for fqdn, addresses in self.group_by_fqdn(to_addrs).items():

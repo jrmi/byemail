@@ -5,7 +5,7 @@ import asyncio
 import smtplib
 from unittest import mock
 
-from byemail import mta
+from byemail import smtp
 
 from . import commons
 
@@ -14,14 +14,14 @@ DATADIR = os.path.join(BASEDIR, 'data')
 
 count = 0
 
-def fake_send_middleware(msg, from_addr, to_addrs):
+async def fake_send_middleware(msg, from_addr, to_addrs):
     global count
     print("FAKE middleware called")
     count += 1
     
 def test_send(loop):
 
-    msend = mta.MailSender(loop)
+    msend = smtp.MsgSender(loop)
 
     msg = commons.get_msg_test()
 
@@ -32,7 +32,7 @@ def test_send(loop):
         'other@yopmail.com'
     ]
     
-    with mock.patch('byemail.mta.MailSender._relay_to') as smtp_send:
+    with mock.patch('byemail.smtp.MsgSender._relay_to') as smtp_send:
 
         f = asyncio.Future(loop=loop)
         f.set_result(
@@ -53,7 +53,7 @@ def test_send(loop):
                 'other@yopmail.com': {'status': 'ERROR', 'reason': 'SMTP_ERROR', 'smtp_info': ('534', 'Fail for any reason')}
             }
 
-    with mock.patch('byemail.mta.MailSender._relay_to') as smtp_send:
+    with mock.patch('byemail.smtp.MsgSender._relay_to') as smtp_send:
 
         f = asyncio.Future(loop=loop)
         exc = smtplib.SMTPRecipientsRefused(
@@ -77,7 +77,7 @@ def test_send(loop):
 
 def test_send_middleware(loop):
 
-    msend = mta.MailSender(loop)
+    msend = smtp.MsgSender(loop)
 
     msg = commons.get_msg_test()
 
@@ -88,8 +88,8 @@ def test_send_middleware(loop):
         'other@yopmail.com'
     ]
     
-    with mock.patch('byemail.mta.MailSender._relay_to') as smtp_send, \
-        mock.patch('byemail.mta.settings') as set_mock:
+    with mock.patch('byemail.smtp.MsgSender._relay_to') as smtp_send, \
+        mock.patch('byemail.smtp.settings') as set_mock:
 
         set_mock.MTA_MIDDLEWARES = [
             'byemail.tests.test_mta.fake_send_middleware',

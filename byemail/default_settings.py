@@ -35,9 +35,14 @@ SMTP_CONF = {
 }
 
 MTA_MIDDLEWARES = [
-    'byemail.middlewares.dkim.sign'
+    # Next middleware not working yet
+    # 'byemail.middlewares.dkim.sign'
 ]
 
+INCOMING_MIDDLEWARES = [
+    # Next middleware not working yet
+    # 'byemail.middlewares.dkim.verify'
+]
 
 LOGGING = {
     'version': 1,

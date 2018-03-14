@@ -12,7 +12,7 @@ from sanic_auth import Auth
 from sanic.exceptions import Forbidden
 
 from byemail.mailstore import storage
-from byemail.mta import MailSender
+from byemail.smtp import MsgSender
 from byemail.account import account_manager
 from byemail import mailutils
 from byemail.conf import settings
@@ -69,6 +69,8 @@ def init_app():
     @app.route('/login', methods=['POST'])
     async def login(request):
         credentials = request.json
+        print(credentials)
+        print(settings.ACCOUNTS)
         # get user account
         account = account_manager.authenticate(credentials)
 
@@ -176,7 +178,7 @@ def init_app():
     async def sendmail(request, account):
         data = request.json
 
-        mail_sender = MailSender()
+        mail_sender = MsgSender()
 
         from_addr = mailutils.parse_email(account.address)
         all_addrs = [mailutils.parse_email(a['address']) for a in data['recipients']]

@@ -34,8 +34,14 @@ class Account():
 class AccountManager():
     """ Account manager """
     def __init__(self):
-        # Load all accounts from configuration
-        self.accounts = self.load_accounts()
+        self._accounts = None
+        
+    @property
+    def accounts(self):
+        if self._accounts is None:
+            # Load all accounts from configuration
+            self._accounts = self.load_accounts()
+        return self._accounts
 
     def load_accounts(self):
         result = {}
@@ -52,13 +58,17 @@ class AccountManager():
         return result
 
     def get(self, name):
+        print(self.accounts)
         return self.accounts.get(name)
 
     def authenticate(self, credentials):
         account = self.get(credentials['name'])
+        print(account)
 
         if account and account.check_credentials(credentials):
+            print("Eh be c'est bon...")
             return account
+        print("ah be non")
         return None
 
     def get_from_token(self, token):

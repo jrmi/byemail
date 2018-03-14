@@ -5,13 +5,21 @@ import magic
 
 from byemail.conf import settings
 
-def sign(msg, from_addr, to_addrs):
+async def sign(msg, from_addr, to_addrs):
     """ Adding DKIM signature to message """
 
     signature = gen_sign(msg)
     msg['DKIM-Signature'] = signature
 
-    return msg
+
+async def verify(msg, from_addr, to_addrs):
+    """ Verify DKIM signature """
+    if not verify_sign(msg):
+        raise 
+    
+
+def verify_sign(msg):
+    return True
 
 
 def gen_sign(msg):
