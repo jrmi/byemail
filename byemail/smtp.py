@@ -34,7 +34,21 @@ COMMASPACE = ', '
 CRLF = b'\r\n'
 NLCRE = re.compile(br'\r\n|\r|\n')
 
-class MSGHandler:
+async def enrich(msg, from_addr, to_addrs):
+    msg['type'] = 'mail'
+
+    msg['original-sender'] = from_addr
+    msg['original-recipients'] = to_addrs
+
+    # First define uid
+    msg['uid'] = uuid.uuid4().hex
+
+    msg['account'] = account.name
+
+    msg['incoming'] = incoming
+    msg['unread'] = incoming
+
+class MsgHandler:
 
     def __init__(self, loop=None):
         super().__init__()
@@ -69,9 +83,22 @@ class MSGHandler:
     async def handle_DATA(self, server, session, envelope):
         print('Message From: %s, To: %s' % (envelope.mail_from, envelope.rcpt_tos))
 
+        # TODO handle message refused when spam or something
         await self.local_delivery(envelope.rcpt_tos, server, session, envelope)
 
         return '250 Message accepted for delivery'
+
+    async def apply_middlewares(self, msg, from_addr, to_addrs):
+        for middleware in settings.INCOMING_MIDDLEWARES:
+            try:
+                module, _, func = middleware.rpartition(".")
+                print(func, module)
+            except ModuleNotFoundError:
+                logger.error("Module %s can't be loaded !", middleware)
+                raise
+            else:
+                mod = importlib.import_module(module)
+                await getattr(mod, func)(msg, from_addr, to_addrs)
 
     async def local_delivery(self, rcpt_tos, server, session, envelope):
         for to in rcpt_tos:
@@ -81,7 +108,18 @@ class MSGHandler:
                 msg = BytesParser(policy=policy.default).parsebytes(envelope.content)
                 account = account_manager.get_account_for_address(to)
                 logger.info('Message delivered to account %s', account.name)
-                msg_data = await storage.store_msg(msg, account=account, from_addr=envelope.mail_from, to_addrs=envelope.rcpt_tos)
+
+                msg_data = await mailutils.extract_data_from_msg(msg)
+
+                await self.apply_middlewares(msg_data, envelope.mail_from, [to])
+                
+                stored_msg = await storage.store_msg(
+                    msg_data, 
+                    account=account, 
+                    from_addr=envelope.mail_from, 
+                    to_addrs=envelope.rcpt_tos
+                )
+                
             except:
                 import traceback; traceback.print_exc()
                 #import ipdb; ipdb.set_trace()
@@ -89,7 +127,6 @@ class MSGHandler:
                 print('Error for current message')
 
             return '250 Message accepted for delivery'
-
 
 
 class MxRecord(object):
@@ -100,6 +137,10 @@ class MxRecord(object):
         self._expiration = 0
         self.loop = loop or asyncio.get_event_loop()
         self.resolver = aiodns.DNSResolver(loop=self.loop)
+
+    @property
+    def expired(self):
+        return not self._expiration or time.time() >= self._expiration
 
     async def get(self):
         if self.expired:
@@ -143,9 +184,7 @@ class MxRecord(object):
             except DNSError as exc:
                 raise
 
-    @property
-    def expired(self):
-        return not self._expiration or time.time() >= self._expiration
+
 
 class MsgSender():
 
@@ -162,12 +201,8 @@ class MsgSender():
 
         return result
 
-    async def send(self, msg, from_addr, to_addrs):
-        """ Relay message to other party """
-
-        status = {}
-
-        for middleware in settings.MTA_MIDDLEWARES:
+    async def apply_middlewares(self, msg, from_addr, to_addrs):
+        for middleware in settings.OUTGOING_MIDDLEWARES:
             try:
                 module, _, func = middleware.rpartition(".")
                 print(func, module)
@@ -178,6 +213,12 @@ class MsgSender():
                 mod = importlib.import_module(module)
                 await getattr(mod, func)(msg, from_addr, to_addrs)
 
+    async def send(self, msg, from_addr, to_addrs):
+        """ Relay message to other party """
+
+        status = {}
+
+        await self.apply_middlewares(msg, from_addr, to_addrs)
 
         for fqdn, addresses in self.group_by_fqdn(to_addrs).items():
             try:

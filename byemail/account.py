@@ -40,7 +40,7 @@ class AccountManager():
     def accounts(self):
         if self._accounts is None:
             # Load all accounts from configuration
-            self._accounts = self.load_accounts()
+            self.load_accounts()
         return self._accounts
 
     def load_accounts(self):
@@ -55,20 +55,18 @@ class AccountManager():
             })
             result[settings_account['name']] = account
 
+        self._accounts = result
+
         return result
 
     def get(self, name):
-        print(self.accounts)
         return self.accounts.get(name)
 
     def authenticate(self, credentials):
         account = self.get(credentials['name'])
-        print(account)
 
         if account and account.check_credentials(credentials):
-            print("Eh be c'est bon...")
             return account
-        print("ah be non")
         return None
 
     def get_from_token(self, token):

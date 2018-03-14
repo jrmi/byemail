@@ -23,3 +23,6 @@ def get_msg_test():
     return BytesParser(policy=policy.default).parsebytes(MAIL_TEST)
 
 
+class objectview(object):
+    def __init__(self, d):
+        self.__dict__ = d

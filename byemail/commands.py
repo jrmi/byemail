@@ -35,7 +35,7 @@ def start(reload: 'Make server autoreload (Dev only)'=False,):
 
     settings.init_settings()
 
-    controller = Controller(smtp.MSGHandler(), **settings.SMTP_CONF)
+    controller = Controller(smtp.MsgHandler(), **settings.SMTP_CONF)
     controller.start()
 
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())

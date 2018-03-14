@@ -97,10 +97,8 @@ class DbBackend():
 
         return msg
 
-    async def store_msg(self, emailmsg, account, from_addr, to_addrs, incoming=True, extra_data=None, extra_mailbox_data=None):
+    async def store_msg(self, msg, account, from_addr, to_addrs, incoming=True, extra_data=None, extra_mailbox_data=None):
         """ Store EmailMessage in database """
-
-        msg = await mailutils.extract_data_from_msg(emailmsg)
 
         msg['type'] = 'mail'
 

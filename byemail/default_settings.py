@@ -34,7 +34,7 @@ SMTP_CONF = {
     'ssl_context': None, # For enabling SSL provide context
 }
 
-MTA_MIDDLEWARES = [
+OUTGOING_MIDDLEWARES = [
     # Next middleware not working yet
     # 'byemail.middlewares.dkim.sign'
 ]

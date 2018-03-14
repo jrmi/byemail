@@ -189,9 +189,11 @@ def init_app():
 
         msg = mailutils.make_msg(data['subject'], data['content'], from_addr, tos, ccs, attachments)
 
+        msg_to_store = mailutils.extract_data_from_msg(msg)
+
         # First we store it
         saved_msg = await storage.store_msg(
-            msg,
+            msg_to_store,
             account=account,
             from_addr=from_addr,
             to_addrs=all_addrs,

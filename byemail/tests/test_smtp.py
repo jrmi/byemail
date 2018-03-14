@@ -6,6 +6,7 @@ import smtplib
 from unittest import mock
 
 from byemail import smtp
+from byemail.account import account_manager
 
 from . import commons
 
@@ -91,8 +92,8 @@ def test_send_middleware(loop):
     with mock.patch('byemail.smtp.MsgSender._relay_to') as smtp_send, \
         mock.patch('byemail.smtp.settings') as set_mock:
 
-        set_mock.MTA_MIDDLEWARES = [
-            'byemail.tests.test_mta.fake_send_middleware',
+        set_mock.OUTGOING_MIDDLEWARES = [
+            'byemail.tests.test_smtp.fake_send_middleware',
             'another.bad.middleware'
         ]
 
@@ -111,4 +112,42 @@ def test_send_middleware(loop):
         assert count == 1
 
 
+def test_receive(loop):
+    msg_handler = smtp.MsgHandler(loop=loop)
 
+    with mock.patch('byemail.smtp.storage') as storage_mock, \
+        mock.patch('byemail.account.settings') as set_mock:
+
+
+        set_mock.ACCOUNTS = [
+            {
+                'name': 'suzie',
+                'password': 'crepe',
+                'accept': ['@shopping.example.net'],
+                'address': 'Suzie Q <suzie@shopping.example.net>'
+            }
+        ]
+        
+        # Reload accounts
+        account_manager.load_accounts()
+
+        fut = asyncio.Future(loop=loop)
+        fut.set_result({})
+
+        storage_mock.store_msg.return_value = fut
+        storage_mock.store_bad_msg.return_value = fut
+
+        envelope = commons.objectview(dict(
+            content=commons.MAIL_TEST,
+            mail_from="joe@football.example.com",
+            rcpt_tos=["suzie@shopping.example.net"]
+        ))
+
+        session = commons.objectview(dict(
+            peer="peer",
+            host_name="hostname"
+        ))
+
+        loop.run_until_complete(msg_handler.handle_DATA('127.0.0.1', session, envelope))
+
+        storage_mock.store_msg.assert_called_once()
