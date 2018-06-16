@@ -15,10 +15,13 @@ from urllib import request
 
 import uvloop
 import begin
+from aiosmtpd.controller import Controller
 
 import byemail
 from byemail.conf import settings
 from byemail import mailutils
+from byemail import smtp, httpserver
+from byemail import storage
 
 # TODO: remove below if statement asap. This is a workaround for a bug in begins
 # TODO: which provokes an exception when calling command without parameters.
@@ -32,10 +35,14 @@ sys.path.insert(0, os.getcwd())
 @begin.subcommand
 def start(reload: 'Make server autoreload (Dev only)'=False,):
     """ Start byemail """
-    from byemail import smtp, httpserver
-    from aiosmtpd.controller import Controller
 
     settings.init_settings()
+
+    # Post init_settings things
+    if not os.path.isdir(settings.DATADIR):
+        os.makedirs(settings.DATADIR)
+
+    storage.init_storage()
 
     controller = Controller(smtp.MsgHandler(), **settings.SMTP_CONF)
     controller.start()

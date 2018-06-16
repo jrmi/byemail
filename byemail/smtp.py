@@ -1,6 +1,7 @@
 #!/bin/env python
 
 import re
+import uuid
 import time
 import smtplib
 import asyncio
@@ -23,7 +24,7 @@ from aiodns.error import DNSError
 
 from byemail import mailutils
 from byemail.conf import settings
-from byemail.mailstore import storage
+from byemail.storage import storage
 from byemail.account import account_manager
 
 logger = logging.getLogger(__name__)
@@ -34,7 +35,7 @@ COMMASPACE = ', '
 CRLF = b'\r\n'
 NLCRE = re.compile(br'\r\n|\r|\n')
 
-async def enrich(msg, from_addr, to_addrs):
+'''async def enrich(msg, from_addr, to_addrs):
     msg['type'] = 'mail'
 
     msg['original-sender'] = from_addr
@@ -46,7 +47,7 @@ async def enrich(msg, from_addr, to_addrs):
     msg['account'] = account.name
 
     msg['incoming'] = incoming
-    msg['unread'] = incoming
+    msg['unread'] = incoming'''
 
 class MsgHandler:
 
@@ -112,14 +113,14 @@ class MsgHandler:
                 msg_data = await mailutils.extract_data_from_msg(msg)
 
                 await self.apply_middlewares(msg_data, envelope.mail_from, [to])
-                
+
                 stored_msg = await storage.store_msg(
-                    msg_data, 
-                    account=account, 
-                    from_addr=envelope.mail_from, 
+                    msg_data,
+                    account=account,
+                    from_addr=envelope.mail_from,
                     to_addrs=envelope.rcpt_tos
                 )
-                
+
             except:
                 import traceback; traceback.print_exc()
                 #import ipdb; ipdb.set_trace()
@@ -181,9 +182,8 @@ class MxRecord(object):
         except DNSError:
             try:
                 return await self._resolve_a()
-            except DNSError as exc:
+            except DNSError:
                 raise
-
 
 
 class MsgSender():
@@ -250,13 +250,21 @@ class MsgSender():
                                 'reason': 'SMTP_ERROR',
                                 'smtp_info': addr_status
                             }
-                except smtplib.SMTPException as e:
+                except smtplib.SMTPRecipientsRefused as e:
                     # Failed for all recipients
                     for addr in addresses:
                         status[addr] = {
                             'status': 'ERROR',
                             'reason': 'SMTP_ERROR',
                             'smtp_info': e.recipients[addr]
+                        }
+                except smtplib.SMTPException:
+                    # Failed for all recipients
+                    for addr in addresses:
+                        status[addr] = {
+                            'status': 'ERROR',
+                            'reason': 'SMTP_ERROR',
+                            'smtp_info': addresses
                         }
                 except TimeoutError:
                     # Can't connect
@@ -277,18 +285,18 @@ class MsgSender():
 
                 if not try_another_mx:
                     break
-        
+
         return status
 
     async def _relay_to(self, hostname, from_addr, to_addrs, msg):
         logger.info("Try to relay mail to %s from %s to %s", hostname, from_addr, str(to_addrs))
         return await self.loop.run_in_executor(
-            None, 
-            self._sendmsg, 
-            hostname, 
-            25, 
-            msg, 
-            from_addr, 
+            None,
+            self._sendmsg,
+            hostname,
+            25,
+            msg,
+            from_addr,
             to_addrs
         )
 

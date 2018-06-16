@@ -3,7 +3,11 @@ import os
 
 ACCOUNTS = []
 
-DEBUG = True
+DEBUG = False
+
+STORAGE = {
+    "backend": "byemail.storage.tinydb.Backend",
+}
 
 DATADIR = "data/"
 

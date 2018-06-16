@@ -15,6 +15,10 @@ ACCOUNTS = [
 
 DEBUG = False
 
+STORAGE = {
+    "backend": "byemail.storage.tinydb.Backend",
+}
+
 DATADIR = "data/"
 
 HTTP_CONF = {

@@ -11,7 +11,7 @@ from sanic.response import json, redirect, stream
 from sanic_auth import Auth
 from sanic.exceptions import Forbidden
 
-from byemail.mailstore import storage
+from byemail.storage import storage
 from byemail.smtp import MsgSender
 from byemail.account import account_manager
 from byemail import mailutils
@@ -33,7 +33,7 @@ def get_app():
     if app is None:
         init_app()
     return app
-    
+
 def init_app():
     global app
     app = Sanic(__name__, log_config=None)
@@ -69,8 +69,6 @@ def init_app():
     @app.route('/login', methods=['POST'])
     async def login(request):
         credentials = request.json
-        print(credentials)
-        print(settings.ACCOUNTS)
         # get user account
         account = account_manager.authenticate(credentials)
 
@@ -142,7 +140,7 @@ def init_app():
                 if not guessed_ext:
                     guessed_ext = ".bin"
                 att['filename'] = 'file_{}{}'.format(
-                    att['index'], 
+                    att['index'],
                     guessed_ext
                 )
             att['url'] = "/api/mail/{}/attachment/{}/{}".format(mail_id, att['index'], att['filename'])
