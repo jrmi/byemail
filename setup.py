@@ -24,7 +24,7 @@ setup(name='byemail',
       author_email='jeremie.pardou@mhcomm.fr',
 
       license='Apache Software License',
-      packages=['byemail'],
+      packages=['byemail', 'byemail.storage'],
 
       entry_points={
           'console_scripts': [
@@ -34,7 +34,7 @@ setup(name='byemail',
 
       test_suite='pytest',
       install_requires=[
-          'begins', 
+          'begins',
           'python-magic',
           'aiosmtpd',
           'arrow',
