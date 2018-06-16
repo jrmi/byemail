@@ -37,10 +37,6 @@ def start(reload: 'Make server autoreload (Dev only)'=False,):
 
     settings.init_settings()
 
-    # Post init_settings things
-    if not os.path.isdir(settings.DATADIR):
-        os.makedirs(settings.DATADIR)
-
     storage.init_storage()
 
     from byemail import smtp, httpserver

@@ -40,7 +40,7 @@ if __name__ == "__main__":
     client = Client('localhost', 8025)
 
     for arg in sys.argv[1:]:
-        print(arg)
+        print(f"Sending {arg}")
         msg = mail_from_file(arg)
         #import ipdb; ipdb.set_trace()
 
@@ -52,5 +52,5 @@ if __name__ == "__main__":
         else:
             r = client.sendmail('from@localhost', ['to@localhost'], msg.as_string().encode('utf-8'))
 
-        
+
 

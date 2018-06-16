@@ -7,9 +7,10 @@ storage = None
 
 def init_storage():
     global storage
-    module_path, _, backend = settings.STORAGE['backend'].rpartition('.')
+    config = dict(settings.STORAGE)
+    module_path, _, backend = config.pop('backend').rpartition('.')
 
     # Load storage backend
     module = import_module(module_path)
 
-    storage = getattr(module, backend)()
+    storage = getattr(module, backend)(**config)

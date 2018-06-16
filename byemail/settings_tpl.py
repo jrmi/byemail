@@ -17,9 +17,8 @@ DEBUG = False
 
 STORAGE = {
     "backend": "byemail.storage.tinydb.Backend",
+    "datadir": "data/"
 }
-
-DATADIR = "data/"
 
 HTTP_CONF = {
     'host': 'localhost',

@@ -36,11 +36,11 @@ def test_make_msg(loop):
 
         msg = mailutils.make_msg(
             "Is dinner ready?",
-            message_content, 
+            message_content,
             from_addr=from_address,
             tos=to_address
         )
-        
+
         print(msg)
 
         assert msg['From'] == str(from_address)
@@ -53,10 +53,10 @@ def test_extract_data(loop):
     data = loop.run_until_complete(mailutils.extract_data_from_msg(msg))
 
     assert data['from'].addr_spec == "joe@football.example.com"
-    
 
-def _test_msg_signing():
-    # Use https://www.mail-tester.com to test 
+
+'''def _test_msg_signing():
+    # Use https://www.mail-tester.com to test
     from_address = mailutils.parse_email("Joe SixPack <joe@football.example.com>")
     to_address = mailutils.parse_email("Suzie Q <suzie@shopping.example.net>")
 
@@ -70,8 +70,8 @@ def _test_msg_signing():
         }
 
         msg = mailutils.make_msg(
-            "Is dinner ready?", 
-            message_content, 
+            "Is dinner ready?",
+            message_content,
             from_addr=from_address,
             tos=to_address
         )
@@ -93,7 +93,7 @@ def _test_msg_signing():
     def dnsfunc(*args):
         print("Called with ", *args)
         return DNS_DKIM_RESPONSE_TPL.format(publickey)
-    
-    assert dkim.verify(msg.as_string().encode(), dnsfunc=dnsfunc)
-    
+
+    assert dkim.verify(msg.as_string().encode(), dnsfunc=dnsfunc)'''
+
 

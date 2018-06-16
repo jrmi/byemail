@@ -44,8 +44,13 @@ class AddressSerializer(Serializer):
         return Address(display_name=display_name, addr_spec=addr_spec)
 
 class Backend():
-    def __init__(self):
+    def __init__(self, datadir="data/"):
         super().__init__()
+
+
+        # Post init_settings things
+        if not os.path.isdir(datadir):
+            os.makedirs(datadir)
 
         self.loop = asyncio.get_event_loop()
 
@@ -53,8 +58,8 @@ class Backend():
         serialization.register_serializer(DateTimeSerializer(), 'TinyDate')
         serialization.register_serializer(AddressSerializer(), 'TinyAddress')
 
-        self.db = TinyDB(os.path.join(settings.DATADIR, 'db.json'), storage=serialization)
-        self.maildb = TinyDB(os.path.join(settings.DATADIR, 'maildb.json'))
+        self.db = TinyDB(os.path.join(datadir, 'db.json'), storage=serialization)
+        self.maildb = TinyDB(os.path.join(datadir, 'maildb.json'))
 
     async def get(self, filter):
         results = self.db.search(filter)

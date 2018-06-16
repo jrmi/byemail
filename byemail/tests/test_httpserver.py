@@ -8,6 +8,7 @@ import smtplib
 from unittest import mock
 
 from byemail.conf import settings
+from byemail import storage
 
 from . import commons
 from icecream import ic
@@ -18,7 +19,9 @@ def httpapp():
     os.environ['BYEMAIL_SETTINGS_MODULE'] = 'byemail.tests.workdir.settings'
 
     settings.init_settings()
-    
+
+    storage.init_storage()
+
     from byemail.httpserver import get_app
     return get_app()
 

@@ -7,13 +7,12 @@ DEBUG = False
 
 STORAGE = {
     "backend": "byemail.storage.tinydb.Backend",
+    "datadir": "data/"
 }
 
-DATADIR = "data/"
-
 DKIM_CONFIG = {
-    'private_key': os.path.join(DATADIR, 'dkimprivatekey.pem'),
-    'public_key': os.path.join(DATADIR, 'dkimpublickey.pem'),
+    'private_key': 'dkimprivatekey.pem',
+    'public_key': 'dkimpublickey.pem',
     'selector': 'dkim',
     'domain': 'example.com',
     'headers': ['From', 'To', 'Subject', 'Date', 'Message-Id']
