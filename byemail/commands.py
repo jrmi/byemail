@@ -7,8 +7,10 @@
 
 import os
 import sys
+import shutil
 import asyncio
 import subprocess
+from os import path
 from urllib import request
 
 import uvloop
@@ -17,8 +19,6 @@ import begin
 import byemail
 from byemail.conf import settings
 from byemail import mailutils
-from byemail import smtp, httpserver
-from aiosmtpd.controller import Controller
 
 # TODO: remove below if statement asap. This is a workaround for a bug in begins
 # TODO: which provokes an exception when calling command without parameters.
@@ -32,6 +32,8 @@ sys.path.insert(0, os.getcwd())
 @begin.subcommand
 def start(reload: 'Make server autoreload (Dev only)'=False,):
     """ Start byemail """
+    from byemail import smtp, httpserver
+    from aiosmtpd.controller import Controller
 
     settings.init_settings()
 
@@ -58,11 +60,8 @@ def generatekeys():
     """ Generate DKIM specific keys """
     # TODO check exist to avoid accidental rewrite
     private_command = ['openssl', 'genrsa', '-out', settings.DKIM_CONFIG['private_key'], '1024']
-    public_command = ['openssl', 'rsa', '-in', settings.DKIM_CONFIG['private_key'], 
+    public_command = ['openssl', 'rsa', '-in', settings.DKIM_CONFIG['private_key'],
         '-out', settings.DKIM_CONFIG['public_key'], '-pubout']
-
-    from requests import get
-    ip = get('https://api.ipify.org').text
 
     print("Generating private key {}".format(settings.DKIM_CONFIG['private_key']))
     process = subprocess.run(private_command)
@@ -103,7 +102,7 @@ def dnsconfig():
 
         result.append(MX_TPL.format(**context))
         result.append(SPF_TPL.format(**context))
-        result.append(DKIM_TPL.format(**context))
+        #result.append(DKIM_TPL.format(**context))
         result.append(DMARC_TPL.format(**context))
 
         print("\n--- For account {name}, domain {dkim_domain}\n".format(**account, **context))
@@ -111,7 +110,16 @@ def dnsconfig():
         print("\n---")
 
 
-# TODO add a command to show DNS config to add
+@begin.subcommand
+def init():
+    print("Initialize directory...")
+    setting_tpl = path.join(path.realpath(path.dirname(__file__)), "settings_tpl.py")
+
+    # Copy settings template
+    shutil.copy(setting_tpl, path.join('.', 'settings.py'))
+
+    print("Done.")
+
 
 @begin.start
 def run(version=False):

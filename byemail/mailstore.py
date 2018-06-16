@@ -47,7 +47,7 @@ class DbBackend():
     def __init__(self):
         super().__init__()
 
-        loop = asyncio.get_event_loop()
+        self.loop = asyncio.get_event_loop()
 
         serialization = SerializationMiddleware()
         serialization.register_serializer(DateTimeSerializer(), 'TinyDate')
@@ -117,7 +117,7 @@ class DbBackend():
             msg.update(extra_data)
 
         # Then save data in maildb
-        await self.store_content(msg['uid'], emailmsg.as_bytes())
+        await self.store_content(msg['uid'], msg.as_bytes())
 
         eid = self.db.insert(msg)
 
