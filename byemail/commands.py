@@ -20,7 +20,6 @@ from aiosmtpd.controller import Controller
 import byemail
 from byemail.conf import settings
 from byemail import mailutils
-from byemail import smtp, httpserver
 from byemail import storage
 
 # TODO: remove below if statement asap. This is a workaround for a bug in begins
@@ -43,6 +42,8 @@ def start(reload: 'Make server autoreload (Dev only)'=False,):
         os.makedirs(settings.DATADIR)
 
     storage.init_storage()
+
+    from byemail import smtp, httpserver
 
     controller = Controller(smtp.MsgHandler(), **settings.SMTP_CONF)
     controller.start()

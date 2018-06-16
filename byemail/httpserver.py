@@ -54,7 +54,7 @@ def init_app():
         session_key = request.cookies.get('session_key')
 
         if session_key:
-            request['session'] = sessions[session_key]
+            request['session'] = await storage.get_user_session(session_key)
         else:
             request['session'] = {}
 
@@ -69,13 +69,15 @@ def init_app():
     @app.route('/login', methods=['POST'])
     async def login(request):
         credentials = request.json
-        # get user account
+        # get user account from credentials
         account = account_manager.authenticate(credentials)
 
         if account:
             session_key = gen_session_key()
-            session = sessions[session_key]
+
+            session = await storage.get_user_session(session_key)
             session[auth.auth_session_key] = account.name
+            await storage.save_user_session(session_key, session)
 
             response = json(account.to_json())
             # Add session key to response

@@ -222,11 +222,25 @@ class Backend():
         return attachment, content
 
     async def update_mail(self, mail):
+        """ Update any mail """
         Message = Query()
 
         self.db.update(mail, Message.uid==mail['uid'])
 
         return mail
+
+    async def save_user_session(self, session_key, session):
+        """ Save modified user session """
+        Session = Query()
+        self.db.update(session, (Session.type == 'session') & (Session.key==session_key))
+
+    async def get_user_session(self, session_key):
+        """ Load user session from database """
+        Session = Query()
+        return await self.get_or_create(
+            (Session.type=='session') & (Session.key==session_key),
+            {'type': 'session', 'key': session_key}
+        )
 
 
 
