@@ -99,10 +99,10 @@ def dnsconfig():
         context['dkim_selector'] = settings.DKIM_CONFIG['selector']
         context['dkim_domain'] = settings.DKIM_CONFIG['domain']
 
-        with open(settings.DKIM_CONFIG['public_key']) as key:
+        '''with open(settings.DKIM_CONFIG['public_key']) as key:
             context['publickey'] = key.read().replace('\n', '')\
                 .replace('-----BEGIN PUBLIC KEY-----', '')\
-                .replace('-----END PUBLIC KEY-----', '')
+                .replace('-----END PUBLIC KEY-----', '')'''
 
         result.append(MX_TPL.format(**context))
         result.append(SPF_TPL.format(**context))
