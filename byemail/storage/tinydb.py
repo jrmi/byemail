@@ -43,7 +43,7 @@ class AddressSerializer(Serializer):
 
         return Address(display_name=display_name, addr_spec=addr_spec)
 
-class DbBackend():
+class Backend():
     def __init__(self):
         super().__init__()
 
@@ -229,4 +229,5 @@ class DbBackend():
         return mail
 
 
-storage = DbBackend()
+
+
