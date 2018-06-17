@@ -2,7 +2,7 @@
   <div class="webmail">
     <md-list class="mailboxes md-dense">
       <md-subheader>Mailboxes <md-button class="md-icon-button" @click="refreshMailboxes()"><md-icon>refresh</md-icon></md-button></md-subheader>
-      
+
       <md-list-item v-for="mailbox in allMailboxes()" :key="mailbox.uid" :to="{name: 'mailbox', params: { id: mailbox.uid }}">
           <md-avatar class="md-xsmall-hide">
             <img :src="gravatarUrl(mailbox)" alt="People">
@@ -38,9 +38,7 @@ export default {
   },
   methods: {
     fetchData () {
-      if (this.allMailboxes() === null) {
-        this.refreshMailboxes()
-      }
+      this.refreshMailboxes()
     },
     refreshMailboxes () {
       this.setLoading(true)

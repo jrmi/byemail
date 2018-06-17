@@ -12,12 +12,9 @@ async def main():
     storage.init_storage()
     fake = Faker()
 
-    print(account_manager.accounts)
-
     for account_name, account in account_manager.accounts.items():
-        print(account)
         from_addr = account.address
-        print(f"Generate message for {from_addr}")
+        print(f"Generate messages for {from_addr}...")
 
         for _ in range(randint(3,5)):
             to_addr = mailutils.parse_email(fake.safe_email())

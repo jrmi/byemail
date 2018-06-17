@@ -166,6 +166,24 @@ const mutations = {
     if (_.isDefined(recipients)) {
       state.draft.recipients = recipients
     }
+  },
+  [types.RESET_MAILBOXES] (state) {
+    Object.assign(state, {
+      all: null,
+      current: null,
+      mail: null,
+      draft: {
+        mailContent: '',
+        mailSubject: '',
+        recipients: [
+          {
+            id: _.uniqueId(),
+            address: '',
+            type: 'to'
+          }
+        ]
+      }
+    })
   }
 }
 

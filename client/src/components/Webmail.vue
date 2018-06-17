@@ -1,6 +1,6 @@
 <template>
   <div class="content"  :class="{loading: isLoading()}" v-if="account">
-    <md-toolbar id="topbar" class="md-primary"> 
+    <md-toolbar id="topbar" class="md-primary">
         <md-menu>
           <md-button md-menu-trigger class="md-icon-button"><md-icon>menu</md-icon></md-button>
           <md-menu-content>
@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex'
+import { mapGetters, mapActions, mapMutations } from 'vuex'
 
 export default {
   name: 'webmail',
@@ -45,6 +45,7 @@ export default {
     },
     logout () {
       this.$http.get('/logout').then(response => {
+        this.resetMailboxes()
         this.$router.push({ name: 'login' })
       })
     },
@@ -53,6 +54,9 @@ export default {
     ]),
     ...mapActions([
       'setLoading'
+    ]),
+    ...mapMutations([
+      'resetMailboxes'
     ])
   },
   data () {
