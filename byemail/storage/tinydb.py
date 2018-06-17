@@ -122,7 +122,7 @@ class Backend():
             msg.update(extra_data)
 
         # Then save data in maildb
-        await self.store_content(msg['uid'], msg.as_bytes())
+        #await self.store_content(msg['uid'], msg.as_bytes())
 
         eid = self.db.insert(msg)
 

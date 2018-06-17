@@ -5,17 +5,6 @@ verify_ssl = true
 name = "pypi"
 
 
-[dev-packages]
-
-pylint = "*"
-ipdb = "*"
-pytest = "*"
-tox = "*"
-tox-pipenv = "*"
-icecream = "*"
-aiohttp = "*"
-
-
 [requires]
 
 python_version = "3.6"
@@ -36,3 +25,16 @@ aiodns = "*"
 sanic-auth = "*"
 python-magic = "*"
 dkimpy = "*"
+
+
+[dev-packages]
+
+pylint = "*"
+ipdb = "*"
+pytest = "*"
+tox = "*"
+tox-pipenv = "*"
+icecream = "*"
+aiohttp = "*"
+faker = "*"
+pipenv = "*"

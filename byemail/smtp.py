@@ -93,12 +93,11 @@ class MsgHandler:
         for middleware in settings.INCOMING_MIDDLEWARES:
             try:
                 module, _, func = middleware.rpartition(".")
-                print(func, module)
+                mod = importlib.import_module(module)
             except ModuleNotFoundError:
                 logger.error("Module %s can't be loaded !", middleware)
                 raise
             else:
-                mod = importlib.import_module(module)
                 await getattr(mod, func)(msg, from_addr, to_addrs)
 
     async def local_delivery(self, rcpt_tos, server, session, envelope):
