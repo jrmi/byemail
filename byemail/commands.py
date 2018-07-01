@@ -110,9 +110,10 @@ def dnsconfig():
         #result.append(DKIM_TPL.format(**context))
         result.append(DMARC_TPL.format(**context))
 
-        print("\n--- For account {name}, domain {dkim_domain}\n".format(**account, **context))
+        print(f"\n# For account {account['name']}, domain {context['address_domain']}\n")
         print('\n'.join(result))
-        print("\n---")
+        
+    print()
 
 
 @begin.subcommand
