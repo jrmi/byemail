@@ -1,8 +1,6 @@
 {
   "name": "byemail-client",
   "version": "0.1.0",
-  "description": "A byemail web client",
-  "author": "Jeremie Pardou-Piquemal <jrmi@jeremiez.net>",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -18,6 +16,7 @@
     "register-service-worker": "^1.0.0",
     "vue": "^2.5.16",
     "vue-router": "^3.0.1",
+    "vuetify": "^1.0.19",
     "vuex": "^3.0.1"
   },
   "devDependencies": {
@@ -32,11 +31,19 @@
     "babel-jest": "^23.0.1",
     "less": "^3.0.4",
     "less-loader": "^4.1.0",
+    "vue-cli-plugin-vuetify": "^0.1.6",
     "vue-template-compiler": "^2.5.16"
   },
   "browserslist": [
     "> 1%",
     "last 2 versions",
     "not ie <= 8"
-  ]
+  ],
+  "description": "A byemail web client",
+  "author": "Jeremie Pardou-Piquemal <jrmi@jeremiez.net>",
+  "proxy": {
+    "/api": "http://localhost:8000",
+    "/login": "http://localhost:8000",
+    "/logout": "http://localhost:8000"
+  }
 }
