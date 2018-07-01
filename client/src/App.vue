@@ -10,7 +10,8 @@ export default {
 }
 </script>
 
-<style>
+<style lang="less">
+
 body{
   position: relative;
 }
@@ -24,3 +25,6 @@ body{
 }
 
 </style>
+
+
+
