@@ -106,8 +106,8 @@ def test_send_middleware(loop):
         )
         smtp_send.return_value = f
 
-        with pytest.raises(ModuleNotFoundError) as e_info:
-            result = loop.run_until_complete(msend.send(msg, from_addr, to_addrs))
+        with pytest.raises(ModuleNotFoundError):
+            loop.run_until_complete(msend.send(msg, from_addr, to_addrs))
 
         assert count == 1
 
@@ -117,7 +117,6 @@ def test_receive(loop):
 
     with mock.patch('byemail.smtp.storage') as storage_mock, \
         mock.patch('byemail.account.settings') as set_mock:
-
 
         set_mock.ACCOUNTS = [
             {

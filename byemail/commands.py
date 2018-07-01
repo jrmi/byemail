@@ -33,7 +33,7 @@ sys.path.insert(0, os.getcwd())
 
 @begin.subcommand
 def start(reload: 'Make server autoreload (Dev only)'=False,):
-    """ Start byemail """
+    """ Start byemail SMTP and HTTP servers """
 
     settings.init_settings()
 
@@ -86,6 +86,7 @@ DMARC_TPL = """_dmarc.{address_domain}. TXT \"v=DMARC1; p=none\""""
 
 @begin.subcommand
 def dnsconfig():
+    """ Show configuration to apply to your DNS """
     context = {}
 
     print("# This is the guessed configuration for your domain.")
@@ -116,6 +117,7 @@ def dnsconfig():
 
 @begin.subcommand
 def init():
+    """ Initialize a new directory for byemail """
     print("Initialize directory...")
     setting_tpl = path.join(path.realpath(path.dirname(__file__)), "settings_tpl.py")
 

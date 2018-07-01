@@ -1,4 +1,5 @@
 .env
+.env.leave
 db.json
 maildb.json
 data/
