@@ -1,20 +1,13 @@
 <template>
-  <div @keyup.enter="submit()" class="login">
-    <md-whiteframe class="inside">
-      <form novalidate @submit.stop.prevent="submit">
+
+  <v-card @keyup.enter="submit()" class="login">
+      <v-form novalidate @submit.stop.prevent="submit">
         <p v-if="loginFailed">Your username or password is incorrect. Please try again...</p>
-        <md-field>
-          <label>Login</label>
-          <md-input v-model.trim="name" required></md-input>
-        </md-field>
-        <md-field>
-          <label>Password</label>
-          <md-input type="password" v-model="password" required></md-input>
-        </md-field>
-        <md-button class="md-raised md-primary" @click="submit()">Submit</md-button>
-      </form>
-    </md-whiteframe>
-  </div>
+        <v-text-field v-model.trim="name" required label="Login"></v-text-field>
+        <v-text-field v-model="password" required label="Password"></v-text-field>
+        <v-btn class="success" @click="submit()">Submit</v-btn>
+      </v-form>
+  </v-card>
 </template>
 
 <script>

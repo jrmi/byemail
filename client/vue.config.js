@@ -1,4 +1,5 @@
 module.exports = {
-    configureWebpack: {
+    devServer: {
+        proxy: 'http://localhost:8000'
     }
-  }
+}

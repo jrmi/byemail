@@ -1,23 +1,65 @@
 <template>
   <div class="content"  :class="{loading: isLoading()}" v-if="account">
-    <md-toolbar id="topbar" class="md-primary">
-        <md-menu>
-          <md-button md-menu-trigger class="md-icon-button"><md-icon>menu</md-icon></md-button>
-          <md-menu-content>
-            <md-menu-item><router-link :to="{ name: 'mailedit'}">Compose message</router-link></md-menu-item>
-            <md-menu-item @click="logout()">Log out</md-menu-item>
-          </md-menu-content>
-        </md-menu>
-        <h3 class="md-title">Maiboxes for {{account.name}}</h3>
-        <router-link :to="{ name: 'mailboxes'}"><md-icon>home</md-icon></router-link>
-    </md-toolbar>
-
-    <router-view></router-view>
 
 
-    <md-bottom-bar>
-      <h3 class="center">Byemail for your pleasure</h3>
-    </md-bottom-bar>
+    <v-navigation-drawer
+      persistent
+      :mini-variant="miniVariant"
+      :clipped="clipped"
+      v-model="drawer"
+      enable-resize-watcher
+      fixed
+      app
+    >
+      <v-list>
+        <div v-for="(item, i) in items" :key="i">
+          <v-list-tile
+            v-if="item.route"
+            value="true"
+            :to="item.route"
+          >
+            <v-list-tile-action>
+              <v-icon v-html="item.icon"></v-icon>
+            </v-list-tile-action>
+            <v-list-tile-content>
+                <v-list-tile-title v-text="item.title">
+                </v-list-tile-title>
+            </v-list-tile-content>
+          </v-list-tile>
+          <v-list-tile
+            v-if="item.action"
+            value="true"
+            :to="item.route"
+            @click="item.action"
+          >
+            <v-list-tile-action>
+              <v-icon v-html="item.icon"></v-icon>
+            </v-list-tile-action>
+            <v-list-tile-content>
+              <v-list-tile-title v-text="item.title" >
+              </v-list-tile-title>
+            </v-list-tile-content>
+          </v-list-tile>
+        </div>
+      </v-list>
+    </v-navigation-drawer>
+
+    <v-toolbar
+      app
+      :clipped-left="clipped"
+    >
+      <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
+      <v-toolbar-title>Maiboxes for {{account.name}}</v-toolbar-title>
+      <v-spacer></v-spacer>
+    </v-toolbar>
+  
+    <v-content>
+      <router-view/>
+    </v-content>
+
+    <v-footer :fixed="fixed" app>
+      <span>Byemail for your pleasure &copy; 2017</span>
+    </v-footer>
 
     <div class="waiter"><div class="signal"></div></div>
 
@@ -61,6 +103,26 @@ export default {
   },
   data () {
     return {
+      clipped: false,
+      drawer: false,
+      fixed: false,
+      items: [{
+        icon: 'bubble_chart',
+        title: 'Home',
+        route: { name: 'mailboxes' }
+      },{
+        icon: 'bubble_chart',
+        title: 'Compose message',
+        route: { name: 'mailedit' }
+      },{
+        icon: 'bubble_chart',
+        title: 'Log out',
+        action: () => {
+          this.logout()
+        }
+      }
+      ],
+      miniVariant: false,
       account: null
     }
   }

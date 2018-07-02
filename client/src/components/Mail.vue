@@ -1,5 +1,53 @@
 <template>
-  <div class="mail" v-if="currentMail() && showMail">
+
+  <v-card v-if="currentMail() && showMail">
+    <v-toolbar color="grey" dark flat>
+
+      <v-toolbar-title>{{currentMail().subject}} ({{currentMail()['body-type']}})</v-toolbar-title>
+
+      <v-spacer></v-spacer>
+
+      <v-btn icon @click="showCompose = ! showCompose">
+        <v-icon>reply</v-icon>
+      </v-btn>
+      <v-btn icon @click="showMail = ! showMail">
+        <v-icon>close</v-icon>
+      </v-btn>
+      <v-btn icon v-if="currentMail().unread" @click="markMailRead()">
+        <v-icon>visibility</v-icon>
+      </v-btn>
+
+    </v-toolbar>
+
+    <div class="mail-header">
+      <span v-for="to of currentMail().recipients" :key="to.addr_spec">To: {{to.addr_spec}}</span>
+    </div>
+
+    <div class="mail-content">
+      <p class="text" v-if="currentMail()['body-type'] == 'text/plain'" v-html="currentMail().body"></p>
+      <iframe class="html" v-if="currentMail()['body-type'] == 'text/html'" :src="currentMail().iframeSrc">
+        {{currentMail().body}}
+      </iframe>
+      <div class="mail-attachments" v-if="currentMail().attachments.length">
+        <h3>{{currentMail().attachments.length}} <md-icon>attachment</md-icon></h3>
+        <ul v-for="att of currentMail().attachments" :key="att.filename">
+          <li><a :href="att.url" :download="att.filename">{{att.filename}}</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mail-actions" v-if="showCompose">
+      <div class="mail-compose" >
+        <v-textarea v-model="composeContent"></v-textarea>
+        <v-btn icon @click="reply()">
+          <v-icon>send</v-icon>
+        </v-btn>
+      </div>
+    </div>
+
+  </v-card>
+
+  <!--div class="mail" v-if="currentMail() && showMail">
     <md-toolbar class="md-dense md-warn">
       <h2 class="md-title">{{currentMail().subject}} ({{currentMail()['body-type']}})</h2>
       <md-button @click="showCompose = ! showCompose" class="md-icon-button">
@@ -38,7 +86,7 @@
 
     </div>
 
-  </div>
+  </div-->
 </template>
 
 <script>
