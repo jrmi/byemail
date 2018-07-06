@@ -1,5 +1,4 @@
 <template>
-
   <v-card @keyup.enter="submit()" class="login">
       <v-form novalidate @submit.stop.prevent="submit">
         <p v-if="loginFailed">Your username or password is incorrect. Please try again...</p>

@@ -1,10 +1,10 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Login from '@/components/Login'
-import Webmail from '@/components/Webmail'
-import Mailboxes from '@/components/Mailboxes'
-import Mailbox from '@/components/Mailbox'
-import Mail from '@/components/Mail'
+import Login from '@/views/Login'
+import Webmail from '@/views/Webmail'
+import Mailboxes from '@/views/Mailboxes'
+import Mailbox from '@/views/Mailbox'
+import Mail from '@/views/Mail'
 import MailEdit from '@/components/MailEdit'
 
 Vue.use(Router)

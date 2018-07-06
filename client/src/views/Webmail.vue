@@ -1,7 +1,5 @@
 <template>
   <div class="content"  :class="{loading: isLoading()}" v-if="account">
-
-
     <v-navigation-drawer
       persistent
       :mini-variant="miniVariant"
