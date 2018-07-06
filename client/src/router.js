@@ -5,7 +5,7 @@ import Webmail from '@/views/Webmail'
 import Mailboxes from '@/views/Mailboxes'
 import Mailbox from '@/views/Mailbox'
 import Mail from '@/views/Mail'
-import MailEdit from '@/components/MailEdit'
+import MailEdit from '@/views/MailEdit'
 
 Vue.use(Router)
 

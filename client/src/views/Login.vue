@@ -3,7 +3,14 @@
       <v-form novalidate @submit.stop.prevent="submit">
         <p v-if="loginFailed">Your username or password is incorrect. Please try again...</p>
         <v-text-field v-model.trim="name" required label="Login"></v-text-field>
-        <v-text-field v-model="password" required label="Password"></v-text-field>
+        <v-text-field 
+          v-model="password" 
+          required label="Password"
+          :append-icon="show1 ? 'visibility_off' : 'visibility'"
+          :type="show1 ? 'text' : 'password'"
+          @click:append="show1 = !show1"
+        >
+        </v-text-field>
         <v-btn class="success" @click="submit()">Submit</v-btn>
       </v-form>
   </v-card>
