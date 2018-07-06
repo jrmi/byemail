@@ -1,6 +1,10 @@
 <template>
   <v-card>
     <message-composer/>
+    <div class="actions">
+      <v-btn @click="goBack()">Cancel</v-btn>
+      <v-btn @click="send()">Send</v-btn>
+    </div>
   </v-card>
 </template>
 

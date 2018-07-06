@@ -1,76 +1,80 @@
 <template>
-
+<v-container grid-list-md text-xs-left>
   <v-form>      
-    
-    <div class="recipients">
-      <ul>
-        <li v-for="(recipient, index) in recipients" :key="recipient.id" class="md-layout">
-          <v-select
-            v-model="recipient.type"
-            :items="recipientTypes"
-          ></v-select>
-          <v-autocomplete
-            v-model="recipient.address"
-            :items="recipient.entries"
-            :loading="recipient.isLoading"
-            :search-input.sync="recipient.search"
-            item-text="name"
-            item-value="name"
-          >
-            Recipient
-          </v-autocomplete>
-          <v-btn icon @click="recipients.splice(index, 1)">
-            <v-icon>remove</v-icon>
-          </v-btn>
-        </li>
+      <div class="recipients">
 
-      </ul>
-      <v-btn icon @click="addRecipient()">
-        <v-icon>add</v-icon>
-      </v-btn>
-    </div>
+        <v-layout row wrap v-for="(recipient, index) in recipients" :key="recipient.id" >
+          <v-flex xs2>
+            <v-select
+              v-model="recipient.type"
+              :items="recipientTypes"
+            ></v-select>
+            </v-flex>
+            <v-flex xs9>
+            <v-autocomplete
+              v-model="recipient.address"
+              :items="recipient.entries"
+              :loading="recipient.isLoading"
+              :search-input.sync="recipient.search"
+              item-text="name"
+              item-value="name"
+            >
+              Recipient
+            </v-autocomplete>
+          </v-flex>
+          <v-flex xs1>
+            <v-btn icon @click="recipients.splice(index, 1)" v-if="index >= 1">
+              <v-icon>remove</v-icon>
+            </v-btn>
+          </v-flex>
+        </v-layout>
+        <v-btn @click="addRecipient()">
+          Add recipient
+        </v-btn>
+      </div>
 
-    <div class="attachments">
-      <ul>
-        <li v-for="(attachment, index) in attachments" :key="attachment.id">
+      <div class="attachments">
+        <v-layout row wrap v-for="(attachment, index) in attachments" :key="attachment.id" >
 
-          <v-text-field 
-            v-model="attachment.filename" 
-            type="file"
-            @md-change="files => {attachment.files = files}">
-          </v-text-field>
+          <v-flex xs11>
+            <v-text-field 
+              v-model="attachment.filename" 
+              type="file"
+              @md-change="files => {attachment.files = files}">
+            </v-text-field>
+          </v-flex>
 
-          <v-btn icon @click="attachments.splice(index, 1)">
-            <v-icon>remove</v-icon>
-          </v-btn>
+          <v-flex xs1>
+            <v-btn icon @click="attachments.splice(index, 1)" v-if="index >= 1">
+              <v-icon>remove</v-icon>
+            </v-btn>
+          </v-flex>
 
-        </li>
-      </ul>
+        </v-layout>
 
-      <v-btn @click="addAttachment()">Add attachment</v-btn>
-    </div>
+        <v-btn @click="addAttachment()">Add attachment</v-btn>
+      </div>
 
-    <div class="mail-subject">
-      <v-text-field
-        v-model.trim="mailSubject"
-        label="Subject"
-      >
-      </v-text-field>
-    </div>
+      <div class="mail-subject">
+        <v-text-field
+          v-model.trim="mailSubject"
+          label="Subject"
+        >
+        </v-text-field>
+      </div>
 
-    <div class="mail-content">
-        <v-textarea
-            v-model="mailContent"
-            label="Content"
-        ></v-textarea>
-    </div>
+      <div class="mail-content">
+          <v-textarea
+              v-model="mailContent"
+              label="Content"
+          ></v-textarea>
+      </div>
 
-    <div class="actions">
-      <v-btn @click="goBack()">Cancel</v-btn>
-      <v-btn @click="send()">Send</v-btn>
-    </div>
-
+      <div class="actions">
+        <v-btn @click="send()">Send</v-btn>
+      </div>
   </v-form>
+</v-container>
 </template>
 
 <script>
@@ -123,6 +127,7 @@ export default {
 
       this.recipients.push(recipient)
 
+      // TODO unwatch when necessary
       this.$watch(function () {
         return recipient.search
       },
@@ -138,10 +143,6 @@ export default {
         files_b64: []
       }
       this.attachments.push(attachment)
-    },
-    goBack () {
-      // TODO verify dirtyness
-      this.$router.go(-1)
     },
     send () {
       this.setLoading(true)
