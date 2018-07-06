@@ -16,9 +16,6 @@
     </v-toolbar>
 
     <message-list :messages="currentMailbox().messages" />
-
-    <router-view></router-view>
-
   </v-card>
 </template>
 

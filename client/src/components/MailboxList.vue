@@ -1,21 +1,8 @@
 <template>
-    <v-list class="mailboxes" two-line>
+    <v-list class="blist" two-line>
         <template v-for="(mailbox, index) in mailboxes">
-        <v-subheader
-            v-if="mailbox.header"
-            :key="mailbox.uid"
-        >
-            {{ mailbox.header }}
-        </v-subheader>
-
-        <v-divider
-            v-else-if="mailbox.divider"
-            :inset="mailbox.inset"
-            :key="mailbox.uid"
-        ></v-divider>
 
         <v-list-tile
-            v-else
             :key="mailbox.uid"
             avatar
             :to="{name: 'mailbox', params: { id: mailbox.uid }}"
@@ -41,6 +28,8 @@
                 </v-badge>
             </v-list-tile-action>
         </v-list-tile>
+
+        <v-divider v-if="index + 1 < mailboxes.length" :key="`divider-${index}`"></v-divider>
         </template>
     </v-list>
 </template>
@@ -69,6 +58,4 @@ export default {
 </script>
 
 <style scoped lang="less">
-
-
 </style>

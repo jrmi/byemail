@@ -57,7 +57,7 @@ export default {
     },
     reply (data) {
       this.setLoading(true)
-      this.sendMail(data).then(function (response) {
+      this.sendMail(data).then((response) => {
         this.showCompose = false
         this.setLoading(false)
       })

@@ -8,7 +8,6 @@
 </template>
 
 <script>
-// import Moment from 'moment'
 import { mapGetters, mapActions } from 'vuex'
 
 export default {
@@ -29,12 +28,6 @@ export default {
       }
       this.$emit('reply', data)
       this.composeContent = ''
-      /*this.setLoading(true)
-      this.sendMail(data).then(function (response) {
-        this.showCompose = false
-        this.composeContent = ''
-        this.setLoading(false)
-      })*/
     },
   },
   data () {

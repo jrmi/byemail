@@ -23,7 +23,7 @@
             </v-autocomplete>
           </v-flex>
           <v-flex xs1>
-            <v-btn icon @click="recipients.splice(index, 1)" v-if="index >= 1">
+            <v-btn color="error" icon @click="recipients.splice(index, 1)" v-if="index >= 1">
               <v-icon>remove</v-icon>
             </v-btn>
           </v-flex>
@@ -45,7 +45,7 @@
           </v-flex>
 
           <v-flex xs1>
-            <v-btn icon @click="attachments.splice(index, 1)" v-if="index >= 1">
+            <v-btn color="error" icon @click="attachments.splice(index, 1)">
               <v-icon>remove</v-icon>
             </v-btn>
           </v-flex>

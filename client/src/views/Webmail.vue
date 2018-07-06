@@ -51,12 +51,12 @@
       <v-spacer></v-spacer>
     </v-toolbar>
   
-    <v-content>
-      <router-view/>
+    <v-content style="height: 100%">
+      <router-view></router-view>
     </v-content>
 
     <v-footer :fixed="fixed" app>
-      <span>Byemail for your pleasure &copy; 2017</span>
+      <span>Byemail for your pleasure &copy; 2018</span>
     </v-footer>
 
     <div class="waiter"><div class="signal"></div></div>
@@ -129,10 +129,9 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
+
 .content{
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
+  height: 100%;
 
   .waiter{
     display: none;
@@ -179,10 +178,4 @@ export default {
     }
 }
 
-#topbar{
-  flex: 0;
-  .md-menu{
-    float: right;
-  }
-}
 </style>

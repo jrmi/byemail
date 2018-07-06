@@ -1,7 +1,7 @@
 <template>
-  <v-layout row>
-    <v-flex xs4>
-      <v-card _class="webmail">
+  <div class="main">
+    <div class="mailboxes">
+      <v-card class="mailboxlist">
         <v-toolbar color="grey" dark flat>
 
           <v-toolbar-title>Mailboxes</v-toolbar-title>
@@ -15,13 +15,15 @@
         </v-toolbar>
         <mailbox-list :mailboxes="allMailboxes()"/>
       </v-card>
-    </v-flex>
-
-    <v-flex xs8>
-        <router-view></router-view>
-        <div class="filler" v-if="$route.name === 'mailboxes'">Select a mailbox from left...</div>
-    </v-flex>
-  </v-layout>
+    </div>
+    <div class="mailbox">
+      <div class="filler" v-if="$route.name === 'mailboxes'">Select a mailbox from left...</div>
+      <router-view></router-view>
+    </div>
+    <div class="mail">
+      <router-view name="mail"></router-view>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -53,19 +55,31 @@ export default {
     ])
   },
   components: {
-    MailboxList
-  },
-  data () {
-    return {
-    }
+    MailboxList,
   }
 }
 </script>
 
 <style scoped lang="less">
-.content{
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
+.main{
+  height: 100%;
+  max-height: 100%;
+  display: grid;
+  grid-template-columns: 25% 27% auto;
+}
+.mailboxes{
+  height: 100%;
+  max-height: 100%;
+  overflow-y: scroll;
+}
+.mailbox{
+  height: 100%;
+  max-height: 100%;
+  overflow-y: scroll;
+}
+.mail{
+  height: 100%;
+  max-height: 100%;
+  overflow-y: scroll;
 }
 </style>
