@@ -9,24 +9,39 @@ const debug = process.env.NODE_ENV !== 'production'
 Vue.use(Vuex)
 
 const state = {
-  isLoading: false
+  isLoading: false,
+  message: '',
+  messageColor: 'primary'
 }
 
 const mutations = {
   [types.SET_LOADING] (state, status) {
     state.isLoading = status
+  },
+  [types.SET_MESSAGE] (state, status) {
+    state.message = status.message
+    state.messageColor = status.color
   }
 }
 
 const actions = {
   setLoading: ({commit}, status) => {
     commit(types.SET_LOADING, status)
+  },
+  showMessage: ({commit}, status) => {
+    commit(types.SET_MESSAGE, status)
   }
 }
 
 const getters = {
   isLoading: state => {
     return state.isLoading
+  },
+  getMessage: state => {
+    return {
+      message: state.message,
+      color: state.messageColor
+    }
   }
 }
 
