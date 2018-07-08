@@ -176,6 +176,7 @@ def init_app():
     @app.route("/api/sendmail/", methods=['POST'])
     @auth.login_required(user_keyword='account', handle_no_auth=handle_no_auth)
     async def sendmail(request, account):
+        """ Send an email """
         data = request.json
 
         mail_sender = MsgSender()
@@ -200,6 +201,10 @@ def init_app():
             incoming=False
         )
 
+        saved_msg['status'] = 'sending'
+
+        storage.update_mail(saved_msg)
+
         # Then we send it
         delivery_status = await mail_sender.send(
             msg,
@@ -207,7 +212,11 @@ def init_app():
             to_addrs=[a.addr_spec for a in all_addrs]
         )
 
-        # TODO update delivery status in store
+        # Then we save status and delivery status
+        saved_msg['status'] = 'sent'
+        saved_msg['delivery_status'] = delivery_status
 
-        # Finally we return it
+        storage.update_mail(saved_msg)
+
+        # At last we return it
         return json(saved_msg)

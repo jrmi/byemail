@@ -119,11 +119,14 @@ class MsgHandler:
                     from_addr=envelope.mail_from,
                     to_addrs=envelope.rcpt_tos
                 )
+                stored_msg['status'] = 'received'
+
+                storage.update_mail(stored_msg)
 
             except:
                 import traceback; traceback.print_exc()
                 #import ipdb; ipdb.set_trace()
-                await self.save_failed_msg(session, envelope) # TODO handle multiple toos
+                await self.save_failed_msg(session, envelope) # TODO handle multiple tos
                 print('Error for current message')
 
             return '250 Message accepted for delivery'

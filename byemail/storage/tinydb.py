@@ -128,10 +128,12 @@ class Backend():
 
         Mailbox = Query()
 
+        # Mailbox to link mail
         mailboxes = []
         if incoming:
             mailboxes.append((msg['from'].addr_spec, msg['from'].display_name)) # store only in `from` box
         else:
+            # TODO Create group mailboxes
             for to in to_addrs: # Put in all recipients boxes
                 mailboxes.append((to.addr_spec, to.display_name))
 
