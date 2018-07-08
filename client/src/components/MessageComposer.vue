@@ -32,7 +32,7 @@
           Add recipient
         </v-btn>
       </div>
-
+      <hr />
       <div class="attachments">
         <v-layout row wrap v-for="(attachment, index) in attachments" :key="attachment.id" >
 
@@ -40,7 +40,9 @@
             <v-text-field 
               v-model="attachment.filename" 
               type="file"
-              @md-change="files => {attachment.files = files}">
+              @click="attachment.files = $event.target.files"
+              prepend-icon='attach_file'
+            >
             </v-text-field>
           </v-flex>
 
@@ -93,12 +95,12 @@ export default {
       mailContent: '',
       mailSubject: '',
       attachments: [],
+      recipients: [],
       address: [
         {id: 1, name: 'Toto <toto@localhost>'},
         {id: 2, name: 'titi@localhost'},
         {id: 3, name: 'tata@localhost'}
-      ],
-      recipients: []
+      ]
     }
   },
   created () {
@@ -145,7 +147,6 @@ export default {
       this.attachments.push(attachment)
     },
     send () {
-      this.setLoading(true)
       this.prepareAttachment().then((attachments) => {
         let data = {
           recipients: this.recipients,
@@ -153,10 +154,7 @@ export default {
           subject: this.mailSubject,
           content: this.mailContent
         }
-        this.sendMail(data).then(response => {
-          this.setLoading(false)
-          this.$router.go(-1)
-        })
+        this.$emit('sendMessage', data)
       })
     },
     prepareAttachment () {

@@ -1,9 +1,8 @@
 <template>
   <v-card>
-    <message-composer/>
+    <message-composer @sendMessage="send" />
     <div class="actions">
       <v-btn @click="goBack()">Cancel</v-btn>
-      <v-btn @click="send()">Send</v-btn>
     </div>
   </v-card>
 </template>
@@ -27,19 +26,11 @@ export default {
       // TODO verify dirtyness
       this.$router.go(-1)
     },
-    send () {
+    send (data) {
       this.setLoading(true)
-      this.prepareAttachment().then((attachments) => {
-        let data = {
-          recipients: this.recipients,
-          attachments: attachments,
-          subject: this.mailSubject,
-          content: this.mailContent
-        }
-        this.sendMail(data).then(response => {
-          this.setLoading(false)
-          this.$router.go(-1)
-        })
+      this.sendMail(data).then(response => {
+        this.setLoading(false)
+        this.$router.go(-1)
       })
     },
     ...mapActions([
