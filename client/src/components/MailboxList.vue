@@ -17,8 +17,7 @@
             <v-list-tile-sub-title>{{mailbox.last_message.fromNow()}} - {{mailbox.messages.length}} msgs</v-list-tile-sub-title>
             </v-list-tile-content>
 
-
-            <v-list-tile-action>
+            <v-list-tile-action v-if="mailbox.unreads">
                 <v-badge right overlap v-model="mailbox.unreads">
                     <span slot="badge" v-if="mailbox.unreads <= 9">{{mailbox.unreads}}</span>
                     <span slot="badge" v-else>9+</span>

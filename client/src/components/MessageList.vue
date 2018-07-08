@@ -1,6 +1,6 @@
 <template>
-  <v-list two-line class="maillist">
-    <template v-for="message in messages" >
+  <v-list two-line class="maillist" >
+    <template v-for="message in messages">
 
       <v-list-tile
         :key="message.uid"
@@ -10,9 +10,9 @@
       >
         <v-list-tile-content>
           <v-list-tile-title>{{message.subject}}</v-list-tile-title>
-          <v-list-tile-sub-title><span class='text--primary'>{{message.date.fromNow()}}</span>
+          <v-list-tile-sub-title><span>{{message.date.fromNow()}}</span>
             <span v-if="message.attachments.length">
-              | {{message.attachments.length}} <md-icon>attachment</md-icon>
+              | {{message.attachments.length}} <v-icon>attach_file</v-icon>
             </span>
           </v-list-tile-sub-title>
         </v-list-tile-content>

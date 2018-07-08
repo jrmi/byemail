@@ -1,6 +1,6 @@
 <template>
 <v-container grid-list-md text-xs-left>
-  <v-form>      
+  <v-form>
       <div class="recipients">
 
         <v-layout row wrap v-for="(recipient, index) in recipients" :key="recipient.id" >
@@ -24,7 +24,7 @@
           </v-flex>
           <v-flex xs1>
             <v-btn color="error" icon @click="recipients.splice(index, 1)" v-if="index >= 1">
-              <v-icon>remove</v-icon>
+              <v-icon>clear</v-icon>
             </v-btn>
           </v-flex>
         </v-layout>
@@ -37,8 +37,8 @@
         <v-layout row wrap v-for="(attachment, index) in attachments" :key="attachment.id" >
 
           <v-flex xs11>
-            <v-text-field 
-              v-model="attachment.filename" 
+            <v-text-field
+              v-model="attachment.filename"
               type="file"
               @click="attachment.files = $event.target.files"
               prepend-icon='attach_file'
@@ -48,7 +48,7 @@
 
           <v-flex xs1>
             <v-btn color="error" icon @click="attachments.splice(index, 1)">
-              <v-icon>remove</v-icon>
+              <v-icon>clear</v-icon>
             </v-btn>
           </v-flex>
 
@@ -108,14 +108,14 @@ export default {
   },
   methods: {
     querySelections (recipient, val) {
-        recipient.loading = true
-        // Simulated ajax query
-        setTimeout(() => {
-          recipient.entries = this.address.filter(e => {
-            return (e.name || '').toLowerCase().indexOf((val || '').toLowerCase()) > -1
-          })
-          recipient.loading = false
-        }, 500)
+      recipient.loading = true
+      // Simulated ajax query
+      setTimeout(() => {
+        recipient.entries = this.address.filter((e) => {
+          return (e.name || '').toLowerCase().indexOf((val || '').toLowerCase()) > -1
+        })
+        recipient.loading = false
+      }, 500)
     },
     addRecipient () {
       const recipient = {

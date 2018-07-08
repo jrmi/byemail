@@ -11,19 +11,21 @@
     >
       <v-list>
         <div v-for="(item, i) in items" :key="i">
+
           <v-list-tile
             v-if="item.route"
             value="true"
             :to="item.route"
           >
             <v-list-tile-action>
-              <v-icon v-html="item.icon"></v-icon>
+              <v-icon>{{item.icon}}</v-icon>
             </v-list-tile-action>
             <v-list-tile-content>
                 <v-list-tile-title v-text="item.title">
                 </v-list-tile-title>
             </v-list-tile-content>
           </v-list-tile>
+
           <v-list-tile
             v-if="item.action"
             value="true"
@@ -31,13 +33,14 @@
             @click="item.action"
           >
             <v-list-tile-action>
-              <v-icon v-html="item.icon"></v-icon>
+              <v-icon>{{item.icon}}</v-icon>
             </v-list-tile-action>
             <v-list-tile-content>
               <v-list-tile-title v-text="item.title" >
               </v-list-tile-title>
             </v-list-tile-content>
           </v-list-tile>
+
         </div>
       </v-list>
     </v-navigation-drawer>
@@ -50,7 +53,7 @@
       <v-toolbar-title>Maiboxes for {{account.name}}</v-toolbar-title>
       <v-spacer></v-spacer>
     </v-toolbar>
-  
+
     <v-content style="height: 100%">
       <router-view></router-view>
     </v-content>
@@ -105,15 +108,15 @@ export default {
       drawer: false,
       fixed: false,
       items: [{
-        icon: 'bubble_chart',
+        icon: 'all_inbox',
         title: 'Home',
         route: { name: 'mailboxes' }
-      },{
-        icon: 'bubble_chart',
+      }, {
+        icon: 'mail',
         title: 'Compose message',
         route: { name: 'mailedit' }
-      },{
-        icon: 'bubble_chart',
+      }, {
+        icon: 'input',
         title: 'Log out',
         action: () => {
           this.logout()

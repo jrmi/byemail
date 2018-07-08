@@ -5,7 +5,7 @@
       {{message.body}}
     </iframe>
     <div class="mail-attachments" v-if="message.attachments.length">
-      <h3>{{message.attachments.length}} <md-icon>attachment</md-icon></h3>
+      <h3>{{message.attachments.length}} <v-icon>attach_file</v-icon></h3>
       <ul v-for="att of message.attachments" :key="att.filename">
         <li><a :href="att.url" :download="att.filename">{{att.filename}}</a></li>
       </ul>
@@ -53,7 +53,7 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
 .mail-attachments{
-  background-color: #258097;
+  background-color: #CCC;
   color: #eee;
   padding-left: 10px;
   flex: 0;

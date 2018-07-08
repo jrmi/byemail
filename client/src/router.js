@@ -20,7 +20,7 @@ export default new Router({
       name: 'login',
       component: Login
     },
-    /*{
+    /* {
       path: '/webmail',
       name: 'webmail',
       component: Webmail,
@@ -55,7 +55,7 @@ export default new Router({
           component: null
         }
       ]
-    },*/
+    }, */
     {
       path: '/webmail',
       name: 'webmail',
