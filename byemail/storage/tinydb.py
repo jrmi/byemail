@@ -44,7 +44,7 @@ class AddressSerializer(Serializer):
         return Address(display_name=display_name, addr_spec=addr_spec)
 
 class Backend():
-    def __init__(self, datadir="data/"):
+    def __init__(self, datadir="data/", loop=None):
         super().__init__()
 
 
@@ -52,7 +52,7 @@ class Backend():
         if not os.path.isdir(datadir):
             os.makedirs(datadir)
 
-        self.loop = asyncio.get_event_loop()
+        self.loop = loop or asyncio.get_event_loop()
 
         serialization = SerializationMiddleware()
         serialization.register_serializer(DateTimeSerializer(), 'TinyDate')
@@ -133,9 +133,12 @@ class Backend():
         if incoming:
             mailboxes.append((msg['from'].addr_spec, msg['from'].display_name)) # store only in `from` box
         else:
-            # TODO Create group mailboxes
-            for to in to_addrs: # Put in all recipients boxes
+            if len(to_addrs) == 1:
+                to = to_addrs[0]
                 mailboxes.append((to.addr_spec, to.display_name))
+            else: # TODO Create group mailboxes
+                for to in to_addrs: # Put in all recipients boxes
+                    mailboxes.append((to.addr_spec, to.display_name))
 
         for mailbox_address, mailbox_name in mailboxes:
             # Get mailbox if exists or create it
@@ -215,6 +218,7 @@ class Backend():
         return mail
 
     async def get_mail_attachment(self, mail_uid, att_index):
+        """ Return a specific mail attachment """
         Message = Query()
 
         mail = await self.get(Message.uid==mail_uid)
@@ -242,7 +246,7 @@ class Backend():
         self.db.update(session, (Session.type == 'session') & (Session.key==session_key))
 
     async def get_user_session(self, session_key):
-        """ Load user session from database """
+        """ Load user session """
         Session = Query()
         return await self.get_or_create(
             (Session.type=='session') & (Session.key==session_key),

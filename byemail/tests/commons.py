@@ -1,7 +1,6 @@
 from email import policy
 from email.parser import BytesParser
 
-
 MAIL_TEST = b"""Content-Type: text/plain; charset="utf-8"\r
 Content-Transfer-Encoding: 7bit\r
 MIME-Version: 1.0\r
@@ -21,7 +20,6 @@ Joe.\r
 
 def get_msg_test():
     return BytesParser(policy=policy.default).parsebytes(MAIL_TEST)
-
 
 class objectview(object):
     def __init__(self, d):

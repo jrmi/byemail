@@ -29,7 +29,6 @@
 <script>
 import MailboxList from '@/components/MailboxList'
 import { mapGetters, mapActions } from 'vuex'
-import md5 from 'crypto-js/md5'
 
 export default {
   name: 'mailboxes',
@@ -55,7 +54,7 @@ export default {
     ])
   },
   components: {
-    MailboxList,
+    MailboxList
   }
 }
 </script>
@@ -65,7 +64,7 @@ export default {
   height: 100%;
   max-height: 100%;
   display: grid;
-  grid-template-columns: 25% 27% auto;
+  grid-template-columns: 25% 30% auto;
 }
 .mailboxes{
   height: 100%;

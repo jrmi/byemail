@@ -16,6 +16,7 @@ from byemail.smtp import MsgSender
 from byemail.account import account_manager
 from byemail import mailutils
 from byemail.conf import settings
+from byemail.smtp import send_mail
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +63,7 @@ def init_app():
     async def add_session_key_to_response(request, response):
         # add default session key if not existing
         auth_key = request.cookies.get('session_key')
-        if auth_key is None:
+        if auth_key is None and response.cookies.get('session_key') is None:
             session_key = gen_session_key()
             response.cookies['session_key'] = session_key
 
@@ -179,8 +180,6 @@ def init_app():
         """ Send an email """
         data = request.json
 
-        mail_sender = MsgSender()
-
         from_addr = mailutils.parse_email(account.address)
         all_addrs = [mailutils.parse_email(a['address']) for a in data['recipients']]
         tos = [mailutils.parse_email(a['address']) for a in data['recipients'] if a['type'] == 'to']
@@ -189,34 +188,7 @@ def init_app():
         attachments = data.get('attachments', [])
 
         msg = mailutils.make_msg(data['subject'], data['content'], from_addr, tos, ccs, attachments)
+        
+        result = await send_mail(account, msg, from_addr, all_addrs)
 
-        msg_to_store = await mailutils.extract_data_from_msg(msg)
-
-        # First we store it
-        saved_msg = await storage.store_msg(
-            msg_to_store,
-            account=account,
-            from_addr=from_addr,
-            to_addrs=all_addrs,
-            incoming=False
-        )
-
-        saved_msg['status'] = 'sending'
-
-        storage.update_mail(saved_msg)
-
-        # Then we send it
-        delivery_status = await mail_sender.send(
-            msg,
-            from_addr=from_addr.addr_spec,
-            to_addrs=[a.addr_spec for a in all_addrs]
-        )
-
-        # Then we save status and delivery status
-        saved_msg['status'] = 'sent'
-        saved_msg['delivery_status'] = delivery_status
-
-        storage.update_mail(saved_msg)
-
-        # At last we return it
-        return json(saved_msg)
+        return json(result)

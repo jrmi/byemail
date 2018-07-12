@@ -37,8 +37,6 @@ def start(reload: 'Make server autoreload (Dev only)'=False,):
 
     settings.init_settings()
 
-    storage.init_storage()
-
     from byemail import smtp, httpserver
 
     controller = Controller(smtp.MsgHandler(), **settings.SMTP_CONF)

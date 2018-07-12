@@ -4,24 +4,12 @@ import sys
 import json
 import pytest
 import asyncio
-import smtplib
 from unittest import mock
 
-from byemail.conf import settings
-from byemail import storage
-
 from . import commons
-from icecream import ic
 
 @pytest.fixture
-def httpapp():
-    # Override settings before
-    os.environ['BYEMAIL_SETTINGS_MODULE'] = 'byemail.tests.workdir.settings'
-
-    settings.init_settings()
-
-    storage.init_storage()
-
+def httpapp(settings):
     from byemail.httpserver import get_app
     return get_app()
 
@@ -29,13 +17,19 @@ def httpapp():
 def auth_app():
     pass
 
-
 def test_basic(httpapp):
     request, response = httpapp.test_client.get('/')
     assert response.status == 200
 
 def test_auth(httpapp):
-    data = {''}
+    data = {
+        'name': 'test',
+        'password': 'bad_password'
+    }
+
+    request, response = httpapp.test_client.post('/login', data=json.dumps(data))
+
+    assert response.status == 403
 
     data = {
         'name': 'test',
@@ -43,5 +37,35 @@ def test_auth(httpapp):
     }
 
     request, response = httpapp.test_client.post('/login', data=json.dumps(data))
+
+    assert response.status == 200
+
+def test_send_mail(httpapp):
+    data = {
+        'name': 'test',
+        'password': 'test_pass'
+    }
+
+    request, response = httpapp.test_client.post('/login', data=json.dumps(data))
+
+    assert response.status == 200
+
+    data = {
+        "recipients":
+        [
+            {"address":"alt.n2-75zy2uk@yopmail.com","type":"to"}, # test_byemail
+            {"address":"alt.n2-75zy2uk@yopmail.com","type":"cc"}
+        ],
+        "subject":"Test mail",
+        "content":"Content\nMultiline",
+        "attachments":[
+            {
+                "filename":"testfile.txt",
+                "b64":"VGVzdAo="
+            }
+        ]
+    }
+    cookies = {'session_key': response.cookies['session_key'].value}
+    request, response = httpapp.test_client.post('/api/sendmail/', data=json.dumps(data), cookies=cookies)
 
     assert response.status == 200

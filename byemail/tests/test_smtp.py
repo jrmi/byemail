@@ -5,8 +5,9 @@ import asyncio
 import smtplib
 from unittest import mock
 
-from byemail import smtp
+from byemail import smtp, mailutils
 from byemail.account import account_manager
+
 
 from . import commons
 
@@ -76,7 +77,7 @@ def test_send(loop):
             }
 
 
-def test_send_middleware(loop):
+def test_send_process(loop):
 
     msend = smtp.MsgSender(loop)
 
@@ -89,13 +90,7 @@ def test_send_middleware(loop):
         'other@yopmail.com'
     ]
     
-    with mock.patch('byemail.smtp.MsgSender._relay_to') as smtp_send, \
-        mock.patch('byemail.smtp.settings') as set_mock:
-
-        set_mock.OUTGOING_MIDDLEWARES = [
-            'byemail.tests.test_smtp.fake_send_middleware',
-            'another.bad.middleware'
-        ]
+    with mock.patch('byemail.smtp.MsgSender._relay_to') as smtp_send:
 
         f = asyncio.Future(loop=loop)
         f.set_result(
@@ -106,10 +101,36 @@ def test_send_middleware(loop):
         )
         smtp_send.return_value = f
 
-        with pytest.raises(ModuleNotFoundError):
-            loop.run_until_complete(msend.send(msg, from_addr, to_addrs))
+        result = loop.run_until_complete(msend.send(msg, from_addr, to_addrs))
 
-        assert count == 1
+        print(result)
+
+        assert result == {
+                'spam@pouetpouetpouet.com': {'status': 'ERROR', 'reason': 'MX_NOT_FOUND'}, 
+                'byemail@yopmail.com': {'status': 'DELIVERED', 'stmp_info': ('250', 'Delivered')}, 
+                'other@yopmail.com': {'status': 'ERROR', 'reason': 'SMTP_ERROR', 'smtp_info': ('534', 'Fail for any reason')}
+            }
+
+    with mock.patch('byemail.smtp.MsgSender._relay_to') as smtp_send:
+
+        f = asyncio.Future(loop=loop)
+        exc = smtplib.SMTPRecipientsRefused(
+            {
+                'byemail@yopmail.com': ('452', 'Requested action not taken'),
+                'other@yopmail.com': ('345', 'Another reason')
+            }
+        )
+        f.set_exception(exc)
+        smtp_send.return_value = f
+
+        result = loop.run_until_complete(msend.send(msg, from_addr, to_addrs))
+
+        print(result)
+        assert result == {
+            'spam@pouetpouetpouet.com': {'status': 'ERROR', 'reason': 'MX_NOT_FOUND'}, 
+            'byemail@yopmail.com': {'status': 'ERROR', 'reason': 'SMTP_ERROR', 'smtp_info': ('452', 'Requested action not taken')}, 
+            'other@yopmail.com': {'status': 'ERROR', 'reason': 'SMTP_ERROR', 'smtp_info': ('345', 'Another reason')}
+            }
 
 
 def test_receive(loop):
@@ -150,3 +171,33 @@ def test_receive(loop):
         loop.run_until_complete(msg_handler.handle_DATA('127.0.0.1', session, envelope))
 
         storage_mock.store_msg.assert_called_once()
+
+
+def test_send_mail(loop, fake_account, msg_test):
+
+    from_addr = mailutils.parse_email("test@example.com")
+    to_addrs = [
+        mailutils.parse_email('bad@inbox.mailtrap.io'), 
+    ]
+
+    # First with bad recipient
+    result = loop.run_until_complete(smtp.send_mail(fake_account, msg_test, from_addr, to_addrs))
+
+    print(result)
+    
+    assert result['delivery_status'] == {
+        'bad@inbox.mailtrap.io': {'reason': 'SMTP_ERROR', 'smtp_info': "(554, b'5.5.1 Error: no inbox for this email')", 'status': 'ERROR'},
+    }
+
+    # Then good recipient
+    to_addrs = [
+        mailutils.parse_email('alt.n2-75zy2uk@yopmail.com'), 
+    ]
+
+    result = loop.run_until_complete(smtp.send_mail(fake_account, msg_test, from_addr, to_addrs))
+
+    print(result)
+
+    assert result['delivery_status'] == {
+        'alt.n2-75zy2uk@yopmail.com': {'status': 'DELIVERED', 'stmp_info': ('250', 'Delivered')},
+    }

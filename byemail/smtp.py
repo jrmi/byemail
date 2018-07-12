@@ -238,9 +238,10 @@ class MsgSender():
                 try_another_mx = False
                 try:
                     result = await self._relay_to(mx, from_addr, addresses, msg)
+                    
                     # Here result is good for at least one recipient
                     for addr in addresses:
-                        addr_status = result[addr]
+                        addr_status = result.get(addr, ('250', 'Delivered'))
                         if addr_status[0].startswith('25'):
                             status[addr] = {
                                 'status': 'DELIVERED',
@@ -260,14 +261,18 @@ class MsgSender():
                             'reason': 'SMTP_ERROR',
                             'smtp_info': e.recipients[addr]
                         }
-                except smtplib.SMTPException:
+                    logger.exception("Fail to send mail")
+
+                except smtplib.SMTPException as e:
                     # Failed for all recipients
                     for addr in addresses:
                         status[addr] = {
                             'status': 'ERROR',
                             'reason': 'SMTP_ERROR',
-                            'smtp_info': addresses
+                            'smtp_info': str(e)
                         }
+                    logger.exception("Fail to send mail")
+
                 except TimeoutError:
                     # Can't connect
                     try_another_mx = True
@@ -277,6 +282,7 @@ class MsgSender():
                             'reason': 'MX_TIMEOUT'
                         }
                     logger.exception('Timeout error')
+
                 except:
                     for addr in addresses:
                         status[addr] = {
@@ -312,4 +318,42 @@ class MsgSender():
                 result[addr] = ('250', 'Delivered')
         else:
             with smtplib.SMTP(host=host, port=port) as smtp:
-                return smtp.send_message(msg, from_addr=from_addr, to_addrs=to_addrs)
+                result = smtp.send_message(msg, from_addr=from_addr, to_addrs=to_addrs)
+                
+        return result
+
+
+async def send_mail(account, msg, from_addr, all_addrs, loop=None):
+    """ Complete process to send an email """
+
+    mail_sender = MsgSender(loop=loop)
+
+    msg_to_store = await mailutils.extract_data_from_msg(msg)
+
+    # First we store it
+    saved_msg = await storage.store_msg(
+        msg_to_store,
+        account=account,
+        from_addr=from_addr,
+        to_addrs=all_addrs,
+        incoming=False
+    )
+
+    saved_msg['status'] = 'sending'
+
+    await storage.update_mail(saved_msg)
+
+    # Then we send it
+    delivery_status = await mail_sender.send(
+        msg,
+        from_addr=from_addr.addr_spec,
+        to_addrs=[a.addr_spec for a in all_addrs]
+    )
+
+    # Then we save status and delivery status
+    saved_msg['status'] = 'sent'
+    saved_msg['delivery_status'] = delivery_status
+
+    await storage.update_mail(saved_msg)
+
+    return saved_msg

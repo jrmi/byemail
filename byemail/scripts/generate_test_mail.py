@@ -11,7 +11,6 @@ from byemail.account import account_manager
 
 async def main():
     settings.init_settings()
-    storage.init_storage()
     fake = Faker()
 
     for account_name, account in account_manager.accounts.items():
