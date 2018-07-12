@@ -93,6 +93,9 @@ async def extract_data_from_msg(msg):
         'attachments': []
     }
 
+    if msg['Cc']:
+        msg_out['carboncopy'] = list(msg['Cc'].addresses)
+
     for ind, att in enumerate(msg.iter_attachments()):
         msg_out['attachments'].append({
             'index': ind,

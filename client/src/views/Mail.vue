@@ -19,7 +19,19 @@
     </v-toolbar>
 
     <div class="mail-header">
-      <span v-for="to of currentMail().recipients" :key="to.addr_spec">To: {{to.addr_spec}}</span>
+      <span class="to" v-for="to of currentMail().recipients" :key="to.addr_spec">
+        To: {{to.addr_spec}}
+        <span v-if="currentMail().delivery_status[to.addr_spec].status !== 'DELIVERED'">
+          <v-icon>error</v-icon>
+        </span>
+      </span>|
+      <span class="cc" v-for="cc of currentMail().carboncopy" :key="cc.addr_spec">
+        Cc: {{cc.addr_spec}} <span v-if="!currentMail().delivery_status[cc.addr_spec].status !== 'DELIVERED'">
+          <v-icon color="error" @click.stop="currentRecipient = {dest: cc, status: currentMail().delivery_status[cc.addr_spec]}; dialog = true">
+            error
+          </v-icon>
+        </span>
+      </span>
     </div>
 
     <message-content :message="currentMail()" />
@@ -27,6 +39,47 @@
     <div class="mail-actions" v-if="showCompose">
       <quick-reply :mailbox="currentMailbox()" :message="currentMail()" @reply="reply" />
     </div>
+
+    <v-dialog
+      v-model="dialog"
+      max-width="300"
+    >
+      <v-card>
+        <v-card-title class="headline">Delivery fails...</v-card-title>
+
+        <v-card-text>
+          Delivery failure for {{currentRecipient.dest.addr_spec}}.
+          <br/>
+          Failure reason :
+          <br/>
+          {{currentRecipient.status.reason}} : {{currentRecipient.status.smtp_info}}
+          <br/>
+          
+          <br/>
+          Do you want to resend it ?
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn
+            color="error darken-1"
+            flat="flat"
+            @click="dialog = false"
+          >
+            Cancel
+          </v-btn>
+
+          <v-btn
+            color="green darken-1"
+            flat="flat"
+            @click="dialog = false"
+          >
+            Resend
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
   </v-card>
 </template>
@@ -80,6 +133,8 @@ export default {
     return {
       showCompose: false,
       showMail: true,
+      dialog: false,
+      currentRecipient: {dest: '', status: {}},
     }
   }
 }

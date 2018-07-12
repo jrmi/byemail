@@ -11,29 +11,6 @@
       </ul>
     </div>
   </div>
-
-
-  <!--div class="mail" v-if="message && showMail">
-
-
-    <div class="mail-header">
-      <span v-for="to of message.recipients" :key="to.addr_spec">To: {{to.addr_spec}}</span>
-    </div>
-
-    <div class="mail-message">
-      <p class="text" v-if="message['body-type'] == 'text/plain'" v-html="message.body"></p>
-      <iframe class="html" v-if="message['body-type'] == 'text/html'" :src="message.iframeSrc">
-        {{message.body}}
-      </iframe>
-      <div class="mail-attachments" v-if="message.attachments.length">
-        <h3>{{message.attachments.length}} <md-icon>attachment</md-icon></h3>
-        <ul v-for="att of message.attachments" :key="att.filename">
-          <li><a :href="att.url" :download="att.filename">{{att.filename}}</a></li>
-        </ul>
-      </div>
-    </div>
-
-  </div-->
 </template>
 
 <script>

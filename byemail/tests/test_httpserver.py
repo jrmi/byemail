@@ -13,10 +13,6 @@ def httpapp(settings):
     from byemail.httpserver import get_app
     return get_app()
 
-@pytest.fixture
-def auth_app():
-    pass
-
 def test_basic(httpapp):
     request, response = httpapp.test_client.get('/')
     assert response.status == 200
@@ -46,6 +42,7 @@ def test_send_mail(httpapp):
         'password': 'test_pass'
     }
 
+    # Authenticate
     request, response = httpapp.test_client.post('/login', data=json.dumps(data))
 
     assert response.status == 200
