@@ -6,8 +6,6 @@ from unittest import mock
 
 from byemail import mailutils
 
-from .commons import get_msg_test
-
 BASEDIR = os.path.dirname(__file__)
 DATADIR = os.path.join(BASEDIR, 'data')
 
@@ -46,11 +44,10 @@ def test_make_msg(loop):
         assert msg['From'] == str(from_address)
 
 
-def test_extract_data(loop):
+def test_extract_data(loop, msg_test):
     """ Test mail extraction data """
-    msg = get_msg_test()
 
-    data = loop.run_until_complete(mailutils.extract_data_from_msg(msg))
+    data = loop.run_until_complete(mailutils.extract_data_from_msg(msg_test))
 
     assert data['from'].addr_spec == "joe@football.example.com"
 

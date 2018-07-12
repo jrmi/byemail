@@ -10,6 +10,7 @@ from byemail.account import account_manager
 
 
 from . import commons
+from . import conftest
 
 BASEDIR = os.path.dirname(__file__)
 DATADIR = os.path.join(BASEDIR, 'data')
@@ -21,11 +22,9 @@ async def fake_send_middleware(msg, from_addr, to_addrs):
     print("FAKE middleware called")
     count += 1
     
-def test_send(loop):
+def test_send(loop, msg_test):
 
     msend = smtp.MsgSender(loop)
-
-    msg = commons.get_msg_test()
 
     from_addr = "test@example.com"
     to_addrs = [
@@ -45,7 +44,7 @@ def test_send(loop):
         )
         smtp_send.return_value = f
 
-        result = loop.run_until_complete(msend.send(msg, from_addr, to_addrs))
+        result = loop.run_until_complete(msend.send(msg_test, from_addr, to_addrs))
 
         print(result)
 
@@ -67,7 +66,7 @@ def test_send(loop):
         f.set_exception(exc)
         smtp_send.return_value = f
 
-        result = loop.run_until_complete(msend.send(msg, from_addr, to_addrs))
+        result = loop.run_until_complete(msend.send(msg_test, from_addr, to_addrs))
 
         print(result)
         assert result == {
@@ -77,11 +76,9 @@ def test_send(loop):
             }
 
 
-def test_send_process(loop):
+def test_send_process(loop, msg_test):
 
     msend = smtp.MsgSender(loop)
-
-    msg = commons.get_msg_test()
 
     from_addr = "test@example.com"
     to_addrs = [
@@ -101,7 +98,7 @@ def test_send_process(loop):
         )
         smtp_send.return_value = f
 
-        result = loop.run_until_complete(msend.send(msg, from_addr, to_addrs))
+        result = loop.run_until_complete(msend.send(msg_test, from_addr, to_addrs))
 
         print(result)
 
@@ -123,7 +120,7 @@ def test_send_process(loop):
         f.set_exception(exc)
         smtp_send.return_value = f
 
-        result = loop.run_until_complete(msend.send(msg, from_addr, to_addrs))
+        result = loop.run_until_complete(msend.send(msg_test, from_addr, to_addrs))
 
         print(result)
         assert result == {
@@ -158,7 +155,7 @@ def test_receive(loop):
         storage_mock.store_bad_msg.return_value = fut
 
         envelope = commons.objectview(dict(
-            content=commons.MAIL_TEST,
+            content=conftest.MAIL_TEST,
             mail_from="joe@football.example.com",
             rcpt_tos=["suzie@shopping.example.net"]
         ))

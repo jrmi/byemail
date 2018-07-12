@@ -54,7 +54,8 @@ def test_send_mail(httpapp):
         "recipients":
         [
             {"address":"alt.n2-75zy2uk@yopmail.com","type":"to"}, # test_byemail
-            {"address":"alt.n2-75zy2uk@yopmail.com","type":"cc"}
+            {"address":"alt.n2-75zy2uk@yopmail.com","type":"cc"},
+            {"address":"bad@inbox.mailtrap.io","type":"cc"}
         ],
         "subject":"Test mail",
         "content":"Content\nMultiline",
@@ -69,3 +70,8 @@ def test_send_mail(httpapp):
     request, response = httpapp.test_client.post('/api/sendmail/', data=json.dumps(data), cookies=cookies)
 
     assert response.status == 200
+
+    assert json.loads(response.body)['delivery_status'] == {
+        'alt.n2-75zy2uk@yopmail.com': {'status': 'DELIVERED', 'stmp_info': ['250', 'Delivered']}, 
+        'bad@inbox.mailtrap.io': {'reason': 'SMTP_ERROR', 'smtp_info': "(554, b'5.5.1 Error: no inbox for this email')", 'status': 'ERROR'}
+    }
