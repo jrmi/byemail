@@ -75,7 +75,7 @@
           <v-btn
             color="green darken-1"
             flat="flat"
-            @click="dialog = false"
+            @click="dialog = false; resend(currentRecipient.dest.addr_spec)"
           >
             Resend
           </v-btn>
@@ -117,6 +117,12 @@ export default {
         this.setLoading(false)
       })
     },
+    resend (to) {
+      this.setLoading(true)
+      this.resendMail({to}).then((response) => {
+        this.setLoading(false)
+      })
+    },
     ...mapGetters([
       'currentMail',
       'currentMailbox'
@@ -124,6 +130,7 @@ export default {
     ...mapActions([
       'markMailRead',
       'sendMail',
+      'resendMail',
       'setLoading'
     ])
   },

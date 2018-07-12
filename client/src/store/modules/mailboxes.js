@@ -103,6 +103,15 @@ const actions = {
       return promise
     })
   },
+  resendMail({dispatch, commit}, {to}) {
+    return Vue.http.post('/api/mail/' + state.mail.uid + '/resend', {to}).then(function (response) {
+      let promise = dispatch('getAllMailboxes')
+      if (state.current) {
+        promise = dispatch('getMailbox', {mailboxId: state.current.uid})
+      }
+      return promise
+    })
+  },
   resetDraft ({commit}) {
     let draft = {
       mailContent: '',
