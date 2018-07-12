@@ -13,16 +13,16 @@ that are unnecessary for most end users. We also need to add module like:
 
 All this is planned to be part of the same software.
 
-The webmail is also think with need of today. For example, mails are organised by contact and
-group of discussion. No need to search in your archive what your contact wrote six month earlier,
-it's in the current message flow, like sms.
+The webmail is also think with today needs. For instance, mails are organised by contact and
+groups of discussion. No need to search in your archive what your contact wrote you six month earlier,
+it's in the contact message list, like sms.
 
 With byemail, you install only one tool for everything.
 Some use cases:
 
 - Receiving mail for a family or small business,
 - Access your mail anywhere with integrated webmail,
-- Create a mailing list on the go,
+- Create a mailing list on the fly,
 - and more ...
 
 Advantages:
@@ -31,9 +31,14 @@ Advantages:
 - Easy configuration, everything in one file.
 - For small groups like famillies or small compagnies
 
+Some features:
+
+- Middleware to filter/modify/... incoming and outgoing mails
+- ...
+
 # Installation
 
-First install byemail to a virtualenv:
+First install byemail in a virtualenv:
 
 ```sh
 $ pipenv install byemail
@@ -61,5 +66,10 @@ $ byemail dnsconfig
 
 And copy (and adapt if necessary) the command result to your domain dns config.
 
+As root you can make a tunnel to the 25 port without root permission for the server by doing:
+
+```sh
+$ socat tcp-listen:25,reuseaddr,fork tcp:<hostname>:8025 > nohupsocket.out &
+```
 
 DISCLAIMER: This is a early not functionnal version. Don't hope use it in production now.
