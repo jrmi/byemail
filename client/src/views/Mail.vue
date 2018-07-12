@@ -21,14 +21,15 @@
     <div class="mail-header">
       <span class="to" v-for="mail of currentMail().recipients" :key="mail.addr_spec">
         To: {{mail.addr_spec}}
-        <span v-if="currentMail().delivery_status[mail.addr_spec].status !== 'DELIVERED'">
+        <span v-if="!currentMail().incoming && currentMail().delivery_status[mail.addr_spec].status !== 'DELIVERED'">
           <v-icon color="error" @click.stop="currentRecipient = {dest: mail, status: currentMail().delivery_status[mail.addr_spec]}; dialog = true">
             error
           </v-icon>
         </span>
       </span>|
       <span class="cc" v-for="mail of currentMail().carboncopy" :key="mail.addr_spec">
-        Cc: {{mail.addr_spec}} <span v-if="currentMail().delivery_status[mail.addr_spec].status !== 'DELIVERED'">
+        Cc: {{mail.addr_spec}}
+        <span v-if="!currentMail().incoming && currentMail().delivery_status[mail.addr_spec].status !== 'DELIVERED'">
           <v-icon color="error" @click.stop="currentRecipient = {dest: mail, status: currentMail().delivery_status[mail.addr_spec]}; dialog = true">
             error
           </v-icon>
@@ -56,7 +57,6 @@
           <br/>
           {{currentRecipient.status.reason}} : {{currentRecipient.status.smtp_info}}
           <br/>
-          
           <br/>
           Do you want to resend it ?
         </v-card-text>
@@ -143,7 +143,7 @@ export default {
       showCompose: false,
       showMail: true,
       dialog: false,
-      currentRecipient: {dest: '', status: {}},
+      currentRecipient: {dest: '', status: {}}
     }
   }
 }

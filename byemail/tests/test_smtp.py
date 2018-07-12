@@ -233,7 +233,7 @@ def test_resend_mail(loop, fake_account, msg_test):
         )
         smtp_send.return_value = f
 
-        result = loop.run_until_complete(smtp.resend_mail(fake_account, mail_to_resend, to_addrs[1]))
+        result = loop.run_until_complete(smtp.resend_mail(fake_account, mail_to_resend, [to_addrs[1]]))
 
     # Does the delivery status update ?
     assert mail_to_resend['delivery_status'] == {

@@ -35,19 +35,6 @@ COMMASPACE = ', '
 CRLF = b'\r\n'
 NLCRE = re.compile(br'\r\n|\r|\n')
 
-'''async def enrich(msg, from_addr, to_addrs):
-    msg['type'] = 'mail'
-
-    msg['original-sender'] = from_addr
-    msg['original-recipients'] = to_addrs
-
-    # First define uid
-    msg['uid'] = uuid.uuid4().hex
-
-    msg['account'] = account.name
-
-    msg['incoming'] = incoming
-    msg['unread'] = incoming'''
 
 class MsgHandler:
 
@@ -84,48 +71,27 @@ class MsgHandler:
     async def handle_DATA(self, server, session, envelope):
         print('Message From: %s, To: %s' % (envelope.mail_from, envelope.rcpt_tos))
 
-        # TODO handle message refused when spam or something
+        # TODO handle message refused when spam or something with middleware ?
         await self.local_delivery(envelope.rcpt_tos, server, session, envelope)
 
         return '250 Message accepted for delivery'
 
-    async def apply_middlewares(self, msg, from_addr, to_addrs):
-        for middleware in settings.INCOMING_MIDDLEWARES:
-            try:
-                module, _, func = middleware.rpartition(".")
-                mod = importlib.import_module(module)
-            except ModuleNotFoundError:
-                logger.error("Module %s can't be loaded !", middleware)
-                raise
-            else:
-                await getattr(mod, func)(msg, from_addr, to_addrs)
-
     async def local_delivery(self, rcpt_tos, server, session, envelope):
         for to in rcpt_tos:
-            logger.info('Local delivery for %s' % to)
+            logger.info('Local delivery for %s', to)
 
             try:
                 msg = BytesParser(policy=policy.default).parsebytes(envelope.content)
                 account = account_manager.get_account_for_address(to)
-                logger.info('Message delivered to account %s', account.name)
 
-                msg_data = await mailutils.extract_data_from_msg(msg)
-
-                await self.apply_middlewares(msg_data, envelope.mail_from, [to])
-
-                stored_msg = await storage.store_msg(
-                    msg_data,
-                    account=account,
-                    from_addr=envelope.mail_from,
-                    to_addrs=envelope.rcpt_tos
+                await store_mail(
+                    account, 
+                    msg, 
+                    envelope.mail_from, 
+                    envelope.rcpt_tos
                 )
 
-                await storage.store_content(stored_msg['uid'], msg.as_bytes())
-
-                stored_msg['status'] = 'received'
-
-                storage.update_mail(stored_msg)
-
+                logger.info('Message delivered to account %s', account.name)
             except:
                 import traceback; traceback.print_exc()
                 #import ipdb; ipdb.set_trace()
@@ -136,6 +102,7 @@ class MsgHandler:
 
 
 class MxRecord(object):
+    """ Ease MX selection """
 
     def __init__(self, domain, loop=None):
         self.domain = domain
@@ -206,24 +173,10 @@ class MsgSender():
 
         return result
 
-    async def apply_middlewares(self, msg, from_addr, to_addrs):
-        for middleware in settings.OUTGOING_MIDDLEWARES:
-            try:
-                module, _, func = middleware.rpartition(".")
-                print(func, module)
-            except ModuleNotFoundError:
-                logger.error("Module %s can't be loaded !", middleware)
-                raise
-            else:
-                mod = importlib.import_module(module)
-                await getattr(mod, func)(msg, from_addr, to_addrs)
-
     async def send(self, msg, from_addr, to_addrs):
         """ Relay message to other party """
 
         status = {}
-
-        await self.apply_middlewares(msg, from_addr, to_addrs)
 
         for fqdn, addresses in self.group_by_fqdn(to_addrs).items():
             try:
@@ -328,33 +281,68 @@ class MsgSender():
         return result
 
 
-async def send_mail(account, msg, from_addr, all_addrs, loop=None):
+async def apply_middlewares(msg, from_addr, recipients, incoming=True):
+    if incoming:
+        middlewares = settings.INCOMING_MIDDLEWARES 
+    else:
+        middlewares = settings.OUTGOING_MIDDLEWARES
+
+    for middleware in middlewares:
+        try:
+            module, _, func = middleware.rpartition(".")
+            mod = importlib.import_module(module)
+        except ModuleNotFoundError:
+            logger.error("Module %s can't be loaded !", middleware)
+            raise
+        else:
+            await getattr(mod, func)(
+                msg, 
+                from_addr=from_addr, 
+                recipients=recipients, 
+                incoming=incoming
+            )
+
+
+async def store_mail(account, msg, from_addr, recipients, incoming=True):
+    msg_data = await mailutils.extract_data_from_msg(msg)
+
+    await apply_middlewares(msg_data, from_addr, recipients, incoming)
+
+    stored_msg = await storage.store_msg(
+        msg_data,
+        account=account,
+        from_addr=from_addr,
+        to_addrs=recipients,
+        incoming=incoming
+    )
+
+    await storage.store_content(stored_msg['uid'], msg.as_bytes())
+
+    stored_msg['status'] = 'received' if incoming else 'sending'
+
+    await storage.update_mail(stored_msg)
+
+    return stored_msg
+
+
+async def send_mail(account, msg, from_addr, recipients, loop=None):
     """ Complete process to send an email """
 
     mail_sender = MsgSender(loop=loop)
 
-    msg_to_store = await mailutils.extract_data_from_msg(msg)
-
-    # First we store it
-    saved_msg = await storage.store_msg(
-        msg_to_store,
-        account=account,
-        from_addr=str(from_addr),
-        to_addrs=all_addrs,
+    saved_msg = await store_mail(
+        account,
+        msg,
+        from_addr,
+        recipients,
         incoming=False
     )
-
-    await storage.store_content(saved_msg['uid'], msg.as_bytes())
-
-    saved_msg['status'] = 'sending'
-
-    await storage.update_mail(saved_msg)
 
     # Then we send it
     delivery_status = await mail_sender.send(
         msg,
         from_addr=from_addr.addr_spec,
-        to_addrs=[a.addr_spec for a in all_addrs]
+        to_addrs=[a.addr_spec for a in recipients]
     )
 
     # Then we save status and delivery status
@@ -366,7 +354,7 @@ async def send_mail(account, msg, from_addr, all_addrs, loop=None):
     return saved_msg
 
 
-async def resend_mail(account, msg_to_resend, to, loop=None):
+async def resend_mail(account, msg_to_resend, recipients, loop=None):
     """ Complete process to send an email """
 
     mail_sender = MsgSender(loop=loop)
@@ -377,7 +365,7 @@ async def resend_mail(account, msg_to_resend, to, loop=None):
     delivery_status = await mail_sender.send(
         raw_msg,
         from_addr=msg_to_resend['from'].addr_spec,
-        to_addrs=[to.addr_spec]
+        to_addrs=[a.addr_spec for a in recipients]
     )
 
     # Then we save status and delivery status

@@ -68,7 +68,6 @@ const actions = {
   getMail ({commit}, {mailId}) {
     return Vue.http.get('/api/mail/' + mailId, { responseType: 'json' }).then(function (response) {
       const mail = response.body
-      
       mail.date = Moment(mail.date)
       if (mail['body-type'] === 'text/html') {
         mail.iframeSrc = 'data:text/html;charset=' + mail['body-charset'] + ',' + escape(mail.body)
@@ -103,7 +102,7 @@ const actions = {
       return promise
     })
   },
-  resendMail({dispatch, commit}, {to}) {
+  resendMail ({dispatch, commit}, {to}) {
     return Vue.http.post('/api/mail/' + state.mail.uid + '/resend', {to}).then(function (response) {
       let promise = dispatch('getAllMailboxes')
       if (state.current) {

@@ -205,8 +205,8 @@ def init_app():
             raise Forbidden("You don't have permission to resend this mail.")
 
         data = request.json
-        to = mailutils.parse_email(data['to'])
+        tos = [mailutils.parse_email(data['to'])]
 
-        result = await resend_mail(account, mail_to_resend, to)
+        result = await resend_mail(account, mail_to_resend, tos)
 
         return json(result)

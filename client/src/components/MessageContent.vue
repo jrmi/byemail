@@ -14,8 +14,6 @@
 </template>
 
 <script>
-// import Moment from 'moment'
-import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'message-content',
