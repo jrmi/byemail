@@ -69,6 +69,6 @@ def test_send_mail(httpapp):
     assert response.status == 200
 
     assert json.loads(response.body)['delivery_status'] == {
-        'alt.n2-75zy2uk@yopmail.com': {'status': 'DELIVERED', 'stmp_info': ['250', 'Delivered']}, 
+        'alt.n2-75zy2uk@yopmail.com': {'status': 'DELIVERED', 'smtp_info': ['250', 'Delivered']}, 
         'bad@inbox.mailtrap.io': {'reason': 'SMTP_ERROR', 'smtp_info': "(554, b'5.5.1 Error: no inbox for this email')", 'status': 'ERROR'}
     }

@@ -119,6 +119,9 @@ class MsgHandler:
                     from_addr=envelope.mail_from,
                     to_addrs=envelope.rcpt_tos
                 )
+
+                await storage.store_content(stored_msg['uid'], msg.as_bytes())
+
                 stored_msg['status'] = 'received'
 
                 storage.update_mail(stored_msg)
@@ -149,7 +152,7 @@ class MxRecord(object):
         if self.expired:
             self._records, self._expiration = await self._resolve()
         if not self._records:
-            msg = 'No usable DNS records found: %s' % self.domain
+            msg = f'No usable DNS records found: {self.domain}'
             raise ValueError(msg)
         return self._records
 
@@ -245,7 +248,7 @@ class MsgSender():
                         if addr_status[0].startswith('25'):
                             status[addr] = {
                                 'status': 'DELIVERED',
-                                'stmp_info': addr_status
+                                'smtp_info': addr_status
                             }
                         else:
                             status[addr] = {
@@ -279,15 +282,17 @@ class MsgSender():
                     for addr in addresses:
                         status[addr] = {
                             'status': 'ERROR',
-                            'reason': 'MX_TIMEOUT'
+                            'reason': 'MX_TIMEOUT',
+                            'smtp_info': 'Timeout while trying to access MX'
                         }
                     logger.exception('Timeout error')
 
-                except:
+                except Exception as e:
                     for addr in addresses:
                         status[addr] = {
                             'status': 'ERROR',
-                            'reason': 'UNKNOWN_ERROR'
+                            'reason': 'UNKNOWN_ERROR',
+                            'smtp_info': f'Unkwnow error: {e}'
                         }
                     logger.exception('Unknown error while sending to %s', mx)
 
@@ -334,10 +339,12 @@ async def send_mail(account, msg, from_addr, all_addrs, loop=None):
     saved_msg = await storage.store_msg(
         msg_to_store,
         account=account,
-        from_addr=from_addr,
+        from_addr=str(from_addr),
         to_addrs=all_addrs,
         incoming=False
     )
+
+    await storage.store_content(saved_msg['uid'], msg.as_bytes())
 
     saved_msg['status'] = 'sending'
 
@@ -357,3 +364,25 @@ async def send_mail(account, msg, from_addr, all_addrs, loop=None):
     await storage.update_mail(saved_msg)
 
     return saved_msg
+
+
+async def resend_mail(account, msg_to_resend, to, loop=None):
+    """ Complete process to send an email """
+
+    mail_sender = MsgSender(loop=loop)
+
+    raw_msg = await storage.get_content_msg(msg_to_resend['uid'])
+
+    # We send it
+    delivery_status = await mail_sender.send(
+        raw_msg,
+        from_addr=msg_to_resend['from'].addr_spec,
+        to_addrs=[to.addr_spec]
+    )
+
+    # Then we save status and delivery status
+    msg_to_resend['delivery_status'].update(delivery_status)
+
+    await storage.update_mail(msg_to_resend)
+
+    return msg_to_resend

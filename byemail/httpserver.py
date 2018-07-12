@@ -16,7 +16,7 @@ from byemail.smtp import MsgSender
 from byemail.account import account_manager
 from byemail import mailutils
 from byemail.conf import settings
-from byemail.smtp import send_mail
+from byemail.smtp import send_mail, resend_mail
 
 logger = logging.getLogger(__name__)
 
@@ -190,5 +190,23 @@ def init_app():
         msg = mailutils.make_msg(data['subject'], data['content'], from_addr, tos, ccs, attachments)
         
         result = await send_mail(account, msg, from_addr, all_addrs)
+
+        return json(result)
+
+    @app.route("/api/mail/<mail_id>/resend", methods=['POST'])
+    @auth.login_required(user_keyword='account', handle_no_auth=handle_no_auth)
+    async def mail_resend(request, mail_id, account):
+        """ Resend an email by uid for selected recipient"""
+
+        mail_to_resend = await storage.get_mail(mail_id)
+
+        # Check permissions
+        if mail_to_resend['account'] != account.name:
+            raise Forbidden("You don't have permission to resend this mail.")
+
+        data = request.json
+        to = mailutils.parse_email(data['to'])
+
+        result = await resend_mail(account, mail_to_resend, to)
 
         return json(result)

@@ -19,15 +19,17 @@
     </v-toolbar>
 
     <div class="mail-header">
-      <span class="to" v-for="to of currentMail().recipients" :key="to.addr_spec">
-        To: {{to.addr_spec}}
-        <span v-if="currentMail().delivery_status[to.addr_spec].status !== 'DELIVERED'">
-          <v-icon>error</v-icon>
+      <span class="to" v-for="mail of currentMail().recipients" :key="mail.addr_spec">
+        To: {{mail.addr_spec}}
+        <span v-if="currentMail().delivery_status[mail.addr_spec].status !== 'DELIVERED'">
+          <v-icon color="error" @click.stop="currentRecipient = {dest: mail, status: currentMail().delivery_status[mail.addr_spec]}; dialog = true">
+            error
+          </v-icon>
         </span>
       </span>|
-      <span class="cc" v-for="cc of currentMail().carboncopy" :key="cc.addr_spec">
-        Cc: {{cc.addr_spec}} <span v-if="!currentMail().delivery_status[cc.addr_spec].status !== 'DELIVERED'">
-          <v-icon color="error" @click.stop="currentRecipient = {dest: cc, status: currentMail().delivery_status[cc.addr_spec]}; dialog = true">
+      <span class="cc" v-for="mail of currentMail().carboncopy" :key="mail.addr_spec">
+        Cc: {{mail.addr_spec}} <span v-if="currentMail().delivery_status[mail.addr_spec].status !== 'DELIVERED'">
+          <v-icon color="error" @click.stop="currentRecipient = {dest: mail, status: currentMail().delivery_status[mail.addr_spec]}; dialog = true">
             error
           </v-icon>
         </span>

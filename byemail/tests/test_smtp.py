@@ -50,7 +50,7 @@ def test_send(loop, msg_test):
 
         assert result == {
                 'spam@pouetpouetpouet.com': {'status': 'ERROR', 'reason': 'MX_NOT_FOUND'}, 
-                'byemail@yopmail.com': {'status': 'DELIVERED', 'stmp_info': ('250', 'Delivered')}, 
+                'byemail@yopmail.com': {'status': 'DELIVERED', 'smtp_info': ('250', 'Delivered')}, 
                 'other@yopmail.com': {'status': 'ERROR', 'reason': 'SMTP_ERROR', 'smtp_info': ('534', 'Fail for any reason')}
             }
 
@@ -104,7 +104,7 @@ def test_send_process(loop, msg_test):
 
         assert result == {
                 'spam@pouetpouetpouet.com': {'status': 'ERROR', 'reason': 'MX_NOT_FOUND'}, 
-                'byemail@yopmail.com': {'status': 'DELIVERED', 'stmp_info': ('250', 'Delivered')}, 
+                'byemail@yopmail.com': {'status': 'DELIVERED', 'smtp_info': ('250', 'Delivered')}, 
                 'other@yopmail.com': {'status': 'ERROR', 'reason': 'SMTP_ERROR', 'smtp_info': ('534', 'Fail for any reason')}
             }
 
@@ -196,5 +196,47 @@ def test_send_mail(loop, fake_account, msg_test):
     print(result)
 
     assert result['delivery_status'] == {
-        'alt.n2-75zy2uk@yopmail.com': {'status': 'DELIVERED', 'stmp_info': ('250', 'Delivered')},
+        'alt.n2-75zy2uk@yopmail.com': {'status': 'DELIVERED', 'smtp_info': ('250', 'Delivered')},
+    }
+
+
+def test_resend_mail(loop, fake_account, msg_test):
+
+    from_addr = mailutils.parse_email("test@example.com")
+
+    to_addrs = [
+        mailutils.parse_email('byemail@yopmail.com'), 
+        mailutils.parse_email('other@yopmail.com'),
+    ]
+
+    with mock.patch('byemail.smtp.MsgSender._relay_to') as smtp_send:
+        f = asyncio.Future(loop=loop)
+        f.set_result(
+            {
+                'byemail@yopmail.com': ('250', 'Delivered'),
+                'other@yopmail.com': ('534', 'Fail for any reason')
+            },
+        )
+        smtp_send.return_value = f
+
+        mail_to_resend = loop.run_until_complete(smtp.send_mail(fake_account, msg_test, from_addr, to_addrs))
+
+    assert mail_to_resend['delivery_status'] == {
+        'byemail@yopmail.com': {'status': 'DELIVERED', 'smtp_info': ('250', 'Delivered')}, 
+        'other@yopmail.com': {'status': 'ERROR', 'reason': 'SMTP_ERROR', 'smtp_info': ('534', 'Fail for any reason')}
+    }
+
+    with mock.patch('byemail.smtp.MsgSender._relay_to') as smtp_send:
+        f = asyncio.Future(loop=loop)
+        f.set_result(
+            {},
+        )
+        smtp_send.return_value = f
+
+        result = loop.run_until_complete(smtp.resend_mail(fake_account, mail_to_resend, to_addrs[1]))
+
+    # Does the delivery status update ?
+    assert mail_to_resend['delivery_status'] == {
+        'byemail@yopmail.com': {'status': 'DELIVERED', 'smtp_info': ('250', 'Delivered')}, 
+        'other@yopmail.com': {'status': 'DELIVERED', 'smtp_info': ('250', 'Delivered')}
     }
