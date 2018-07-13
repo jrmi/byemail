@@ -1,61 +1,63 @@
 <template>
 <v-container grid-list-md text-xs-left>
   <v-form>
-      <div class="recipients">
-
-        <v-layout row wrap v-for="(recipient, index) in recipients" :key="recipient.id" >
-          <v-flex xs2>
-            <v-select
-              v-model="recipient.type"
-              :items="recipientTypes"
-            ></v-select>
+      <v-layout row wrap>
+        <v-flex xs7>
+          <v-layout class="recipients" row wrap v-for="(recipient, index) in recipients" :key="recipient.id" >
+            <v-flex xs1>
+              <v-select
+                v-model="recipient.type"
+                :items="recipientTypes"
+              ></v-select>
             </v-flex>
-            <v-flex xs9>
-            <v-autocomplete
-              v-model="recipient.address"
-              :items="recipient.entries"
-              :loading="recipient.isLoading"
-              :search-input.sync="recipient.search"
-              item-text="name"
-              item-value="name"
-            >
-              Recipient
-            </v-autocomplete>
-          </v-flex>
-          <v-flex xs1>
-            <v-btn color="error" icon @click="recipients.splice(index, 1)" v-if="index >= 1">
-              <v-icon>clear</v-icon>
-            </v-btn>
-          </v-flex>
-        </v-layout>
-        <v-btn @click="addRecipient()">
-          Add recipient
-        </v-btn>
-      </div>
+            <v-flex xs10>
+              <v-autocomplete
+                v-model="recipient.address"
+                :items="recipient.entries"
+                :loading="recipient.isLoading"
+                :search-input.sync="recipient.search"
+                item-text="name"
+                item-value="name"
+              >
+                Recipient
+              </v-autocomplete>
+            </v-flex>
+            <v-flex xs1>
+              <v-btn color="error" icon @click="recipients.splice(index, 1)" v-if="index >= 1">
+                <v-icon>clear</v-icon>
+              </v-btn>
+            </v-flex>
+          </v-layout>
+          <v-btn @click="addRecipient()">
+            Add recipient
+          </v-btn>
+        </v-flex>
+
+        <v-flex xs5 class="attachments">
+          <v-layout row wrap v-for="(attachment, index) in attachments" :key="attachment.id" >
+
+            <v-flex xs11>
+              <v-text-field
+                v-model="attachment.filename"
+                type="file"
+                @click="attachment.files = $event.target.files"
+                prepend-icon='attach_file'
+              >
+              </v-text-field>
+            </v-flex>
+
+            <v-flex xs1>
+              <v-btn color="error" icon @click="attachments.splice(index, 1)">
+                <v-icon>clear</v-icon>
+              </v-btn>
+            </v-flex>
+
+          </v-layout>
+          <v-btn @click="addAttachment()">Add attachment</v-btn>
+        </v-flex>
+      </v-layout>
+
       <hr />
-      <div class="attachments">
-        <v-layout row wrap v-for="(attachment, index) in attachments" :key="attachment.id" >
-
-          <v-flex xs11>
-            <v-text-field
-              v-model="attachment.filename"
-              type="file"
-              @click="attachment.files = $event.target.files"
-              prepend-icon='attach_file'
-            >
-            </v-text-field>
-          </v-flex>
-
-          <v-flex xs1>
-            <v-btn color="error" icon @click="attachments.splice(index, 1)">
-              <v-icon>clear</v-icon>
-            </v-btn>
-          </v-flex>
-
-        </v-layout>
-
-        <v-btn @click="addAttachment()">Add attachment</v-btn>
-      </div>
 
       <div class="mail-subject">
         <v-text-field
@@ -67,6 +69,7 @@
 
       <div class="mail-content">
           <v-textarea
+              box
               v-model="mailContent"
               label="Content"
           ></v-textarea>
