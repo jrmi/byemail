@@ -41,11 +41,6 @@
     "last 2 versions",
     "not ie <= 8"
   ],
-  "description": "A byemail web client",
-  "author": "Jeremie Pardou-Piquemal <jrmi@jeremiez.net>",
-  "proxy": {
-    "/api": "http://localhost:8000",
-    "/login": "http://localhost:8000",
-    "/logout": "http://localhost:8000"
-  }
+  "description": "The byemail web client",
+  "author": "Jeremie Pardou-Piquemal <jrmi@jeremiez.net>"
 }
