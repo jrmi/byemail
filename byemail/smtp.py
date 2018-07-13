@@ -308,6 +308,14 @@ async def store_mail(account, msg, from_addr, recipients, incoming=True):
 
     await apply_middlewares(msg_data, from_addr, recipients, incoming)
 
+    # First define uid
+    msg_data['uid'] = uuid.uuid4().hex
+
+    msg_data['account'] = account.name
+
+    msg_data['original-sender'] = from_addr
+    msg_data['original-recipients'] = recipients
+
     stored_msg = await storage.store_msg(
         msg_data,
         account=account,

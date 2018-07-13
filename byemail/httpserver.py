@@ -210,3 +210,15 @@ def init_app():
         result = await resend_mail(account, mail_to_resend, tos)
 
         return json(result)
+
+    @app.route("/api/contacts/search", methods=['GET'])
+    @auth.login_required(user_keyword='account', handle_no_auth=handle_no_auth)
+    async def contacts_search(request, account):
+        text = request.args.get('text', '')
+
+        if not text:
+            return json([])
+
+        results = await storage.contacts_search(account, text)
+
+        return json(results)

@@ -32,7 +32,7 @@ def make_msg(subject, content, from_addr, tos=None, ccs=None, attachments=None):
     msg.set_content(content)
     msg['From'] = from_addr
     msg['Subject'] = subject
-    msg['Message-Id'] =  make_msgid()
+    msg['Message-ID'] =  make_msgid()
 
     if tos:
         msg['To'] = tos
@@ -76,6 +76,7 @@ async def extract_data_from_msg(msg):
     msg_out = {
         'status': 'new',
         'subject': msg['Subject'],
+        # TODO rename this field
         'received': datetime.datetime.now().isoformat(),
         'from': msg['From'].addresses[0],
         'recipients': list(msg['To'].addresses),

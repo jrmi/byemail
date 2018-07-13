@@ -47,7 +47,6 @@ class Backend():
     def __init__(self, datadir="data/", loop=None):
         super().__init__()
 
-
         # Post init_settings things
         if not os.path.isdir(datadir):
             os.makedirs(datadir)
@@ -62,6 +61,7 @@ class Backend():
         self.maildb = TinyDB(os.path.join(datadir, 'maildb.json'))
 
     async def get(self, filter):
+        """ Helper to get an item by filter """
         results = self.db.search(filter)
         if len(results) < 1:
             raise DoesntExists()
@@ -70,6 +70,7 @@ class Backend():
         return results[0]
 
     async def get_or_create(self, filter, default):
+        """ Helper to get or create an item by filter with default value """
         try:
             result = await self.get(filter)
             return result
@@ -83,7 +84,7 @@ class Backend():
         self.db.insert(bad_msg)
 
     async def store_content(self, uid, content):
-        """ Store raw content """
+        """ Store raw message content """
         b64_content = base64.b64encode(content).decode('utf-8'),
         return self.maildb.insert({'uid': uid, 'content': b64_content})
 
@@ -102,27 +103,36 @@ class Backend():
 
         return msg
 
-    async def store_msg(self, msg, account, from_addr, to_addrs, incoming=True, extra_data=None, extra_mailbox_data=None):
-        """ Store EmailMessage in database """
+    async def get_or_create_mailbox(self, account, address, name):
+        """ Create a mailbox """
+
+        Mailbox = Query()
+
+        mailbox = await self.get_or_create(
+            (Mailbox.type == 'mailbox') &
+            (Mailbox['address'] == address) &
+            (Mailbox['account'] == account.name), {
+                'uid': uuid.uuid4().hex,
+                'account': account.name,
+                'type': 'mailbox',
+                'address': address,
+                'name': name,
+                'last_message': None,
+                'messages': [],
+            }
+        )
+        return mailbox
+
+    async def store_msg(self, msg, account, from_addr, to_addrs, incoming=True, extra_data=None, extra_mailbox_message_data=None):
+        """ Store message in database """
 
         msg['type'] = 'mail'
-
-        msg['original-sender'] = from_addr
-        msg['original-recipients'] = to_addrs
-
-        # First define uid
-        msg['uid'] = uuid.uuid4().hex
-
-        msg['account'] = account.name
 
         msg['incoming'] = incoming
         msg['unread'] = incoming
 
         if extra_data:
             msg.update(extra_data)
-
-        # Then save data in maildb
-        #await self.store_content(msg['uid'], msg.as_bytes())
 
         eid = self.db.insert(msg)
 
@@ -142,7 +152,7 @@ class Backend():
 
         for mailbox_address, mailbox_name in mailboxes:
             # Get mailbox if exists or create it
-            mailbox = await self.get_or_create(
+            '''mailbox = await self.get_or_create(
                 (Mailbox.type == 'mailbox') &
                 (Mailbox['address'] == mailbox_address) &
                 (Mailbox['account'] == account.name), {
@@ -154,22 +164,23 @@ class Backend():
                     'last_message': msg['date'],
                     'messages': [],
                 }
-            )
+            )'''
+            mailbox = await self.get_or_create_mailbox(account, mailbox_address, mailbox_name)
 
             # Update last_message date
-            if mailbox['last_message'] < msg['date']:
+            if mailbox['last_message'] is None or mailbox['last_message'] < msg['date']:
                 mailbox['last_message'] = msg['date']
 
-            mailbox_data = {
+            mailbox_message_data = {
                 'id': eid,
                 'uid': msg['uid'],
                 'date': msg['date']
             }
 
-            if extra_mailbox_data:
-                mailbox_data.update(extra_mailbox_data)
+            if extra_mailbox_message_data:
+                mailbox_message_data.update(extra_mailbox_message_data)
 
-            mailbox['messages'].append(mailbox_data)
+            mailbox['messages'].append(mailbox_message_data)
 
             self.db.update(mailbox, (Mailbox.type == 'mailbox') & (Mailbox.uid == mailbox['uid']))
 
@@ -177,6 +188,7 @@ class Backend():
 
     async def get_mailboxes(self, account):
         """ Return all mailboxes in db with unread message count and total """
+
         Mailbox = Query()
         Message = Query()
 
@@ -191,6 +203,7 @@ class Backend():
         return mailboxes
 
     async def get_mailbox(self, mailbox_id):
+        """ Return the selected mailboxx """
         Mailbox = Query()
         Message = Query()
 
@@ -211,6 +224,8 @@ class Backend():
         return mailbox
 
     async def get_mail(self, mail_uid):
+        """ Get message by uid """
+
         Message = Query()
 
         mail = await self.get(Message.uid==mail_uid)
@@ -219,6 +234,7 @@ class Backend():
 
     async def get_mail_attachment(self, mail_uid, att_index):
         """ Return a specific mail attachment """
+
         Message = Query()
 
         mail = await self.get(Message.uid==mail_uid)
@@ -234,6 +250,7 @@ class Backend():
 
     async def update_mail(self, mail):
         """ Update any mail """
+
         Message = Query()
 
         self.db.update(mail, Message.uid==mail['uid'])
@@ -242,16 +259,33 @@ class Backend():
 
     async def save_user_session(self, session_key, session):
         """ Save modified user session """
+
         Session = Query()
         self.db.update(session, (Session.type == 'session') & (Session.key==session_key))
 
     async def get_user_session(self, session_key):
         """ Load user session """
+
         Session = Query()
         return await self.get_or_create(
             (Session.type=='session') & (Session.key==session_key),
             {'type': 'session', 'key': session_key}
         )
+
+    async def contacts_search(self, account, text):
+        """ Search a contact from mailboxes """
+
+        Mailbox = Query()
+
+        results = self.db.search(
+            (Mailbox.type=='mailbox') & 
+            (Mailbox['account'] == account.name) &
+            (Mailbox['address'].search(text))
+        )
+
+        return [r['address'] for r in results[:10]]
+
+
 
 
 
