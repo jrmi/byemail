@@ -72,4 +72,4 @@ As root you can make a tunnel to the 25 port without root permission for the ser
 $ socat tcp-listen:25,reuseaddr,fork tcp:<hostname>:8025 > nohupsocket.out &
 ```
 
-DISCLAIMER: This is a early not functionnal version. Don't hope use it in production now.
+DISCLAIMER: This is a early poorly functionnal version. Don't hope using it in production for now.

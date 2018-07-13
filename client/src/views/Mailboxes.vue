@@ -6,7 +6,11 @@
 
           <v-toolbar-title>Mailboxes</v-toolbar-title>
 
-          <v-spacer></v-spacer>
+          <v-spacer></v-spacer> 
+          
+          <v-btn icon :to="{ name: 'mailedit' }">
+            <v-icon>email</v-icon>
+          </v-btn>
 
           <v-btn icon @click="refreshMailboxes()">
             <v-icon>refresh</v-icon>

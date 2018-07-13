@@ -40,7 +40,6 @@ export default {
   name: 'mailbox-list',
   props: ['mailboxes'],
   created () {
-    console.log('test');
   },
   methods: {
     gravatarUrl (mailbox) {

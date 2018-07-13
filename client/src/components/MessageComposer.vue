@@ -95,12 +95,7 @@ export default {
       mailContent: '',
       mailSubject: '',
       attachments: [],
-      recipients: [],
-      address: [
-        {id: 1, name: 'Toto <toto@localhost>'},
-        {id: 2, name: 'titi@localhost'},
-        {id: 3, name: 'tata@localhost'}
-      ]
+      recipients: []
     }
   },
   created () {
@@ -109,13 +104,14 @@ export default {
   methods: {
     querySelections (recipient, val) {
       recipient.loading = true
-      // Simulated ajax query
-      setTimeout(() => {
-        recipient.entries = this.address.filter((e) => {
-          return (e.name || '').toLowerCase().indexOf((val || '').toLowerCase()) > -1
-        })
+      this.$http.get('/api/contacts/search', { responseType: 'json', params: {text: val} }).then(function (response) {
         recipient.loading = false
-      }, 500)
+        recipient.entries = response.body.map((item) => {return {name:item}})
+        // TODO remove me when autocomplete not bugged anymore
+        recipient.entries.push(val)
+        console.log(recipient.entries)
+        recipient.loading = false
+      })
     },
     addRecipient () {
       const recipient = {

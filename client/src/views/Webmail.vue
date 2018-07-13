@@ -1,57 +1,16 @@
 <template>
   <div class="content"  :class="{loading: isLoading()}" v-if="account">
-    <v-navigation-drawer
-      persistent
-      :mini-variant="miniVariant"
-      :clipped="clipped"
-      v-model="drawer"
-      enable-resize-watcher
-      fixed
-      app
-    >
-      <v-list>
-        <div v-for="(item, i) in items" :key="i">
-
-          <v-list-tile
-            v-if="item.route"
-            value="true"
-            :to="item.route"
-          >
-            <v-list-tile-action>
-              <v-icon>{{item.icon}}</v-icon>
-            </v-list-tile-action>
-            <v-list-tile-content>
-                <v-list-tile-title v-text="item.title">
-                </v-list-tile-title>
-            </v-list-tile-content>
-          </v-list-tile>
-
-          <v-list-tile
-            v-if="item.action"
-            value="true"
-            :to="item.route"
-            @click="item.action"
-          >
-            <v-list-tile-action>
-              <v-icon>{{item.icon}}</v-icon>
-            </v-list-tile-action>
-            <v-list-tile-content>
-              <v-list-tile-title v-text="item.title" >
-              </v-list-tile-title>
-            </v-list-tile-content>
-          </v-list-tile>
-
-        </div>
-      </v-list>
-    </v-navigation-drawer>
-
     <v-toolbar
       app
-      :clipped-left="clipped"
+      dense
     >
-      <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
-      <v-toolbar-title>Maiboxes for {{account.name}}</v-toolbar-title>
+
+      <v-btn :to="{ name: 'mailboxes' }" icon><v-icon>home</v-icon></v-btn>
+      <v-toolbar-title>
+        Maiboxes for {{account.name}}
+      </v-toolbar-title>
       <v-spacer></v-spacer>
+      <v-btn icon><v-icon>input</v-icon></v-btn>
     </v-toolbar>
 
     <v-content style="height: 100%">
@@ -62,7 +21,15 @@
       <span>Byemail for your pleasure &copy; 2018</span>
     </v-footer>
 
-    <div class="waiter"><div class="signal"></div></div>
+    <div class="waiter">
+      <v-progress-circular
+        :size="70"
+        :width="7"
+        color="purple"
+        indeterminate
+        class="centered"
+      ></v-progress-circular>
+    </div>
 
   </div>
 </template>
@@ -152,33 +119,11 @@ export default {
   }
 }
 
-.signal {
-    border: 5px solid #333;
-    border-radius: 30px;
-    height: 50px;
-    width: 50px;
+.centered{
     left: 50%;
-    margin: -25px 0 0 -25px;
-    opacity: 0;
     position: absolute;
     top: 50%;
-
-    animation: pulsate 1s ease-out;
-    animation-iteration-count: infinite;
-}
-
-@keyframes pulsate {
-    0% {
-      transform: scale(.1);
-      opacity: 0.0;
-    }
-    50% {
-      opacity: 1;
-    }
-    100% {
-      transform: scale(1.2);
-      opacity: 0;
-    }
+    margin: -25px 0 0 -25px;
 }
 
 </style>
