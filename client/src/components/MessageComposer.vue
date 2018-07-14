@@ -3,27 +3,28 @@
   <v-form>
       <v-layout row wrap>
         <v-flex xs7>
-          <v-layout class="recipients" row wrap v-for="(recipient, index) in recipients" :key="recipient.id" >
-            <v-flex xs1>
+          <v-layout class="recipients" row wrap v-for="(recipient, index) in currentDraft().recipients" :key="recipient.id" >
+            <v-flex xs2>
               <v-select
                 v-model="recipient.type"
                 :items="recipientTypes"
               ></v-select>
             </v-flex>
-            <v-flex xs10>
-              <v-autocomplete
-                v-model="recipient.address"
-                :items="recipient.entries"
-                :loading="recipient.isLoading"
-                :search-input.sync="recipient.search"
+            <v-flex xs9>
+              <v-combobox
+                v-model="address"
+                :items="entries"
+                :loading="isLoading"
+                :search-input.sync="search"
                 item-text="name"
                 item-value="name"
+                @change="test(recipient)"
               >
                 Recipient
-              </v-autocomplete>
+              </v-combobox>
             </v-flex>
             <v-flex xs1>
-              <v-btn color="error" icon @click="recipients.splice(index, 1)" v-if="index >= 1">
+              <v-btn color="error" icon @click="removeDraft({recipient: index})" v-if="index >= 1">
                 <v-icon>clear</v-icon>
               </v-btn>
             </v-flex>
@@ -34,7 +35,7 @@
         </v-flex>
 
         <v-flex xs5 class="attachments">
-          <v-layout row wrap v-for="(attachment, index) in attachments" :key="attachment.id" >
+          <v-layout row wrap v-for="(attachment, index) in currentDraft().attachments" :key="attachment.id" >
 
             <v-flex xs11>
               <v-text-field
@@ -47,7 +48,7 @@
             </v-flex>
 
             <v-flex xs1>
-              <v-btn color="error" icon @click="attachments.splice(index, 1)">
+              <v-btn color="error" icon @click="removeDraft({attachment: index})">
                 <v-icon>clear</v-icon>
               </v-btn>
             </v-flex>
@@ -61,7 +62,7 @@
 
       <div class="mail-subject">
         <v-text-field
-          v-model.trim="mailSubject"
+          v-model.trim="currentDraft().mailSubject"
           label="Subject"
         >
         </v-text-field>
@@ -70,7 +71,7 @@
       <div class="mail-content">
           <v-textarea
               box
-              v-model="mailContent"
+              v-model="currentDraft().mailContent"
               label="Content"
           ></v-textarea>
       </div>
@@ -84,7 +85,7 @@
 
 <script>
 import _ from 'lodash'
-import { mapActions } from 'vuex'
+import { mapGetters, mapActions, mapMutations } from 'vuex'
 
 export default {
   name: 'message-composer',
@@ -95,6 +96,10 @@ export default {
         {text: 'Cc', value: 'cc'},
         {text: 'Bcc', value: 'bcc'}
       ],
+      address: '',
+      entries: [],
+      isLoading: false,
+      search: '',
       mailContent: '',
       mailSubject: '',
       attachments: [],
@@ -102,22 +107,54 @@ export default {
     }
   },
   created () {
-    this.addRecipient()
+    if (this.draft.recipients.length < 1){
+      this.addRecipient()
+    }
+  },
+  computed: {
+    draft: {
+      get () {
+        return this.currentDraft()
+      },
+      set (data) {
+        this.setDraft(data)
+      }
+    }
+  },
+  watch: {
   },
   methods: {
+    /*currentDraft () {
+      return {
+        mailContent: this.mailContent,
+        mailSubject: this.mailSubject,
+        attachments: this.attachments,
+        recipients: this.recipients
+      }
+    },*/
+    test (arg) {
+      console.log('test', arg)
+    },
     querySelections (recipient, val) {
       recipient.loading = true
       this.$http.get('/api/contacts/search', { responseType: 'json', params: {text: val} }).then(function (response) {
-        recipient.loading = false
-        recipient.entries = response.body.map((item) => {return {name:item}})
-        // TODO remove me when autocomplete not bugged anymore
-        recipient.entries.push(val)
-        console.log(recipient.entries)
+        recipient.entries = response.body.map((item) => { return {name: item} })
         recipient.loading = false
       })
     },
     addRecipient () {
-      const recipient = {
+      this.addDraftRecipient({recipient_info:''}).then(() => {
+
+        //console.log(this.currentDraft())
+        // TODO unwatch when necessary
+        /*this.$watch(function () {
+          return this.currentDraft().recipient.search
+        },
+        function (val) {
+          val && this.querySelections(recipient, val)
+        })*/
+      })
+      /*const recipient = {
         id: _.uniqueId(),
         address: '',
         type: 'to',
@@ -126,15 +163,8 @@ export default {
         loading: false
       }
 
-      this.recipients.push(recipient)
+      this.recipients.push(recipient)*/
 
-      // TODO unwatch when necessary
-      this.$watch(function () {
-        return recipient.search
-      },
-      function (val) {
-        val && val.length > 2 && this.querySelections(recipient, val)
-      })
     },
     addAttachment () {
       let attachment = {
@@ -181,7 +211,17 @@ export default {
     },
     ...mapActions([
       'sendMail',
-      'setLoading'
+      'setLoading',
+      'addDraftRecipient'
+    ]),
+    ...mapGetters([
+      'currentDraft'
+    ]),
+    ...mapMutations([
+      'setDraft',
+      'resetDraft',
+      'addDraft',
+      'removeDraft'
     ])
   }
 

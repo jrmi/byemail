@@ -17,18 +17,7 @@ function sanitizeText (str) {
 const state = {
   all: null,
   current: null,
-  mail: null,
-  draft: {
-    mailContent: '',
-    mailSubject: '',
-    recipients: [
-      {
-        id: _.uniqueId(),
-        address: '',
-        type: 'to'
-      }
-    ]
-  }
+  mail: null
 }
 
 // getters
@@ -42,6 +31,44 @@ const getters = {
   },
   currentMailbox: state => state.current,
   currentMail: state => state.mail
+}
+
+// mutations
+const mutations = {
+  [types.SET_MAILBOXES] (state, { mailboxes }) {
+    state.all = mailboxes
+  },
+  [types.SET_CURRENT_MAILBOX] (state, { mailbox }) {
+    state.current = mailbox
+  },
+  [types.SET_CURRENT_MAIL] (state, { mail }) {
+    state.mail = mail
+  },
+  [types.SET_ALL_MAIL_READ] (state) {
+    for (let msg of state.current.messages) {
+      if (msg.unread) {
+        msg.unread = false
+      }
+    }
+    if (state.mail) {
+      state.mail.unread = false
+    }
+    state.current.unreads = 0
+    state.all.find(mb => mb.uid === state.current.uid).unreads = 0
+  },
+  [types.SET_CURRENT_MAIL_READ] (state) {
+    state.all.find(m => m.uid === state.current.uid).unreads--
+    state.current.unreads--
+    state.current.messages.find(m => m.uid === state.mail.uid).unread = false
+    state.mail.unread = false
+  },
+  [types.RESET_MAILBOXES] (state) {
+    Object.assign(state, {
+      all: null,
+      current: null,
+      mail: null
+    })
+  }
 }
 
 // actions
@@ -110,91 +137,9 @@ const actions = {
       }
       return promise
     })
-  },
-  resetDraft ({commit}) {
-    let draft = {
-      mailContent: '',
-      mailSubject: '',
-      recipients: [
-        {
-          id: _.uniqueId(),
-          address: '',
-          type: 'to'
-        }
-      ]
-    }
-    commit({ type: types.SET_DRAFT }, draft)
-  },
-  addDraftReciptient ({commit}) {
-    let recipient = {
-      id: _.uniqueId(),
-      address: '',
-      type: 'to'
-    }
-    let recipients = state.draft.recipients
-    recipients.push(recipient)
   }
 }
 
-// mutations
-const mutations = {
-  [types.SET_MAILBOXES] (state, { mailboxes }) {
-    state.all = mailboxes
-  },
-  [types.SET_CURRENT_MAILBOX] (state, { mailbox }) {
-    state.current = mailbox
-  },
-  [types.SET_CURRENT_MAIL] (state, { mail }) {
-    state.mail = mail
-  },
-  [types.SET_ALL_MAIL_READ] (state) {
-    for (let msg of state.current.messages) {
-      if (msg.unread) {
-        msg.unread = false
-      }
-    }
-    if (state.mail) {
-      state.mail.unread = false
-    }
-    state.current.unreads = 0
-    state.all.find(mb => mb.uid === state.current.uid).unreads = 0
-  },
-  [types.SET_CURRENT_MAIL_READ] (state) {
-    state.all.find(m => m.uid === state.current.uid).unreads--
-    state.current.unreads--
-    state.current.messages.find(m => m.uid === state.mail.uid).unread = false
-    state.mail.unread = false
-  },
-  [types.SET_DRAFT] (state, { mailContent, mailSubject, recipients }) {
-    if (_.isDefined(mailContent)) {
-      state.draft.mailContent = mailContent
-    }
-    if (_.isDefined(mailSubject)) {
-      state.draft.mailSubject = mailSubject
-    }
-    if (_.isDefined(recipients)) {
-      state.draft.recipients = recipients
-    }
-  },
-  [types.RESET_MAILBOXES] (state) {
-    Object.assign(state, {
-      all: null,
-      current: null,
-      mail: null,
-      draft: {
-        mailContent: '',
-        mailSubject: '',
-        recipients: [
-          {
-            id: _.uniqueId(),
-            address: '',
-            type: 'to'
-          }
-        ]
-      }
-    })
-  }
-}
 
 export default {
   state,
