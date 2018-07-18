@@ -3,58 +3,39 @@
   <v-form>
       <v-layout row wrap>
         <v-flex xs7>
-          <v-layout class="recipients" row wrap v-for="(recipient, index) in currentDraft().recipients" :key="recipient.id" >
-            <v-flex xs2>
-              <v-select
-                v-model="recipient.type"
-                :items="recipientTypes"
-              ></v-select>
-            </v-flex>
-            <v-flex xs9>
-              <v-combobox
-                v-model="address"
-                :items="entries"
-                :loading="isLoading"
-                :search-input.sync="search"
-                item-text="name"
-                item-value="name"
-                @change="test(recipient)"
+          <v-layout class="recipients" row wrap v-for="(recipient, index) in draft().recipients" :key="recipient.id" >
+            <v-flex xs11>
+              <search-address-field
+                @update="updateRecipient(recipient, $event)"
               >
-                Recipient
-              </v-combobox>
+              </search-address-field>
             </v-flex>
             <v-flex xs1>
-              <v-btn color="error" icon @click="removeDraft({recipient: index})" v-if="index >= 1">
+              <v-btn color="error" icon @click="removeDraftRecipient({rid: recipient.id})" v-if="index >= 1">
                 <v-icon>clear</v-icon>
               </v-btn>
             </v-flex>
           </v-layout>
-          <v-btn @click="addRecipient()">
+          <v-btn @click="addDraftEmptyRecipient()">
             Add recipient
           </v-btn>
         </v-flex>
 
         <v-flex xs5 class="attachments">
-          <v-layout row wrap v-for="(attachment, index) in currentDraft().attachments" :key="attachment.id" >
+          <v-layout row wrap v-for="(attachment, index) in draft().attachments" :key="attachment.id" >
 
             <v-flex xs11>
-              <v-text-field
-                v-model="attachment.filename"
-                type="file"
-                @click="attachment.files = $event.target.files"
-                prepend-icon='attach_file'
-              >
-              </v-text-field>
+              <attachment-field @change="updateAttachment(attachment, $event)"/>
             </v-flex>
 
             <v-flex xs1>
-              <v-btn color="error" icon @click="removeDraft({attachment: index})">
+              <v-btn color="error" icon @click="removeDraftAttachment({aid: attachment.id})">
                 <v-icon>clear</v-icon>
               </v-btn>
             </v-flex>
 
           </v-layout>
-          <v-btn @click="addAttachment()">Add attachment</v-btn>
+          <v-btn @click="addDraftEmptyAttachment()">Add attachment</v-btn>
         </v-flex>
       </v-layout>
 
@@ -62,7 +43,7 @@
 
       <div class="mail-subject">
         <v-text-field
-          v-model.trim="currentDraft().mailSubject"
+          v-model.trim="subject"
           label="Subject"
         >
         </v-text-field>
@@ -71,13 +52,13 @@
       <div class="mail-content">
           <v-textarea
               box
-              v-model="currentDraft().mailContent"
+              v-model="content"
               label="Content"
           ></v-textarea>
       </div>
 
       <div class="actions">
-        <v-btn @click="send()">Send</v-btn>
+        <v-btn @click="sendData">Send</v-btn>
       </div>
   </v-form>
 </v-container>
@@ -86,6 +67,8 @@
 <script>
 import _ from 'lodash'
 import { mapGetters, mapActions, mapMutations } from 'vuex'
+import SearchAddressField from "@/components/SearchAddressField"
+import AttachmentField from "@/components/AttachmentField"
 
 export default {
   name: 'message-composer',
@@ -95,133 +78,71 @@ export default {
         {text: 'To', value: 'to'},
         {text: 'Cc', value: 'cc'},
         {text: 'Bcc', value: 'bcc'}
-      ],
-      address: '',
-      entries: [],
-      isLoading: false,
-      search: '',
-      mailContent: '',
-      mailSubject: '',
-      attachments: [],
-      recipients: []
+      ]
     }
   },
   created () {
-    if (this.draft.recipients.length < 1){
-      this.addRecipient()
+    if (this.draft().recipients.length < 1){
+      this.addDraftEmptyRecipient()
     }
+  },
+  components: {
+    SearchAddressField,
+    AttachmentField
   },
   computed: {
-    draft: {
-      get () {
-        return this.currentDraft()
+    subject: {
+      get(){
+        this.draft().subject
       },
-      set (data) {
-        this.setDraft(data)
+      set(value){
+        this.setDraftSubject({subject:value})
+      }
+    },
+    content: {
+      get(){
+        this.draft().content
+      },
+      set(value){
+        this.setDraftContent({content:value})
       }
     }
   },
-  watch: {
-  },
   methods: {
-    /*currentDraft () {
-      return {
-        mailContent: this.mailContent,
-        mailSubject: this.mailSubject,
-        attachments: this.attachments,
-        recipients: this.recipients
-      }
-    },*/
-    test (arg) {
-      console.log('test', arg)
+    updateRecipient (recipient, newfields){
+      const newRecipient = Object.assign({...recipient}, newfields)
+      this.updateDraftRecipient({recipient: newRecipient})
     },
-    querySelections (recipient, val) {
-      recipient.loading = true
-      this.$http.get('/api/contacts/search', { responseType: 'json', params: {text: val} }).then(function (response) {
-        recipient.entries = response.body.map((item) => { return {name: item} })
-        recipient.loading = false
-      })
+    updateAttachment (attachment, newfields){
+      const newAttachment = Object.assign({...attachment}, newfields)
+      this.updateDraftAttachment({attachment: newAttachment})
     },
-    addRecipient () {
-      this.addDraftRecipient({recipient_info:''}).then(() => {
 
-        //console.log(this.currentDraft())
-        // TODO unwatch when necessary
-        /*this.$watch(function () {
-          return this.currentDraft().recipient.search
-        },
-        function (val) {
-          val && this.querySelections(recipient, val)
-        })*/
-      })
-      /*const recipient = {
-        id: _.uniqueId(),
-        address: '',
-        type: 'to',
-        search: null,
-        result: [],
-        loading: false
+    sendData () {
+      const data = {
+        recipients: this.draft().recipients,
+        attachments: this.draft().attachments,
+        subject: this.draft().subject,
+        content: this.draft().content
       }
-
-      this.recipients.push(recipient)*/
-
-    },
-    addAttachment () {
-      let attachment = {
-        id: _.uniqueId(),
-        files: null,
-        filename: '',
-        files_b64: []
-      }
-      this.attachments.push(attachment)
-    },
-    send () {
-      this.prepareAttachment().then((attachments) => {
-        let data = {
-          recipients: this.recipients,
-          attachments: attachments,
-          subject: this.mailSubject,
-          content: this.mailContent
-        }
-        this.$emit('sendMessage', data)
-      })
-    },
-    prepareAttachment () {
-      // Compute all base64 for attachment
-      return new Promise((resolve, reject) => {
-        let promises = []
-        let attachments = []
-        for (let att of this.attachments) {
-          for (let f of att.files) {
-            let promise = new Promise((resolve, reject) => {
-              let reader = new FileReader()
-              reader.onload = () => {
-                attachments.push({filename: f.name, b64: btoa(reader.result)})
-                resolve()
-              }
-              reader.readAsBinaryString(f)
-            })
-            promises.push(promise)
-          }
-        }
-        Promise.all(promises).then(() => {
-          resolve(attachments)
-        })
-      })
+      this.$emit('sendMessage', data)
     },
     ...mapActions([
-      'sendMail',
-      'setLoading',
-      'addDraftRecipient'
+      'addDraftEmptyRecipient',
+      'addDraftEmptyAttachment'
     ]),
     ...mapGetters([
-      'currentDraft'
+      'draft',
     ]),
     ...mapMutations([
-      'setDraft',
-      'resetDraft',
-      'addDraft',
-      'removeDraft'
+      'setDraftSubject',
+      'setDraftContent',
+      'addDraftRecipient',
+      'updateDraftRecipient',
+      'removeDraftRecipient',
+      'addDraftAttachment',
+      'updateDraftAttachment',
+      'removeDraftAttachment'
     ])
   }
 

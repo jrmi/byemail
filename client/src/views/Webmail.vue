@@ -10,7 +10,7 @@
         Maiboxes for {{account.name}}
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn icon><v-icon>input</v-icon></v-btn>
+      <v-btn icon @click="logout()"><v-icon>input</v-icon></v-btn>
     </v-toolbar>
 
     <v-content style="height: 100%">

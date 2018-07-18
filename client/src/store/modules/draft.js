@@ -7,10 +7,10 @@ import * as types from '../mutation-types'
 // initial state
 const state = {
   draftRecipients: {},
-  draftAttachment: {},
+  draftAttachments: {},
   draft: {
-    mailContent: '',
-    mailSubject: '',
+    content: '',
+    subject: '',
     recipients: [],
     attachments: []
   }
@@ -18,7 +18,7 @@ const state = {
 
 // getters
 const getters = {
-  currentDraft: state => {
+  draft: state => {
     const draft = {...state.draft}
     draft.recipients = draft.recipients.map( recipientId => state.draftRecipients[recipientId])
     draft.attachments = draft.attachments.map( attachmentId => state.draftAttachments[attachmentId])
@@ -28,36 +28,6 @@ const getters = {
 
 // mutations
 const mutations = {
-  [types.SET_DRAFT] (state, { mailContent, mailSubject, recipients, attachments }) {
-    if (mailContent) {
-      state.draft.mailContent = mailContent
-    }
-    if (mailSubject) {
-      state.draft.mailSubject = mailSubject
-    }
-    if (recipients) {
-      state.draft.recipients = recipients
-    }
-    if (attachments) {
-      state.draft.attachments = attachments
-    }
-  },
-  [types.ADD_DRAFT] (state, { recipient, attachment }) {
-    if (recipient) {
-      state.draft.recipients.push(recipient)
-    }
-    if (attachment) {
-      state.draft.attachments.push(attachment)
-    }
-  },
-  [types.REMOVE_DRAFT] (state, { recipient, attachment }) {
-    if (recipient) {
-      state.draft.recipients.splice(recipient, 1)
-    }
-    if (attachment) {
-      state.draft.attachments.splice(attachement, 1)
-    }
-  },
   [types.RESET_DRAFT] (state) {
     Object.assign(state, {
       draft: {
@@ -67,38 +37,69 @@ const mutations = {
         attachments: []
       }
     })
+    state.draftRecipients = {}
+    state.draftAttachments  = {}
+  },
+  // Recipients
+  [types.ADD_DRAFT_RECIPIENT] (state, {recipient}) {
+    const rid = recipient.id
+    Vue.set(state.draftRecipients, rid, recipient)
+    state.draft.recipients.push(rid)
+  },
+  [types.UPDATE_DRAFT_RECIPIENT] (state, {recipient}) {
+    const rid = recipient.id
+    Object.assign(
+        state.draftRecipients[rid], 
+        recipient
+    )
+  },
+  [types.REMOVE_DRAFT_RECIPIENT] (state, {rid}) {
+    state.draft.recipients.splice(state.draft.recipients.indexOf(rid), 1);
+    delete state.draftRecipients[rid]
+  },
+  // Attachments
+  [types.ADD_DRAFT_ATTACHMENT] (state, {attachment}) {
+    const aid = attachment.id
+    Vue.set(state.draftAttachments, aid, attachment)
+    state.draft.attachments.push(aid)
+  },
+  [types.UPDATE_DRAFT_ATTACHMENT] (state, {attachment}) {
+    const rid = attachment.id
+    Object.assign(
+        state.draftAttachments[rid], 
+        attachment
+    )
+  },
+  [types.REMOVE_DRAFT_ATTACHMENT] (state, {aid}) {
+    state.draft.attachments.splice(state.draft.attachments.indexOf(aid), 1);
+    delete state.draftAttachments[aid]
+  },
+  // Subject and content
+  [types.SET_DRAFT_SUBJECT] (state, {subject}) {
+    state.draft.subject = subject
+  },
+  [types.SET_DRAFT_CONTENT] (state, {content}) {
+    state.draft.content = content
   }
 }
 
 // actions
 const actions = {
-  resetDraft ({commit}) {
-    const draft = {
-      mailContent: '',
-      mailSubject: '',
-      recipients: [],
-      attachments: []
-    }
-    commit({ type: types.SET_DRAFT }, draft)
-  },
-  addDraftRecipient ({commit}, {recipient_info}) {
+  addDraftEmptyRecipient ({commit}) {
     const recipient = {
       id: _.uniqueId(),
       address: '',
-      type: 'to',
-      search: null, // TODO remove this from here
-      result: [],
-      loading: false
+      type: 'to'
     }
-
-    if (recipient_info) {
-      recipient.address = recipient_info
+    commit({ type: types.ADD_DRAFT_RECIPIENT, recipient})
+  },
+  addDraftEmptyAttachment ({commit}) {
+    const attachment = {
+      id: _.uniqueId(),
+      filename: '',
+      b64: ''
     }
-
-    const recipients = state.draft.recipients
-    
-    //recipients.push(recipient)
-    commit({ type: types.ADD_DRAFT, recipient})
+    commit({ type: types.ADD_DRAFT_ATTACHMENT, attachment})
   }
 }
 
