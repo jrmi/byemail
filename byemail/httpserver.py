@@ -170,7 +170,7 @@ def init_app():
         attachment, att_content = await storage.get_mail_attachment(mail_id, int(att_index))
 
         async def streaming_att(response):
-            response.write(att_content)
+            await response.write(att_content)
 
         return stream(streaming_att, content_type=attachment['type'])
 

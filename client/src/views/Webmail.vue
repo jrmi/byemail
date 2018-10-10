@@ -1,10 +1,7 @@
 <template>
   <div class="content"  :class="{loading: isLoading()}" v-if="account">
-    <v-toolbar
-      app
-      dense
-    >
 
+    <v-toolbar app dense >
       <v-btn :to="{ name: 'mailboxes' }" icon><v-icon>home</v-icon></v-btn>
       <v-toolbar-title>
         Maiboxes for {{account.name}}

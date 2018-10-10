@@ -32,11 +32,11 @@ Some common use cases:
 - Access your webmail from everywhere,
 - Receiving mail for a family or small business,
 - Create a mailing list on the fly,
-- Share huge attachment without thinking of it and withou flooding the net,
+- Share huge attachment without thinking of it and without flooding the net,
 - Send "burn after reading" email,
 - Cancel mail sent by mistake,
 - Create tempory address on the fly for spam protection,
-- Really secure mail even if the recipient doesn't have configured is gpg key,
+- Really secure mail even if the recipient doesn't have configured his gpg key,
 - Auto update your DNS configuration,
 - Spam protect you with captcha,
 - Easy quitting by easily export all your data to import them in another instance,
@@ -45,10 +45,10 @@ Some common use cases:
 Some technical advantages:
 
 - Easy backup: you only have one directory to save,
-- Easy configuration, everything in one file,
+- Easy configuration, everything in one python file,
 - Middleware to filter/modify/... incoming and outgoing mails,
 - Secure by design, open relay can't be done at all,
-- Use DKIM, SPF, DMARC to allow the better receiveability,
+- Use DKIM, SPF, DMARC to allow better receiveability,
 - ...
 
 # Installation
