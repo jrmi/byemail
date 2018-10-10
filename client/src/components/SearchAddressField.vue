@@ -28,6 +28,7 @@ import _ from 'lodash'
 
 export default {
   name: 'message-composer',
+  props: ['value'],
   data () {
     return {
       recipientTypes: [

@@ -20,7 +20,7 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex'
+import { mapGetters, mapActions, mapMutations } from 'vuex'
 import MessageList from '@/components/MessageList'
 
 export default {
@@ -41,6 +41,13 @@ export default {
       })
     },
     writeMail () {
+      this.resetDraft()
+      const newRecipient = {
+        id: _.uniqueId(),
+        address: this.currentMailbox().address,
+        type: 'to'
+      }
+      this.addDraftRecipient({recipient: newRecipient})
       this.$router.push({ name: 'mailedit' })
     },
     ...mapGetters([
@@ -49,6 +56,10 @@ export default {
     ...mapActions([
       'markAllMailRead',
       'setLoading'
+    ]),
+    ...mapMutations([
+      'resetDraft',
+      'addDraftRecipient',
     ])
   },
   components: {

@@ -7,6 +7,7 @@
             <v-flex xs11>
               <search-address-field
                 @update="updateRecipient(recipient, $event)"
+                :value="recipient.address"
               >
               </search-address-field>
             </v-flex>
