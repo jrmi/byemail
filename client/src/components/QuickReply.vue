@@ -8,7 +8,6 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'quick-reply',
@@ -28,7 +27,7 @@ export default {
       }
       this.$emit('reply', data)
       this.composeContent = ''
-    },
+    }
   },
   data () {
     return {

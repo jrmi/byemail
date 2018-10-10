@@ -24,6 +24,7 @@
 </template>
 
 <script>
+import _ from 'lodash'
 
 export default {
   name: 'message-composer',
@@ -35,20 +36,25 @@ export default {
         {text: 'Bcc', value: 'bcc'}
       ],
       type: 'to',
-      value: '',
+      value: null,
       entries: [],
       loading: false,
       search: ''
     }
   },
   watch: {
-      search (val) {
-          val && this.querySelections(val)
-      }
+    search (val) {
+      val && this.querySelections(val)
+    }
   },
   methods: {
     sendUpdate () {
-      this.$emit('update', {type: this.type, address: this.search})
+      let name = this.value
+      if (_.isObject(name)) {
+        // FIXME Autocomplete bug workaround ?
+        name = name.name
+      }
+      this.$emit('update', {type: this.type, address: name})
     },
     querySelections (val) {
       this.loading = true

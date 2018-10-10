@@ -1,8 +1,6 @@
 import Vue from 'vue'
-import Moment from 'moment'
 import _ from 'lodash'
 import * as types from '../mutation-types'
-
 
 // initial state
 const state = {
@@ -20,8 +18,8 @@ const state = {
 const getters = {
   draft: state => {
     const draft = {...state.draft}
-    draft.recipients = draft.recipients.map( recipientId => state.draftRecipients[recipientId])
-    draft.attachments = draft.attachments.map( attachmentId => state.draftAttachments[attachmentId])
+    draft.recipients = draft.recipients.map(recipientId => state.draftRecipients[recipientId])
+    draft.attachments = draft.attachments.map(attachmentId => state.draftAttachments[attachmentId])
     return draft
   }
 }
@@ -38,7 +36,7 @@ const mutations = {
       }
     })
     state.draftRecipients = {}
-    state.draftAttachments  = {}
+    state.draftAttachments = {}
   },
   // Recipients
   [types.ADD_DRAFT_RECIPIENT] (state, {recipient}) {
@@ -49,12 +47,12 @@ const mutations = {
   [types.UPDATE_DRAFT_RECIPIENT] (state, {recipient}) {
     const rid = recipient.id
     Object.assign(
-        state.draftRecipients[rid], 
-        recipient
+      state.draftRecipients[rid],
+      recipient
     )
   },
   [types.REMOVE_DRAFT_RECIPIENT] (state, {rid}) {
-    state.draft.recipients.splice(state.draft.recipients.indexOf(rid), 1);
+    state.draft.recipients.splice(state.draft.recipients.indexOf(rid), 1)
     delete state.draftRecipients[rid]
   },
   // Attachments
@@ -66,12 +64,12 @@ const mutations = {
   [types.UPDATE_DRAFT_ATTACHMENT] (state, {attachment}) {
     const rid = attachment.id
     Object.assign(
-        state.draftAttachments[rid], 
-        attachment
+      state.draftAttachments[rid],
+      attachment
     )
   },
   [types.REMOVE_DRAFT_ATTACHMENT] (state, {aid}) {
-    state.draft.attachments.splice(state.draft.attachments.indexOf(aid), 1);
+    state.draft.attachments.splice(state.draft.attachments.indexOf(aid), 1)
     delete state.draftAttachments[aid]
   },
   // Subject and content
@@ -91,7 +89,7 @@ const actions = {
       address: '',
       type: 'to'
     }
-    commit({ type: types.ADD_DRAFT_RECIPIENT, recipient})
+    commit({type: types.ADD_DRAFT_RECIPIENT, recipient})
   },
   addDraftEmptyAttachment ({commit}) {
     const attachment = {
@@ -99,10 +97,9 @@ const actions = {
       filename: '',
       b64: ''
     }
-    commit({ type: types.ADD_DRAFT_ATTACHMENT, attachment})
+    commit({type: types.ADD_DRAFT_ATTACHMENT, attachment})
   }
 }
-
 
 export default {
   state,

@@ -8,7 +8,6 @@
 </template>
 
 <script>
-import _ from 'lodash'
 import { mapActions } from 'vuex'
 import MessageComposer from '@/components/MessageComposer'
 
@@ -43,6 +42,5 @@ export default {
 </script>
 
 <style scoped lang="less">
-
 
 </style>

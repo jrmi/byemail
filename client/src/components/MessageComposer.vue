@@ -22,7 +22,7 @@
         </v-flex>
 
         <v-flex xs5 class="attachments">
-          <v-layout row wrap v-for="(attachment, index) in draft().attachments" :key="attachment.id" >
+          <v-layout row wrap v-for="attachment in draft().attachments" :key="attachment.id" >
 
             <v-flex xs11>
               <attachment-field @change="updateAttachment(attachment, $event)"/>
@@ -65,10 +65,9 @@
 </template>
 
 <script>
-import _ from 'lodash'
 import { mapGetters, mapActions, mapMutations } from 'vuex'
-import SearchAddressField from "@/components/SearchAddressField"
-import AttachmentField from "@/components/AttachmentField"
+import SearchAddressField from '@/components/SearchAddressField'
+import AttachmentField from '@/components/AttachmentField'
 
 export default {
   name: 'message-composer',
@@ -82,7 +81,7 @@ export default {
     }
   },
   created () {
-    if (this.draft().recipients.length < 1){
+    if (this.draft().recipients.length < 1) {
       this.addDraftEmptyRecipient()
     }
   },
@@ -92,28 +91,28 @@ export default {
   },
   computed: {
     subject: {
-      get(){
-        this.draft().subject
+      get () {
+        return this.draft().subject
       },
-      set(value){
-        this.setDraftSubject({subject:value})
+      set (value) {
+        this.setDraftSubject({subject: value})
       }
     },
     content: {
-      get(){
-        this.draft().content
+      get () {
+        return this.draft().content
       },
-      set(value){
-        this.setDraftContent({content:value})
+      set (value) {
+        this.setDraftContent({content: value})
       }
     }
   },
   methods: {
-    updateRecipient (recipient, newfields){
+    updateRecipient (recipient, newfields) {
       const newRecipient = Object.assign({...recipient}, newfields)
       this.updateDraftRecipient({recipient: newRecipient})
     },
-    updateAttachment (attachment, newfields){
+    updateAttachment (attachment, newfields) {
       const newAttachment = Object.assign({...attachment}, newfields)
       this.updateDraftAttachment({attachment: newAttachment})
     },
@@ -132,7 +131,7 @@ export default {
       'addDraftEmptyAttachment'
     ]),
     ...mapGetters([
-      'draft',
+      'draft'
     ]),
     ...mapMutations([
       'setDraftSubject',

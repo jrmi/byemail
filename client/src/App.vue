@@ -24,13 +24,13 @@ import { mapGetters, mapMutations } from 'vuex'
 
 export default {
   name: 'App',
-  computed:{
+  computed: {
     snackbar: {
       get () {
         return this.getMessage().message
       },
       set (val) {
-        if (!val){
+        if (!val) {
           this.setMessage({message: '', color: 'primary'})
         }
       }

@@ -1,5 +1,5 @@
 <template>
-  <v-card v-if="currentMailbox()">      
+  <v-card v-if="currentMailbox()">
     <v-toolbar color="grey" dark flat>
 
       <v-toolbar-title>Mailbox: {{currentMailbox().name}} &lt;{{currentMailbox().address}}&gt;</v-toolbar-title>
@@ -21,7 +21,7 @@
 
 <script>
 import { mapGetters, mapActions } from 'vuex'
-import MessageList from "@/components/MessageList"
+import MessageList from '@/components/MessageList'
 
 export default {
   name: 'mailbox',

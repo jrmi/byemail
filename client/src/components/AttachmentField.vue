@@ -10,12 +10,11 @@
 </template>
 
 <script>
-
 export default {
   name: 'message-composer',
   data () {
     return {
-      filename: '',
+      filename: ''
     }
   },
   methods: {

@@ -7,6 +7,7 @@ import asyncio
 from email import policy
 from email.parser import BytesParser
 from email.headerregistry import Address
+from email.errors import InvalidHeaderDefect
 
 import arrow
 
@@ -40,8 +41,10 @@ class AddressSerializer(Serializer):
 
     def decode(self, s):
         addr_spec, display_name = s.split('(_|_)')
-        print(f"{addr_spec}---")
-        return Address(display_name=display_name, addr_spec=addr_spec)
+        try:
+            return Address(display_name=display_name, addr_spec=addr_spec)
+        except InvalidHeaderDefect:
+            return ''
 
 class Backend():
     def __init__(self, datadir="data/", loop=None):

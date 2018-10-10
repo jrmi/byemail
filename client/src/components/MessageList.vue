@@ -27,11 +27,10 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'message-list',
-  props: ['messages'],
+  props: ['messages']
 }
 </script>
 
