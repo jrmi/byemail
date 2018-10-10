@@ -24,7 +24,7 @@ setup(name='byemail',
       author_email='jeremie.pardou@mhcomm.fr',
 
       license='Apache Software License',
-      packages=['byemail', 'byemail.storage'],
+      packages=['byemail', 'byemail.storage', 'byemail.helpers'],
 
       entry_points={
           'console_scripts': [

@@ -21,6 +21,7 @@ import byemail
 from byemail.conf import settings
 from byemail import mailutils
 from byemail import storage
+from byemail.helpers import reloader
 
 # TODO: remove below if statement asap. This is a workaround for a bug in begins
 # TODO: which provokes an exception when calling command without parameters.
@@ -31,9 +32,8 @@ if len(sys.argv) == 1:
 # Keep this import
 sys.path.insert(0, os.getcwd())
 
-@begin.subcommand
-def start(reload: 'Make server autoreload (Dev only)'=False,):
-    """ Start byemail SMTP and HTTP servers """
+def main(loop):
+    """ Main function """
 
     settings.init_settings()
 
@@ -42,12 +42,10 @@ def start(reload: 'Make server autoreload (Dev only)'=False,):
     controller = Controller(smtp.MsgHandler(), **settings.SMTP_CONF)
     controller.start()
 
-    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    loop = asyncio.get_event_loop()
 
     app = httpserver.get_app()
     server = app.create_server(**settings.HTTP_CONF)
-    asyncio.ensure_future(server)
+    asyncio.ensure_future(server, loop=loop)
 
     try:
         print("Server started on %s:%d" % (controller.hostname, controller.port))
@@ -56,6 +54,15 @@ def start(reload: 'Make server autoreload (Dev only)'=False,):
         print("Stopping")
 
     controller.stop()
+
+@begin.subcommand
+def start(reload: 'Make server autoreload (Dev only)'=False,):
+    """ Start byemail SMTP and HTTP servers """
+
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+    loop = asyncio.get_event_loop()
+
+    reloader.reloader_opt(main, reload, 2, loop)
 
 @begin.subcommand
 def generatekeys():
