@@ -1,17 +1,12 @@
 [[source]]
-
 url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
-
 [requires]
-
 python_version = "3.6"
 
-
 [packages]
-
 aiosmtpd = "*"
 codernitydb = "*"
 tinydb = "*"
@@ -26,16 +21,14 @@ sanic-auth = "*"
 python-magic = "*"
 dkimpy = "*"
 
-
 [dev-packages]
-
 pylint = "*"
 ipdb = "*"
 pytest = "*"
-tox = "*"
-tox-pipenv = "*"
+tox = ">=3.5.0"
 icecream = "*"
 aiohttp = "*"
 faker = "*"
 pipenv = "*"
-rope = "*"
+tox-pipenv = {editable = true, ref = "master", git = "https://github.com/tox-dev/tox-pipenv.git"}
+rope = ">=0.11.0"
