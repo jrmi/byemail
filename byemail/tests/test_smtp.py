@@ -151,7 +151,7 @@ def test_receive(loop):
         fut = asyncio.Future(loop=loop)
         fut.set_result({})
 
-        storage_mock.store_msg.return_value = fut
+        storage_mock.store_mail.return_value = fut
         storage_mock.store_bad_msg.return_value = fut
 
         envelope = commons.objectview(dict(
@@ -167,10 +167,10 @@ def test_receive(loop):
 
         loop.run_until_complete(msg_handler.handle_DATA('127.0.0.1', session, envelope))
 
-        storage_mock.store_msg.assert_called_once()
+        storage_mock.store_mail.assert_called_once()
 
 
-def test_send_mail(loop, fake_account, msg_test):
+def test_send_mail(loop, fake_account, msg_test, settings):
 
     from_addr = mailutils.parse_email("test@example.com")
     to_addrs = [
@@ -233,7 +233,7 @@ def test_resend_mail(loop, fake_account, msg_test):
         )
         smtp_send.return_value = f
 
-        result = loop.run_until_complete(smtp.resend_mail(fake_account, mail_to_resend, [to_addrs[1]]))
+        mail_to_resend = loop.run_until_complete(smtp.resend_mail(fake_account, mail_to_resend, [to_addrs[1]]))
 
     # Does the delivery status update ?
     assert mail_to_resend['delivery_status'] == {

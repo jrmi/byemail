@@ -38,10 +38,12 @@ def main(loop):
     settings.init_settings()
 
     from byemail import smtp, httpserver
+    from byemail.storage import storage
 
     controller = Controller(smtp.MsgHandler(), **settings.SMTP_CONF)
     controller.start()
 
+    loop.run_until_complete(storage.start())
 
     app = httpserver.get_app()
     server = app.create_server(**settings.HTTP_CONF)
@@ -53,6 +55,7 @@ def main(loop):
     except KeyboardInterrupt:
         print("Stopping")
 
+    loop.run_until_complete(storage.stop())
     controller.stop()
 
 @begin.subcommand

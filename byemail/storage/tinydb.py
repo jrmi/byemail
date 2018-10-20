@@ -16,6 +16,7 @@ from tinydb_serialization import Serializer, SerializationMiddleware
 
 from byemail import mailutils
 from byemail.conf import settings
+from byemail.storage import core
 
 
 class DoesntExists(Exception):
@@ -46,15 +47,13 @@ class AddressSerializer(Serializer):
         except InvalidHeaderDefect:
             return ''
 
-class Backend():
-    def __init__(self, datadir="data/", loop=None):
-        super().__init__()
+class Backend(core.Backend):
+    def __init__(self, datadir="data/", **kwargs):
+        super().__init__(**kwargs)
 
         # Post init_settings things
         if not os.path.isdir(datadir):
             os.makedirs(datadir)
-
-        self.loop = loop or asyncio.get_event_loop()
 
         serialization = SerializationMiddleware()
         serialization.register_serializer(DateTimeSerializer(), 'TinyDate')
@@ -126,13 +125,16 @@ class Backend():
         )
         return mailbox
 
-    async def store_msg(self, msg, account, from_addr, to_addrs, incoming=True, extra_data=None, extra_mailbox_message_data=None):
+    async def store_msg(self, msg, account, from_addr, to_addrs, incoming=True, extra_data=None):
         """ Store message in database """
 
         msg['type'] = 'mail'
+        
+        msg['uid'] = uuid.uuid4().hex
 
         msg['incoming'] = incoming
         msg['unread'] = incoming
+        msg['account'] = account.name
 
         if extra_data:
             msg.update(extra_data)
@@ -155,19 +157,6 @@ class Backend():
 
         for mailbox_address, mailbox_name in mailboxes:
             # Get mailbox if exists or create it
-            '''mailbox = await self.get_or_create(
-                (Mailbox.type == 'mailbox') &
-                (Mailbox['address'] == mailbox_address) &
-                (Mailbox['account'] == account.name), {
-                    'uid': uuid.uuid4().hex,
-                    'account': account.name,
-                    'type': 'mailbox',
-                    'address': mailbox_address,
-                    'name': mailbox_name,
-                    'last_message': msg['date'],
-                    'messages': [],
-                }
-            )'''
             mailbox = await self.get_or_create_mailbox(account, mailbox_address, mailbox_name)
 
             # Update last_message date
@@ -179,9 +168,6 @@ class Backend():
                 'uid': msg['uid'],
                 'date': msg['date']
             }
-
-            if extra_mailbox_message_data:
-                mailbox_message_data.update(extra_mailbox_message_data)
 
             mailbox['messages'].append(mailbox_message_data)
 

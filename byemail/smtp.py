@@ -8,7 +8,6 @@ import asyncio
 import base64
 import datetime
 import logging
-import importlib
 
 from collections import defaultdict
 
@@ -84,7 +83,7 @@ class MsgHandler:
                 msg = BytesParser(policy=policy.default).parsebytes(envelope.content)
                 account = account_manager.get_account_for_address(to)
 
-                await store_mail(
+                await storage.store_mail(
                     account, 
                     msg, 
                     envelope.mail_from, 
@@ -281,70 +280,18 @@ class MsgSender():
         return result
 
 
-async def apply_middlewares(msg, from_addr, recipients, incoming=True):
-    if incoming:
-        middlewares = settings.INCOMING_MIDDLEWARES 
-    else:
-        middlewares = settings.OUTGOING_MIDDLEWARES
-
-    for middleware in middlewares:
-        try:
-            module, _, func = middleware.rpartition(".")
-            mod = importlib.import_module(module)
-        except ModuleNotFoundError:
-            logger.error("Module %s can't be loaded !", middleware)
-            raise
-        else:
-            await getattr(mod, func)(
-                msg, 
-                from_addr=from_addr, 
-                recipients=recipients, 
-                incoming=incoming
-            )
-
-
-async def store_mail(account, msg, from_addr, recipients, incoming=True):
-    msg_data = await mailutils.extract_data_from_msg(msg)
-
-    await apply_middlewares(msg_data, from_addr, recipients, incoming)
-
-    # First define uid
-    msg_data['uid'] = uuid.uuid4().hex
-
-    msg_data['account'] = account.name
-
-    msg_data['original-sender'] = from_addr
-    msg_data['original-recipients'] = recipients
-
-    stored_msg = await storage.store_msg(
-        msg_data,
-        account=account,
-        from_addr=from_addr,
-        to_addrs=recipients,
-        incoming=incoming
-    )
-
-    await storage.store_content(stored_msg['uid'], msg.as_bytes())
-
-    stored_msg['status'] = 'received' if incoming else 'sending'
-
-    await storage.update_mail(stored_msg)
-
-    return stored_msg
-
-
 async def send_mail(account, msg, from_addr, recipients, loop=None):
     """ Complete process to send an email """
 
-    mail_sender = MsgSender(loop=loop)
-
-    saved_msg = await store_mail(
+    saved_msg = await storage.store_mail(
         account,
         msg,
         from_addr,
         recipients,
         incoming=False
     )
+
+    mail_sender = MsgSender(loop=loop)
 
     # Then we send it
     delivery_status = await mail_sender.send(

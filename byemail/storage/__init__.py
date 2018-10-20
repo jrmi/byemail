@@ -1,7 +1,6 @@
 from importlib import import_module
 
 from byemail.conf import settings
-from byemail.storage.tinydb import Backend
 
 class Storage():
     def __init__(self, loop=None):

@@ -1,6 +1,8 @@
 import time
 import base64
 import datetime
+import logging
+import importlib
 from collections import OrderedDict
 
 from email import policy
@@ -11,6 +13,8 @@ from email.headerregistry import AddressHeader, HeaderRegistry
 import magic
 
 from byemail.conf import settings
+
+logger = logging.getLogger(__name__)
 
 def parse_email(email_str):
     """ Helper to parse an email address from client """
@@ -110,3 +114,24 @@ async def extract_data_from_msg(msg):
         msg_out['thread-index'] = msg['Thread-index']
 
     return msg_out
+
+async def apply_middlewares(msg, from_addr, recipients, incoming=True):
+    if incoming:
+        middlewares = settings.INCOMING_MIDDLEWARES 
+    else:
+        middlewares = settings.OUTGOING_MIDDLEWARES
+
+    for middleware in middlewares:
+        try:
+            module, _, func = middleware.rpartition(".")
+            mod = importlib.import_module(module)
+        except ModuleNotFoundError:
+            logger.error("Module %s can't be loaded !", middleware)
+            raise
+        else:
+            await getattr(mod, func)(
+                msg, 
+                from_addr=from_addr, 
+                recipients=recipients, 
+                incoming=incoming
+            )

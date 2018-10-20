@@ -3,6 +3,14 @@ import asyncio
 
 import pytest
 
+from faker import Faker
+
+from email.headerregistry import AddressHeader, HeaderRegistry
+
+fake = Faker()
+fake.seed(42)
+
+
 MAIL_TEST = b"""Content-Type: text/plain; charset="utf-8"\r
 Content-Transfer-Encoding: 7bit\r
 MIME-Version: 1.0\r
@@ -30,12 +38,33 @@ def loop():
 def msg_test():
     from email import policy
     from email.parser import BytesParser
-    return BytesParser(policy=policy.default).parsebytes(MAIL_TEST)
+
+    header_registry = HeaderRegistry()
+    header_registry.map_to_type('To', AddressHeader)
+    policy = policy.EmailPolicy(header_factory=header_registry)
+
+    return BytesParser(policy=policy).parsebytes(MAIL_TEST)
+
+@pytest.fixture
+def msg_test_with_attachments(msg_test):
+    for content in ['att1', 'att2']:
+        print(msg_test)
+        msg_test.add_attachment(
+            content,
+            subtype='plain',
+            filename=f"{content}.txt"
+        )
+    return msg_test
 
 @pytest.fixture
 def fake_account():
     from byemail.account import Account
     return Account(1, 'test', 'test', 'test@example.com', 'test@example.com')
+
+@pytest.fixture
+def fake_emails():
+    return fake.email
+
 
 @pytest.fixture(scope="session")
 def settings():
