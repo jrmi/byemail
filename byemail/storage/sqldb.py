@@ -170,7 +170,7 @@ class Backend(core.Backend):
 
     async def get_content_msg(self, uid):
         """ Return EmailMessage instance for this message uid """
-        rmsg = RawMessage.get(uid=uid)
+        rmsg = await RawMessage.get(uid=uid)
 
         b64_content = rmsg.content
 
@@ -273,7 +273,17 @@ class Backend(core.Backend):
 
     async def get_mail_attachment(self, mail_uid, att_index):
         """ Return a specific mail attachment """
-        raise NotImplementedError()
+
+        mail = await self.get_mail(mail_uid)
+        raw_mail = await self.get_content_msg(mail_uid)
+
+        attachment = mail['attachments'][att_index]
+
+        atts = list(raw_mail.iter_attachments())
+        stream = atts[att_index]
+
+        content = stream.get_content()
+        return attachment, content
 
     async def save_user_session(self, session_key, session):
         """ Save modified user session """

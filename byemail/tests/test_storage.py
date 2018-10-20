@@ -59,7 +59,6 @@ def test_incoming_mail(loop, fake_account, backend, msg_test, fake_emails, setti
     from_addr = msg_test['From'].addresses[0]
     to_addrs = [parse_email(fake_emails()), parse_email(fake_emails())]
 
-    #msg = run(extract_data_from_msg(msg_test))
 
     print(f"From {from_addr}")
     print(f"To {to_addrs}")
@@ -90,24 +89,21 @@ def test_incoming_mail(loop, fake_account, backend, msg_test, fake_emails, setti
     assert delivered_count == 1
 
 
-def _test_get_attachment(loop, fake_account, backend, msg_test_with_attachments, fake_emails, settings):
+def test_get_attachment(loop, fake_account, backend, msg_test_with_attachments, fake_emails, settings):
     run = loop.run_until_complete
 
     from_addr = msg_test_with_attachments['From'].addresses[0]
     to_addrs = [parse_email(fake_emails())]
 
-    msg = run(extract_data_from_msg(msg_test_with_attachments))
-
     print(f"From {from_addr}")
     print(f"To {to_addrs}")
 
-    run(backend.store_msg(
-        msg=msg,
+    run(backend.store_mail(
+        msg=msg_test_with_attachments,
         account=fake_account,
         from_addr=from_addr,
-        to_addrs=to_addrs, 
-        incoming=True, 
-        extra_data=None
+        recipients=to_addrs, 
+        incoming=True
     ))
     
     mailboxes = run(backend.get_mailboxes(fake_account))
@@ -123,12 +119,9 @@ def _test_get_attachment(loop, fake_account, backend, msg_test_with_attachments,
             attachment = run(backend.get_mail_attachment(uid, 0))
             print(f"AAAAAAAA - {attachment}")
 
-            assert attachment == 'att1'
+            assert attachment == ({'filename': 'att1.txt', 'index': 0, 'type': 'text/plain'}, 'att1\n')
 
             attachment = run(backend.get_mail_attachment(uid, 1))
 
-            assert attachment == 'att2'
+            assert attachment == ({'filename': 'att2.txt', 'index': 1, 'type': 'text/plain'}, 'att2\n')
     
-    # Add content message and a way to simplify that
-
-    raise Exception()
