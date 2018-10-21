@@ -250,9 +250,12 @@ class Backend(core.Backend):
 
     async def save_user_session(self, session_key, session):
         """ Save modified user session """
-
         Session = Query()
-        self.db.update(session, (Session.type == 'session') & (Session.key==session_key))
+
+        session_from_storage = await self.get_user_session(session_key)
+        session_from_storage.update(session)
+
+        self.db.update(session_from_storage, (Session.type == 'session') & (Session.key==session_key))
 
     async def get_user_session(self, session_key):
         """ Load user session """

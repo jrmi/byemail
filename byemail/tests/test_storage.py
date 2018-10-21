@@ -126,3 +126,29 @@ def test_get_attachment(loop, fake_account, backend, msg_test_with_attachments, 
 
             assert attachment == ({'filename': 'att2.txt', 'index': 1, 'type': 'text/plain'}, 'att2\n')
     
+
+def test_session(loop, fake_account, backend):
+    """ Test session in storage """
+    run = loop.run_until_complete
+
+    session_key = 'testsessionkey'
+
+    session = {
+        "fakedict": "fakevalue"
+    }
+
+    #session_from_storage = run(backend.get_user_session(session_key))
+
+    #session_from_storage.update(session)
+
+    run(backend.save_user_session(session_key, session))
+    
+    session_from_storage = run(backend.get_user_session(session_key))
+
+    assert 'fakedict' in session_from_storage
+    assert session_from_storage['fakedict'] == 'fakevalue'
+
+
+def test_search_contact(loop, fake_account, backend):
+    """ Test contact search feature """
+    pass

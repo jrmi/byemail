@@ -127,6 +127,7 @@ class Message(Model):
         
         return data
 
+
 class RawMessage(Model):
     """ Raw message content is stored here """
     id = fields.IntField(pk=True)
@@ -134,9 +135,17 @@ class RawMessage(Model):
 
     content = fields.TextField()
 
-# Attachment ?
-# Session
-# Account
+
+class Session(Model):
+    """ Users session """
+
+    id = fields.IntField(pk=True)
+    key = fields.CharField(max_length=255)
+
+    content = fields.JSONField(default=list)
+
+    def as_dict(self):
+        return self.content
 
 
 class Backend(core.Backend):
@@ -286,11 +295,25 @@ class Backend(core.Backend):
 
     async def save_user_session(self, session_key, session):
         """ Save modified user session """
-        raise NotImplementedError()
+        dbsession, _ = await Session.get_or_create(
+            defaults = {
+                'content': {}
+            },
+            key=session_key
+        )
+
+        dbsession.content = session
+        await dbsession.save()
 
     async def get_user_session(self, session_key):
         """ Load user session """
-        raise NotImplementedError()
+        session, _ = await Session.get_or_create(
+            defaults = {
+                'content': {}
+            },
+            key=session_key
+        )
+        return session.as_dict()
 
     async def contacts_search(self, account, text):
         """ Search a contact from mailboxes """

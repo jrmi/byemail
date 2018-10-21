@@ -21,6 +21,7 @@ sanic-auth = "*"
 python-magic = "*"
 dkimpy = "*"
 tortoise-orm = "*"
+asynctest = "*"
 
 [dev-packages]
 pylint = "*"
