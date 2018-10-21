@@ -134,7 +134,6 @@ class RawMessage(Model):
 
     content = fields.TextField()
 
-# Raw message ?
 # Attachment ?
 # Session
 # Account

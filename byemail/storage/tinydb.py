@@ -229,6 +229,8 @@ class Backend(core.Backend):
         mail = await self.get(Message.uid==mail_uid)
         raw_mail = await self.get_content_msg(mail_uid)
 
+        print(f"\natt{mail['attachments']}\n", mail['from'])
+
         attachment = mail['attachments'][att_index]
 
         atts = list(raw_mail.iter_attachments())

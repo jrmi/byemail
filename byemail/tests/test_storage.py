@@ -92,6 +92,10 @@ def test_incoming_mail(loop, fake_account, backend, msg_test, fake_emails, setti
 def test_get_attachment(loop, fake_account, backend, msg_test_with_attachments, fake_emails, settings):
     run = loop.run_until_complete
 
+    del msg_test_with_attachments['From']
+
+    msg_test_with_attachments['From'] = 'test@bar.foo'
+
     from_addr = msg_test_with_attachments['From'].addresses[0]
     to_addrs = [parse_email(fake_emails())]
 
@@ -110,14 +114,11 @@ def test_get_attachment(loop, fake_account, backend, msg_test_with_attachments, 
 
     for mailbox in mailboxes:
         mailbox = run(backend.get_mailbox(mailbox['uid']))
-        print(f"Mailbox : {mailbox['address']}")
 
         if mailbox['address'] in from_addr.addr_spec:
             uid = mailbox['messages'][0]['uid']
-            print(f"inbox : {mailbox}")
 
             attachment = run(backend.get_mail_attachment(uid, 0))
-            print(f"AAAAAAAA - {attachment}")
 
             assert attachment == ({'filename': 'att1.txt', 'index': 0, 'type': 'text/plain'}, 'att1\n')
 
