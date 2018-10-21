@@ -317,7 +317,8 @@ class Backend(core.Backend):
 
     async def contacts_search(self, account, text):
         """ Search a contact from mailboxes """
-        raise NotImplementedError()
+        matching_mailboxes = await Mailbox.filter(address__icontains=text)
+        return [m.address for m in matching_mailboxes]
 
 
 

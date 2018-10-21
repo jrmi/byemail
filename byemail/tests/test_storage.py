@@ -85,6 +85,7 @@ def test_incoming_mail(loop, fake_account, backend, msg_test, fake_emails, setti
             mail = run(backend.get_mail(mailbox['messages'][0]['uid']))
             
             assert mail['from'].addr_spec == from_addr.addr_spec
+            assert mail['status'] == 'received'
 
     assert delivered_count == 1
 
@@ -119,11 +120,9 @@ def test_get_attachment(loop, fake_account, backend, msg_test_with_attachments, 
             uid = mailbox['messages'][0]['uid']
 
             attachment = run(backend.get_mail_attachment(uid, 0))
-
             assert attachment == ({'filename': 'att1.txt', 'index': 0, 'type': 'text/plain'}, 'att1\n')
 
             attachment = run(backend.get_mail_attachment(uid, 1))
-
             assert attachment == ({'filename': 'att2.txt', 'index': 1, 'type': 'text/plain'}, 'att2\n')
     
 
@@ -137,10 +136,6 @@ def test_session(loop, fake_account, backend):
         "fakedict": "fakevalue"
     }
 
-    #session_from_storage = run(backend.get_user_session(session_key))
-
-    #session_from_storage.update(session)
-
     run(backend.save_user_session(session_key, session))
     
     session_from_storage = run(backend.get_user_session(session_key))
@@ -148,7 +143,39 @@ def test_session(loop, fake_account, backend):
     assert 'fakedict' in session_from_storage
     assert session_from_storage['fakedict'] == 'fakevalue'
 
+    session_from_storage['newvalue'] = 42
+    session_from_storage['fakedict'] = "badvalue"
 
-def test_search_contact(loop, fake_account, backend):
+    run(backend.save_user_session(session_key, session_from_storage))
+
+    session_from_storage = run(backend.get_user_session(session_key))
+
+    assert 'fakedict' in session_from_storage 
+    assert 'newvalue' in session_from_storage
+    assert session_from_storage['fakedict'] == 'badvalue'
+    assert session_from_storage['newvalue'] == 42
+
+
+def test_search_contact(loop, fake_account, backend, msg_test, fake_emails, settings):
     """ Test contact search feature """
-    pass
+    run = loop.run_until_complete
+
+    from_addr = msg_test['From'].addresses[0]
+    to_addrs = [parse_email(fake_emails()), parse_email(fake_emails())]
+
+    print(f"From {from_addr}")
+    print(f"To {to_addrs}")
+
+    run(backend.store_mail(
+        msg=msg_test,
+        account=fake_account,
+        from_addr=from_addr,
+        recipients=to_addrs, 
+        incoming=True
+    ))
+
+    search = run(backend.contacts_search(fake_account, 'foot'))
+
+    assert len(search) == 1
+    assert search[0] == 'joe@football.example.com'
+

@@ -60,8 +60,6 @@ class Backend():
             to_addrs=recipients,
             incoming=incoming
         )
-        
-        print('uid here', stored_msg['uid'], await self.get_mail(stored_msg['uid']))
 
         await self.store_content(stored_msg['uid'], msg.as_bytes())
 
