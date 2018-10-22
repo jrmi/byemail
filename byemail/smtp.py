@@ -304,7 +304,7 @@ async def send_mail(account, msg, from_addr, recipients, loop=None):
     saved_msg['status'] = 'sent'
     saved_msg['delivery_status'] = delivery_status
 
-    await storage.update_mail(saved_msg)
+    await storage.update_mail(account, saved_msg)
 
     return saved_msg
 
@@ -326,6 +326,6 @@ async def resend_mail(account, msg_to_resend, recipients, loop=None):
     # Then we save status and delivery status
     msg_to_resend['delivery_status'].update(delivery_status)
 
-    await storage.update_mail(msg_to_resend)
+    await storage.update_mail(account, msg_to_resend)
 
     return msg_to_resend

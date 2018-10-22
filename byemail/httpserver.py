@@ -110,32 +110,19 @@ def init_app():
     @auth.login_required(user_keyword='account', handle_no_auth=handle_no_auth)
     async def mailboxes(request, account):
         mbxs = await storage.get_mailboxes(account)
-        for m in mbxs:
-            if isinstance(m['last_message'], datetime.datetime): # Also strange hack
-                m['last_message'] = m['last_message'].isoformat()
         return json(mbxs)
 
     @app.route("/api/mailbox/<mailbox_id>")
     @auth.login_required(user_keyword='account', handle_no_auth=handle_no_auth)
     async def mailbox(request, mailbox_id, account):
-        mailbox_to_return = await storage.get_mailbox(mailbox_id)
-        if mailbox_to_return['account'] != account.name:
-            raise Forbidden("You don't have permission to see this mailbox.")
-        for m in mailbox_to_return['messages']:
-            if isinstance(m['date'], datetime.datetime): # Also strange hack
-                m['date'] = m['date'].isoformat()
+        mailbox_to_return = await storage.get_mailbox(account, mailbox_id)
+
         return json(mailbox_to_return)
 
     @app.route("/api/mail/<mail_id>")
     @auth.login_required(user_keyword='account', handle_no_auth=handle_no_auth)
     async def mail(request, mail_id, account):
-        mail_to_return = await storage.get_mail(mail_id)
-
-        if mail_to_return['account'] != account.name:
-            raise Forbidden("You don't have permission to see this mail.")
-
-        if isinstance(mail_to_return['date'], datetime.datetime): # Also strange hack
-            mail_to_return['date'] = mail_to_return['date'].isoformat()
+        mail_to_return = await storage.get_mail(account, mail_id)
 
         for att in mail_to_return['attachments']:
             if not att.get('filename'):
@@ -153,10 +140,7 @@ def init_app():
     @app.route("/api/mail/<mail_id>/mark_read", methods=['POST'])
     @auth.login_required(user_keyword='account', handle_no_auth=handle_no_auth)
     async def mail_mark_read(request, mail_id, account):
-        mail_to_mark = await storage.get_mail(mail_id)
-
-        if mail_to_mark['account'] != account.name:
-            raise Forbidden("You don't have permission to see this mail.")
+        mail_to_mark = await storage.get_mail(account, mail_id)
 
         mail_to_mark['unread'] = False
 
@@ -167,7 +151,7 @@ def init_app():
     @app.route("/api/mail/<mail_id>/attachment/<att_index>/<filename>", methods=['GET'])
     @auth.login_required(user_keyword='account', handle_no_auth=handle_no_auth)
     async def mail_download_attachment(request, mail_id, att_index, filename, account):
-        attachment, att_content = await storage.get_mail_attachment(mail_id, int(att_index))
+        attachment, att_content = await storage.get_mail_attachment(account, mail_id, int(att_index))
 
         async def streaming_att(response):
             await response.write(att_content)

@@ -61,6 +61,12 @@ def fake_account():
     from byemail.account import Account
     return Account(1, 'test', 'test', 'test@example.com', 'test@example.com')
 
+
+@pytest.fixture
+def other_fake_account():
+    from byemail.account import Account
+    return Account(1, 'test2', 'test2', 'test2@example.com', 'test2@example.com')
+
 @pytest.fixture
 def fake_emails():
     return fake.email

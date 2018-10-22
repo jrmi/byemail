@@ -11,6 +11,7 @@ from byemail.account import account_manager
 
 async def main():
     settings.init_settings()
+    await storage.storage.start()
     fake = Faker()
 
     for account_name, account in account_manager.accounts.items():
@@ -57,6 +58,9 @@ async def main():
                     to_addrs=[from_addr],
                     incoming=True
                 )
+
+    
+    await storage.storage.stop()
 
 
 if __name__ == "__main__":

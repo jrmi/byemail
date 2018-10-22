@@ -189,14 +189,19 @@ class Backend(core.Backend):
                 msg = await self.get(Message.uid==message['uid'])
                 mailbox['unreads']  += 1 if msg.get('unread') else 0
 
+        # TODO Hacky
+        for m in mailboxes:
+            if isinstance(m['last_message'], datetime.datetime):
+                m['last_message'] = m['last_message'].isoformat()
+
         return mailboxes
 
-    async def get_mailbox(self, mailbox_id):
+    async def get_mailbox(self, account, mailbox_id):
         """ Return the selected mailboxx """
         Mailbox = Query()
         Message = Query()
 
-        mailbox = await self.get(Mailbox.uid==mailbox_id)
+        mailbox = await self.get((Mailbox.uid==mailbox_id) & (Mailbox['account'] == account.name))
 
         messages = []
         mailbox['total'] = len(mailbox['messages'])
@@ -210,23 +215,30 @@ class Backend(core.Backend):
 
         mailbox['messages'] = messages
 
+        for m in messages:
+            if isinstance(m['date'], datetime.datetime): # TODO Also strange hack
+                m['date'] = m['date'].isoformat()
+
         return mailbox
 
-    async def get_mail(self, mail_uid):
+    async def get_mail(self, account, mail_uid):
         """ Get message by uid """
 
         Message = Query()
 
-        mail = await self.get(Message.uid==mail_uid)
+        mail = await self.get((Message.uid==mail_uid) & (Message['account'] == account.name))
+
+        if isinstance(mail['date'], datetime.datetime): # TODO Also strange hack
+            mail['date'] = mail['date'].isoformat()
 
         return mail
 
-    async def get_mail_attachment(self, mail_uid, att_index):
+    async def get_mail_attachment(self, account, mail_uid, att_index):
         """ Return a specific mail attachment """
 
         Message = Query()
 
-        mail = await self.get(Message.uid==mail_uid)
+        mail = await self.get((Message.uid==mail_uid) & (Message['account'] == account.name))
         raw_mail = await self.get_content_msg(mail_uid)
 
         print(f"\natt{mail['attachments']}\n", mail['from'])
@@ -239,12 +251,12 @@ class Backend(core.Backend):
         content = stream.get_content()
         return attachment, content
 
-    async def update_mail(self, mail):
+    async def update_mail(self, account, mail):
         """ Update any mail """
 
         Message = Query()
 
-        self.db.update(mail, Message.uid==mail['uid'])
+        self.db.update(mail, (Message.uid==mail['uid']) & (Message['account'] == account.name))
 
         return mail
 

@@ -14,7 +14,7 @@
             <v-list-tile-content>
             <v-list-tile-title v-if="mailbox.name" v-html="mailbox.name"></v-list-tile-title>
             <v-list-tile-title v-else v-html="mailbox.address"></v-list-tile-title>
-            <v-list-tile-sub-title>{{mailbox.last_message.fromNow()}} - {{mailbox.messages.length}} msgs</v-list-tile-sub-title>
+            <v-list-tile-sub-title>{{mailbox.last_message.fromNow()}} - {{mailbox.totals}} msgs</v-list-tile-sub-title>
             </v-list-tile-content>
 
             <v-list-tile-action v-if="mailbox.unreads">

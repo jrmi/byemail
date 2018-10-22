@@ -11,7 +11,17 @@ from byemail.storage.tinydb import Backend as TinyBackend
 from byemail.mailutils import parse_email, extract_data_from_msg
 
 all_backends = [
-    {'class': SQLBackend, 'conf': {'uri': "sqlite://:memory:"}},
+    {'class': SQLBackend, 'conf': {
+            "config": {
+                'default': {
+                    'engine': 'tortoise.backends.sqlite',
+                    'credentials':{
+                        'file_path': ':memory:'
+                    }
+                },
+            }
+        }
+    },
     {'class': TinyBackend, 'conf': {'datadir': '/tmp/tinydbtest'}}
 ]
 
@@ -28,7 +38,7 @@ def backend(request, loop):
     loop.run_until_complete(backend.stop())
 
 
-def test_mailbox(loop, fake_account, backend):
+def test_mailbox(loop, fake_account, other_fake_account, backend):
 
     result = loop.run_until_complete(backend.get_mailboxes(account=fake_account))
 
@@ -47,10 +57,13 @@ def test_mailbox(loop, fake_account, backend):
 
     uid = result[0]['uid']
 
-    result = loop.run_until_complete(backend.get_mailbox(uid))
+    result = loop.run_until_complete(backend.get_mailbox(fake_account, uid))
 
     assert result['account'] == fake_account.name
     assert result['name'] == "name"
+
+    with pytest.raises(Exception):
+        result = loop.run_until_complete(backend.get_mailbox(other_fake_account, uid))
 
 
 def test_incoming_mail(loop, fake_account, backend, msg_test, fake_emails, settings):
@@ -76,13 +89,13 @@ def test_incoming_mail(loop, fake_account, backend, msg_test, fake_emails, setti
     delivered_count = 0
 
     for mailbox in mailboxes:
-        mailbox = run(backend.get_mailbox(mailbox['uid']))
+        mailbox = run(backend.get_mailbox(fake_account, mailbox['uid']))
 
         if mailbox['address'] in from_addr.addr_spec:
             delivered_count += 1
             assert len(mailbox['messages']) == 1
 
-            mail = run(backend.get_mail(mailbox['messages'][0]['uid']))
+            mail = run(backend.get_mail(fake_account, mailbox['messages'][0]['uid']))
             
             assert mail['from'].addr_spec == from_addr.addr_spec
             assert mail['status'] == 'received'
@@ -114,15 +127,15 @@ def test_get_attachment(loop, fake_account, backend, msg_test_with_attachments, 
     mailboxes = run(backend.get_mailboxes(fake_account))
 
     for mailbox in mailboxes:
-        mailbox = run(backend.get_mailbox(mailbox['uid']))
+        mailbox = run(backend.get_mailbox(fake_account, mailbox['uid']))
 
         if mailbox['address'] in from_addr.addr_spec:
             uid = mailbox['messages'][0]['uid']
 
-            attachment = run(backend.get_mail_attachment(uid, 0))
+            attachment = run(backend.get_mail_attachment(fake_account, uid, 0))
             assert attachment == ({'filename': 'att1.txt', 'index': 0, 'type': 'text/plain'}, 'att1\n')
 
-            attachment = run(backend.get_mail_attachment(uid, 1))
+            attachment = run(backend.get_mail_attachment(fake_account, uid, 1))
             assert attachment == ({'filename': 'att2.txt', 'index': 1, 'type': 'text/plain'}, 'att2\n')
     
 

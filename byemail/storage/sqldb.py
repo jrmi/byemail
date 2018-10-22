@@ -2,6 +2,7 @@ import re
 import uuid
 import arrow
 import base64
+import logging
 import datetime
 
 from json import JSONEncoder, JSONDecoder
@@ -18,6 +19,7 @@ from tortoise.models import Model
 
 from byemail.storage import core
 
+logger = logging.getLogger(__name__)
 
 class DateTimeSerializer():
     OBJ_CLASS = datetime.datetime  # The class this serializer handles
@@ -87,7 +89,7 @@ class Mailbox(Model):
             'account': self.account,
             'address': self.address,
             'name': self.name,
-            'totals': self.total,
+            'total': self.total,
             'unreads': self.unreads
         }
 
@@ -150,17 +152,27 @@ class Session(Model):
 
 class Backend(core.Backend):
 
-    def __init__(self, uri="sqlite://:memory:", **kwargs):
+    def __init__(self, config=None, **kwargs):
         super().__init__(**kwargs)
-        self.uri = uri
+        self.config = config
 
     async def start(self):
-        await Tortoise.init(
-            db_url=self.uri,
-            modules={'models': ['byemail.storage.sqldb']}
-        )
+        config = {
+            'connections': self.config,
+            'apps': {
+                'models': {
+                    'models': ['byemail.storage.sqldb'],
+                    'default_connection': 'default',
+                }
+            }
+        }
 
-        await Tortoise.generate_schemas()
+        await Tortoise.init(config=config)
+
+        try:
+            await Tortoise.generate_schemas()
+        except exceptions.OperationalError:
+            logger.warning("No database initialisation, db seems existing...")
 
     async def stop(self):
         await Tortoise.close_connections()
@@ -204,10 +216,10 @@ class Backend(core.Backend):
         """ Return all mailboxes in db with unread message count and total """
         return [m.as_dict() for m in await Mailbox.filter(account=account.name)]
 
-    async def get_mailbox(self, mailbox_id):
+    async def get_mailbox(self, account, mailbox_id):
         """ Return the selected mailbox """
         
-        mailbox = await Mailbox.get(uid=mailbox_id)
+        mailbox = await Mailbox.get(uid=mailbox_id, account=account.name)
 
         msgs = await Message.filter(mailboxes = mailbox.id).order_by('timestamp')
 
@@ -265,24 +277,24 @@ class Backend(core.Backend):
 
         return dbmsg.as_dict()
 
-    async def get_mail(self, mail_uid):
+    async def get_mail(self, account, mail_uid):
         """ Get message by uid """
-        mail = await Message.get(uid=mail_uid)
+        mail = await Message.get(uid=mail_uid, mailboxes__account=account.name)
         return mail.as_dict()
 
-    async def update_mail(self, mail):
+    async def update_mail(self, account, mail):
         """ Update any mail """
-        dbmsg = await Message.get(uid=mail['uid'])
+        dbmsg = await Message.get(uid=mail['uid'], mailboxes__account=account.name)
         dbmsg.update_from_dict(mail)
 
         await dbmsg.save()
 
         return dbmsg.as_dict()
 
-    async def get_mail_attachment(self, mail_uid, att_index):
+    async def get_mail_attachment(self, account, mail_uid, att_index):
         """ Return a specific mail attachment """
 
-        mail = await self.get_mail(mail_uid)
+        mail = await self.get_mail(account, mail_uid)
         raw_mail = await self.get_content_msg(mail_uid)
 
         attachment = mail['attachments'][att_index]
@@ -317,7 +329,7 @@ class Backend(core.Backend):
 
     async def contacts_search(self, account, text):
         """ Search a contact from mailboxes """
-        matching_mailboxes = await Mailbox.filter(address__icontains=text)
+        matching_mailboxes = await Mailbox.filter(address__icontains=text, account=account.name)
         return [m.address for m in matching_mailboxes]
 
 

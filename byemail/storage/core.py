@@ -36,11 +36,11 @@ class Backend():
         """ Return all mailboxes in db with unread message count and total """
         raise NotImplementedError()
 
-    async def get_mailbox(self, mailbox_id):
+    async def get_mailbox(self, account, mailbox_id):
         """ Return the selected mailbox """
         raise NotImplementedError()
 
-    async def get_mailbox_mails(self, mailbox_id):
+    async def get_mailbox_mails(self, account, mailbox_id):
         """ Return the selected mailbox messages """
         raise NotImplementedError()
 
@@ -65,7 +65,7 @@ class Backend():
 
         stored_msg['status'] = 'received' if incoming else 'sending'
 
-        await self.update_mail(stored_msg)
+        await self.update_mail(account, stored_msg)
 
         return stored_msg
 
@@ -82,15 +82,15 @@ class Backend():
         """ Store message in database """
         raise NotImplementedError()
 
-    async def get_mail(self, mail_uid):
+    async def get_mail(self, account, mail_uid):
         """ Get message by uid """
         raise NotImplementedError()
 
-    async def get_mail_attachment(self, mail_uid, att_index):
+    async def get_mail_attachment(self, account, mail_uid, att_index):
         """ Return a specific mail attachment """
         raise NotImplementedError()
 
-    async def update_mail(self, mail):
+    async def update_mail(self, account, mail):
         """ Update any mail """
         raise NotImplementedError()
 
