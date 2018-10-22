@@ -5,6 +5,7 @@ import base64
 import logging
 import datetime
 
+from functools import wraps
 from json import JSONEncoder, JSONDecoder
 
 from email import policy
@@ -17,7 +18,7 @@ from tortoise import fields
 from tortoise import exceptions
 from tortoise.models import Model
 
-from byemail.storage import core
+from byemail.storage import core, DoesntExists, MultipleResults
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +69,21 @@ class MyJSONDecoder(JSONDecoder):
                     return decoder.decode(obj)
         return obj
 
+
+def translate_exception():
+    def translate(func):
+        @wraps(func)
+        async def func_wrap(*args, **kwargs):
+            try:
+                return await func(*args, **kwargs)
+            except exceptions.DoesNotExist:
+                raise DoesntExists()
+            except exceptions.MultipleObjectsReturned:
+                raise MultipleResults()
+            
+        return func_wrap
+
+    return translate
 
 # Mailbox
 class Mailbox(Model):
@@ -188,6 +204,7 @@ class Backend(core.Backend):
         rmsg = RawMessage(uid=uid, content=b64_content)
         return await rmsg.save()
 
+    @translate_exception()
     async def get_content_msg(self, uid):
         """ Return EmailMessage instance for this message uid """
         rmsg = await RawMessage.get(uid=uid)
@@ -198,6 +215,7 @@ class Backend(core.Backend):
 
         return msg
 
+    @translate_exception()
     async def get_or_create_mailbox(self, account, address, name):
         """ Create a mailbox """
 
@@ -212,10 +230,12 @@ class Backend(core.Backend):
 
         return mailbox
 
+    @translate_exception()
     async def get_mailboxes(self, account):
         """ Return all mailboxes in db with unread message count and total """
         return [m.as_dict() for m in await Mailbox.filter(account=account.name)]
 
+    @translate_exception()
     async def get_mailbox(self, account, mailbox_id):
         """ Return the selected mailbox """
         
@@ -228,6 +248,7 @@ class Backend(core.Backend):
 
         return result
 
+    @translate_exception()
     async def store_msg(
         self, 
         msg, 
@@ -277,11 +298,13 @@ class Backend(core.Backend):
 
         return dbmsg.as_dict()
 
+    @translate_exception()
     async def get_mail(self, account, mail_uid):
         """ Get message by uid """
         mail = await Message.get(uid=mail_uid, mailboxes__account=account.name)
         return mail.as_dict()
 
+    @translate_exception()
     async def update_mail(self, account, mail):
         """ Update any mail """
         dbmsg = await Message.get(uid=mail['uid'], mailboxes__account=account.name)
@@ -291,6 +314,7 @@ class Backend(core.Backend):
 
         return dbmsg.as_dict()
 
+    @translate_exception()
     async def get_mail_attachment(self, account, mail_uid, att_index):
         """ Return a specific mail attachment """
 
@@ -305,6 +329,7 @@ class Backend(core.Backend):
         content = stream.get_content()
         return attachment, content
 
+    @translate_exception()
     async def save_user_session(self, session_key, session):
         """ Save modified user session """
         dbsession, _ = await Session.get_or_create(
@@ -317,6 +342,7 @@ class Backend(core.Backend):
         dbsession.content = session
         await dbsession.save()
 
+    @translate_exception()
     async def get_user_session(self, session_key):
         """ Load user session """
         session, _ = await Session.get_or_create(
@@ -327,6 +353,7 @@ class Backend(core.Backend):
         )
         return session.as_dict()
 
+    @translate_exception()
     async def contacts_search(self, account, text):
         """ Search a contact from mailboxes """
         matching_mailboxes = await Mailbox.filter(address__icontains=text, account=account.name)

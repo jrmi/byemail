@@ -8,6 +8,7 @@ from copy import deepcopy
 
 from byemail.storage.sqldb import Backend as SQLBackend
 from byemail.storage.tinydb import Backend as TinyBackend
+from byemail import storage
 from byemail.mailutils import parse_email, extract_data_from_msg
 
 all_backends = [
@@ -62,11 +63,12 @@ def test_mailbox(loop, fake_account, other_fake_account, backend):
     assert result['account'] == fake_account.name
     assert result['name'] == "name"
 
-    with pytest.raises(Exception):
+    # Check security
+    with pytest.raises(storage.DoesntExists):
         result = loop.run_until_complete(backend.get_mailbox(other_fake_account, uid))
 
 
-def test_incoming_mail(loop, fake_account, backend, msg_test, fake_emails, settings):
+def test_incoming_mail(loop, fake_account, other_fake_account, backend, msg_test, fake_emails, settings):
     run = loop.run_until_complete
 
     from_addr = msg_test['From'].addresses[0]
@@ -95,15 +97,23 @@ def test_incoming_mail(loop, fake_account, backend, msg_test, fake_emails, setti
             delivered_count += 1
             assert len(mailbox['messages']) == 1
 
+
+
             mail = run(backend.get_mail(fake_account, mailbox['messages'][0]['uid']))
             
             assert mail['from'].addr_spec == from_addr.addr_spec
             assert mail['status'] == 'received'
 
+            # Check security
+            with pytest.raises(storage.DoesntExists):
+                mail = run(backend.get_mail(other_fake_account, mailbox['messages'][0]['uid']))
+
     assert delivered_count == 1
 
 
-def test_get_attachment(loop, fake_account, backend, msg_test_with_attachments, fake_emails, settings):
+
+
+def test_get_attachment(loop, fake_account, other_fake_account, backend, msg_test_with_attachments, fake_emails, settings):
     run = loop.run_until_complete
 
     del msg_test_with_attachments['From']
@@ -137,6 +147,10 @@ def test_get_attachment(loop, fake_account, backend, msg_test_with_attachments, 
 
             attachment = run(backend.get_mail_attachment(fake_account, uid, 1))
             assert attachment == ({'filename': 'att2.txt', 'index': 1, 'type': 'text/plain'}, 'att2\n')
+
+            # Check security
+            with pytest.raises(storage.DoesntExists):
+                attachment = run(backend.get_mail_attachment(other_fake_account, uid, 1))
     
 
 def test_session(loop, fake_account, backend):

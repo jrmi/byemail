@@ -16,14 +16,8 @@ from tinydb_serialization import Serializer, SerializationMiddleware
 
 from byemail import mailutils
 from byemail.conf import settings
-from byemail.storage import core
+from byemail.storage import core, DoesntExists, MultipleResults
 
-
-class DoesntExists(Exception):
-    pass
-
-class MultipleResults(Exception):
-    pass
 
 class DateTimeSerializer(Serializer):
     OBJ_CLASS = datetime.datetime  # The class this serializer handles

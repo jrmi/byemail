@@ -2,6 +2,12 @@ from importlib import import_module
 
 from byemail.conf import settings
 
+class DoesntExists(Exception):
+    pass
+
+class MultipleResults(Exception):
+    pass
+
 class Storage():
     def __init__(self, loop=None):
         self.loop = loop
