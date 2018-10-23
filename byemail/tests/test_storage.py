@@ -94,23 +94,26 @@ def test_incoming_mail(loop, fake_account, other_fake_account, backend, msg_test
         mailbox = run(backend.get_mailbox(fake_account, mailbox['uid']))
 
         if mailbox['address'] in from_addr.addr_spec:
+            # Count message to be sure at least one have been recorded
             delivered_count += 1
-            assert len(mailbox['messages']) == 1
 
-
-
+            # Check mail
             mail = run(backend.get_mail(fake_account, mailbox['messages'][0]['uid']))
-            
             assert mail['from'].addr_spec == from_addr.addr_spec
             assert mail['status'] == 'received'
+
+            # Check mailbox data
+            assert len(mailbox['messages']) == 1
+            assert mailbox['total'] == 1
+            assert mailbox['unreads'] == 1
+            assert mailbox['last_message'] == mail['date']
 
             # Check security
             with pytest.raises(storage.DoesntExists):
                 mail = run(backend.get_mail(other_fake_account, mailbox['messages'][0]['uid']))
 
+
     assert delivered_count == 1
-
-
 
 
 def test_get_attachment(loop, fake_account, other_fake_account, backend, msg_test_with_attachments, fake_emails, settings):

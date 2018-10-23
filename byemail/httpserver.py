@@ -110,12 +110,19 @@ def init_app():
     @auth.login_required(user_keyword='account', handle_no_auth=handle_no_auth)
     async def mailboxes(request, account):
         mbxs = await storage.get_mailboxes(account)
+        
+        for mb in mbxs:
+            mb['last_message'] = mb['last_message'].isoformat()
+
         return json(mbxs)
 
     @app.route("/api/mailbox/<mailbox_id>")
     @auth.login_required(user_keyword='account', handle_no_auth=handle_no_auth)
     async def mailbox(request, mailbox_id, account):
         mailbox_to_return = await storage.get_mailbox(account, mailbox_id)
+
+        for msg in mailbox_to_return['messages']:
+            msg['date'] = msg['date'].isoformat()
 
         return json(mailbox_to_return)
 
@@ -134,6 +141,8 @@ def init_app():
                     guessed_ext
                 )
             att['url'] = "/api/mail/{}/attachment/{}/{}".format(mail_id, att['index'], att['filename'])
+
+        mail_to_return['date'] = mail_to_return['date'].isoformat()
 
         return json(mail_to_return)
 

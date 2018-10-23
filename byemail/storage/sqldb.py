@@ -94,6 +94,7 @@ class Mailbox(Model):
     name = fields.CharField(max_length=255)
     unreads = fields.IntField(default=0)
     total = fields.IntField(default=0)
+    last_message = fields.DatetimeField(null=True)
 
     def __str__(self):
         return f"<Mailbox {self.account}(<{self.name}> {self.address})>"
@@ -106,7 +107,8 @@ class Mailbox(Model):
             'address': self.address,
             'name': self.name,
             'total': self.total,
-            'unreads': self.unreads
+            'unreads': self.unreads,
+            'last_message': self.last_message,
         }
 
 
@@ -131,7 +133,7 @@ class Message(Model):
         self.uid = data['uid']
         self.status = data['status']
         self.unread = data['unread']
-        self.timestamp = data['received']
+        self.timestamp = data['date']
         self.incoming = data['incoming']
         self.attachments = data['attachments']
         self.data = data
@@ -168,22 +170,31 @@ class Session(Model):
 
 class Backend(core.Backend):
 
-    def __init__(self, config=None, **kwargs):
+    def __init__(self, config=None, uri=None, **kwargs):
         super().__init__(**kwargs)
+        assert config != None or uri != None, "You need to specify at least one of uri or config param"
         self.config = config
+        self.uri = uri
 
     async def start(self):
-        config = {
-            'connections': self.config,
-            'apps': {
-                'models': {
-                    'models': ['byemail.storage.sqldb'],
-                    'default_connection': 'default',
+        if self.config:
+            config = {
+                'connections': self.config,
+                'apps': {
+                    'models': {
+                        'models': ['byemail.storage.sqldb'],
+                        'default_connection': 'default',
+                    }
                 }
             }
-        }
 
-        await Tortoise.init(config=config)
+            await Tortoise.init(config=config)
+
+        if self.uri:
+            await Tortoise.init(
+                db_url=self.uri,
+                modules={'models': ['byemail.storage.sqldb']}
+            )
 
         try:
             await Tortoise.generate_schemas()
@@ -290,11 +301,18 @@ class Backend(core.Backend):
             if extra_data:
                 msg.data.update(extra_data)
 
-        
-        # Update unread count
-        mailbox.unreads = len(list(await mailbox.messages.filter(unread='true')))
-        mailbox.totals = len(list(await mailbox.messages.filter(id__gte=0)))
-        await mailbox.save()
+            # Update last_message date
+            if mailbox.last_message is None or mailbox.last_message < msg['date']:
+                mailbox.last_message = msg['date']
+
+            # Update unread count
+            #print(await mailbox.messages.filter(unread=1).count()) # TODO fails
+            #print(list(mailbox.messages.all())) # TODO fails
+            print(list(await mailbox.messages.filter(uid__icontains='')))
+            mailbox.unreads = len(list(await mailbox.messages.filter(unread=1)))
+            mailbox.total = len(list(await mailbox.messages.filter(uid__icontains='')))
+
+            await mailbox.save()
 
         return dbmsg.as_dict()
 

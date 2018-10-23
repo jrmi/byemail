@@ -29,8 +29,8 @@ const mutations = {
   [types.RESET_DRAFT] (state) {
     Object.assign(state, {
       draft: {
-        mailContent: '',
-        mailSubject: '',
+        content: '',
+        subject: '',
         recipients: [],
         attachments: []
       }

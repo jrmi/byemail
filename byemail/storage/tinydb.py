@@ -222,8 +222,8 @@ class Backend(core.Backend):
 
         mail = await self.get((Message.uid==mail_uid) & (Message['account'] == account.name))
 
-        if isinstance(mail['date'], datetime.datetime): # TODO Also strange hack
-            mail['date'] = mail['date'].isoformat()
+        #if isinstance(mail['date'], datetime.datetime): # TODO Also strange hack
+        #    mail['date'] = mail['date'].isoformat()
 
         return mail
 
