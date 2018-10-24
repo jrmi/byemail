@@ -35,3 +35,4 @@ pipenv = "*"
 tox-pipenv = {editable = true, ref = "master", git = "https://github.com/tox-dev/tox-pipenv.git"}
 rope = ">=0.11.0"
 ipython = "*"
+docutils = "*"

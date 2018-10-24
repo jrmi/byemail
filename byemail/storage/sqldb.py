@@ -45,7 +45,12 @@ class AddressSerializer():
         }
 
     def decode(self, s):
-        return Address(display_name=s['display_name'], addr_spec=s['addr_spec'])
+        try:
+            return Address(display_name=s['display_name'], addr_spec=s['addr_spec'])
+        except InvalidHeaderDefect:
+            return ''
+
+        
 
 encoders = [DateTimeSerializer(), AddressSerializer()]
 
@@ -127,24 +132,32 @@ class Message(Model):
 
     attachments = fields.JSONField(default=[])
     data = fields.JSONField(encoder=MyJSONEncoder().encode, decoder=MyJSONDecoder().decode)
-    #raw_message = fields.TextField()
 
     def update_from_dict(self, data):
-        self.uid = data['uid']
-        self.status = data['status']
-        self.unread = data['unread']
-        self.timestamp = data['date']
-        self.incoming = data['incoming']
-        self.attachments = data['attachments']
+        data = dict(data)
+        self.uid = data.pop('uid')
+        self.status = data.pop('status')
+        self.unread = data.pop('unread')
+        self.timestamp = data.pop('date')
+        self.incoming = data.pop('incoming')
+        self.attachments = data.pop('attachments')
         self.data = data
 
     def as_dict(self):
-        data = self.data
+        data = dict(self.data)
         data['uid'] = self.uid
         data['status'] = self.status
         data['unread'] = self.unread
+        data['date'] = self.timestamp
         data['incoming'] = self.incoming
+        data['attachments'] = self.attachments
         
+        return data
+
+    def as_mini_dict(self):
+        data = self.as_dict()
+        del data['body']
+
         return data
 
 
@@ -155,6 +168,31 @@ class RawMessage(Model):
 
     content = fields.TextField()
 
+class RawMail(Model):
+    id = fields.IntField(pk=True)
+    status = fields.CharField(max_length=255)
+    peer = fields.CharField(max_length=255),
+    host_name =  fields.CharField(max_length=255),
+    mail_from = fields.CharField(max_length=255),
+    tos =  fields.CharField(max_length=255),
+    subject = fields.CharField(max_length=255),
+    received = fields.DatetimeField(),
+
+    data = fields.TextField()
+
+    @staticmethod
+    def from_dict(data):
+        rm = RawMail()
+        rm.status = data['status']
+        rm.peer = data['peer']
+        rm.host_name = data['host_name']
+        rm.mail_from = data['from']
+        rm.tos = data['tos']
+        rm.subject = data['subject']
+        rm.received = datetime.datetime.now().isoformat()
+        rm.data = data['data']
+
+        return rm
 
 class Session(Model):
     """ Users session """
@@ -206,7 +244,8 @@ class Backend(core.Backend):
 
     async def store_bad_msg(self, bad_msg):
         """ To handle msg that failed to parse """
-        raise NotImplementedError()
+        rm = RawMail.from_dict(bad_msg)
+        await rm.save()
 
     async def store_content(self, uid, content):
         """ Store raw message content """
@@ -255,7 +294,7 @@ class Backend(core.Backend):
         msgs = await Message.filter(mailboxes = mailbox.id).order_by('timestamp')
 
         result = mailbox.as_dict()
-        result['messages'] = [msg.as_dict() for msg in msgs]
+        result['messages'] = [msg.as_mini_dict() for msg in msgs]
 
         return result
 
@@ -271,13 +310,15 @@ class Backend(core.Backend):
     ):
         """ Store message in database """
 
-        dbmsg = Message(uid=uuid.uuid4().hex)
-        dbmsg.incoming = incoming
-        dbmsg.unread = incoming
-        dbmsg.status = 'new'
-        dbmsg.timestamp = msg['received']
-        dbmsg.data = msg
+        # Add information
+        msg['uid'] = uuid.uuid4().hex
+        msg['incoming'] = incoming
+        msg['unread'] = incoming
+        msg['status'] = 'new'
 
+        # Create dbmessage
+        dbmsg = Message()
+        dbmsg.update_from_dict(msg)
         await dbmsg.save()
 
         # Mailbox to link mail
@@ -302,13 +343,12 @@ class Backend(core.Backend):
                 msg.data.update(extra_data)
 
             # Update last_message date
-            if mailbox.last_message is None or mailbox.last_message < msg['date']:
+            if mailbox.last_message is None or mailbox.last_message <  msg['date']:
                 mailbox.last_message = msg['date']
 
             # Update unread count
             #print(await mailbox.messages.filter(unread=1).count()) # TODO fails
             #print(list(mailbox.messages.all())) # TODO fails
-            print(list(await mailbox.messages.filter(uid__icontains='')))
             mailbox.unreads = len(list(await mailbox.messages.filter(unread=1)))
             mailbox.total = len(list(await mailbox.messages.filter(uid__icontains='')))
 
@@ -343,8 +383,8 @@ class Backend(core.Backend):
 
         atts = list(raw_mail.iter_attachments())
         stream = atts[att_index]
-
         content = stream.get_content()
+
         return attachment, content
 
     @translate_exception()

@@ -3,6 +3,8 @@ import os
 import asyncio
 import pytest
 import shutil
+import datetime
+import base64
 
 from copy import deepcopy
 
@@ -126,16 +128,15 @@ def test_get_attachment(loop, fake_account, other_fake_account, backend, msg_tes
     from_addr = msg_test_with_attachments['From'].addresses[0]
     to_addrs = [parse_email(fake_emails())]
 
-    print(f"From {from_addr}")
-    print(f"To {to_addrs}")
-
-    run(backend.store_mail(
+    out_mail = run(backend.store_mail(
         msg=msg_test_with_attachments,
         account=fake_account,
         from_addr=from_addr,
         recipients=to_addrs, 
         incoming=True
     ))
+
+    print("out mail", out_mail)
     
     mailboxes = run(backend.get_mailboxes(fake_account))
 
@@ -193,9 +194,6 @@ def test_search_contact(loop, fake_account, backend, msg_test, fake_emails, sett
     from_addr = msg_test['From'].addresses[0]
     to_addrs = [parse_email(fake_emails()), parse_email(fake_emails())]
 
-    print(f"From {from_addr}")
-    print(f"To {to_addrs}")
-
     run(backend.store_mail(
         msg=msg_test,
         account=fake_account,
@@ -209,3 +207,25 @@ def test_search_contact(loop, fake_account, backend, msg_test, fake_emails, sett
     assert len(search) == 1
     assert search[0] == 'joe@football.example.com'
 
+
+def test_store_bad_msg(loop, fake_account, backend, msg_test, fake_emails, settings):
+    """ Test contact search feature """
+    run = loop.run_until_complete
+
+    from_addr = msg_test['From'].addresses[0]
+    to_addrs = [parse_email(fake_emails()), parse_email(fake_emails())]
+
+    to_save = {
+        'status': 'error',
+        'peer': 'fake@peer.old',
+        'host_name': 'fake@hostname.old',
+        'from': from_addr,
+        'tos': to_addrs,
+        'subject': msg_test['Subject'],
+        'received': datetime.datetime.now().isoformat(),
+        'data': base64.b64encode(msg_test.as_bytes()).decode('utf-8'),
+    }
+
+    run(backend.store_bad_msg(
+        to_save
+    ))

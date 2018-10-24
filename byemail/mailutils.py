@@ -77,6 +77,10 @@ async def extract_data_from_msg(msg):
 
     body = msg.get_body(('html', 'plain',))
 
+    # Fix missing date
+    if msg['Date'] is None:
+        msg['Date'] = datetime.datetime.now()
+
     msg_out = {
         'status': 'new',
         'subject': msg['Subject'],

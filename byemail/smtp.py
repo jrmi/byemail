@@ -54,7 +54,6 @@ class MsgHandler:
         msg = BytesParser(policy=policy.default).parsebytes(envelope.content)
 
         to_save = {
-            'type': 'mail',
             'status': 'error',
             'peer': session.peer,
             'host_name': session.host_name,

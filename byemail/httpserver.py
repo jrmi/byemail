@@ -112,7 +112,8 @@ def init_app():
         mbxs = await storage.get_mailboxes(account)
         
         for mb in mbxs:
-            mb['last_message'] = mb['last_message'].isoformat()
+            if mb['last_message']:
+                mb['last_message'] = mb['last_message'].isoformat()
 
         return json(mbxs)
 
@@ -153,7 +154,7 @@ def init_app():
 
         mail_to_mark['unread'] = False
 
-        await storage.update_mail(mail_to_mark)
+        await storage.update_mail(account, mail_to_mark)
 
         return json(mail_to_mark)
 

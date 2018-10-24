@@ -49,6 +49,7 @@ class Backend(core.Backend):
         if not os.path.isdir(datadir):
             os.makedirs(datadir)
 
+        # TODO put this in start()
         serialization = SerializationMiddleware()
         serialization.register_serializer(DateTimeSerializer(), 'TinyDate')
         serialization.register_serializer(AddressSerializer(), 'TinyAddress')
@@ -76,6 +77,7 @@ class Backend(core.Backend):
 
     async def store_bad_msg(self, bad_msg):
         """ To handle msg that failed to parse """
+        bad_msg['type'] = 'mail'
 
         self.db.insert(bad_msg)
 
@@ -185,8 +187,8 @@ class Backend(core.Backend):
 
         # TODO Hacky
         for m in mailboxes:
-            if isinstance(m['last_message'], datetime.datetime):
-                m['last_message'] = m['last_message'].isoformat()
+            if not isinstance(m['last_message'], datetime.datetime):
+                m['last_message'] = arrow.get(m['last_message']).datetime
 
         return mailboxes
 
@@ -209,9 +211,10 @@ class Backend(core.Backend):
 
         mailbox['messages'] = messages
 
+        # TODO reverse me
         for m in messages:
-            if isinstance(m['date'], datetime.datetime): # TODO Also strange hack
-                m['date'] = m['date'].isoformat()
+            if not isinstance(m['date'], datetime.datetime):
+                m['date'] = arrow.get(m['date']).datetime
 
         return mailbox
 
@@ -222,8 +225,8 @@ class Backend(core.Backend):
 
         mail = await self.get((Message.uid==mail_uid) & (Message['account'] == account.name))
 
-        #if isinstance(mail['date'], datetime.datetime): # TODO Also strange hack
-        #    mail['date'] = mail['date'].isoformat()
+        if not isinstance(mail['date'], datetime.datetime):
+            mail['date'] = arrow.get(mail['date']).datetime
 
         return mail
 
@@ -234,8 +237,6 @@ class Backend(core.Backend):
 
         mail = await self.get((Message.uid==mail_uid) & (Message['account'] == account.name))
         raw_mail = await self.get_content_msg(mail_uid)
-
-        print(f"\natt{mail['attachments']}\n", mail['from'])
 
         attachment = mail['attachments'][att_index]
 

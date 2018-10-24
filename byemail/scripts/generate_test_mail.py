@@ -15,7 +15,7 @@ async def main():
     fake = Faker()
 
     for account_name, account in account_manager.accounts.items():
-        from_addr = account.address
+        from_addr = mailutils.parse_email(account.address)
         print(f"Generate messages for {from_addr}...")
 
         for _ in range(randint(3,5)):

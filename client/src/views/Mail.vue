@@ -26,15 +26,16 @@
             error
           </v-icon>
         </span>
-      </span>|
+      </span>
       <span class="cc" v-for="mail of currentMail().carboncopy" :key="mail.addr_spec">
-        Cc: {{mail.addr_spec}}
+        | Cc: {{mail.addr_spec}}
         <span v-if="!currentMail().incoming && currentMail().delivery_status[mail.addr_spec].status !== 'DELIVERED'">
           <v-icon color="error" @click.stop="currentRecipient = {dest: mail, status: currentMail().delivery_status[mail.addr_spec]}; dialog = true">
             error
           </v-icon>
         </span>
       </span>
+      <span>| Received {{currentMail().date.format('lll')}}</span>
     </div>
 
     <message-content :message="currentMail()" />
