@@ -109,11 +109,12 @@ async def extract_data_from_msg(msg):
         msg_out['attachments'].append({
             'index': ind,
             'type': att.get_content_type(),
-            'filename': att.get_filename()
+            'filename': att.get_filename(),
+            'content-id': att['content-id'][1:-1] if att['content-id'] else None
         })
 
     if msg['Thread-Topic']:
-        msg_out['in_thread'] = True
+        msg_out['in-thread'] = True
         msg_out['thread-topic'] = msg['Thread-Topic']
         msg_out['thread-index'] = msg['Thread-index']
 
