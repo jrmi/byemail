@@ -67,7 +67,7 @@ class MsgHandler:
         await storage.store_bad_msg(to_save)
 
     async def handle_DATA(self, server, session, envelope):
-        print('Message From: %s, To: %s' % (envelope.mail_from, envelope.rcpt_tos))
+        logger.info('Message From: %s, To: %s', envelope.mail_from, envelope.rcpt_tos)
 
         # TODO handle message refused when spam or something with middleware ?
         await self.local_delivery(envelope.rcpt_tos, server, session, envelope)
