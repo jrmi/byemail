@@ -1,5 +1,5 @@
 <template>
-  <v-card v-if="currentMail() && showMail">
+  <v-card class="whole-mail" v-if="currentMail() && showMail">
     <v-toolbar color="grey" dark flat>
 
       <v-toolbar-title>{{currentMail().subject}} ({{currentMail()['body-type']}})</v-toolbar-title>
@@ -152,16 +152,22 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-.mail {
-  flex: 70;
+.whole-mail{
+  flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+}
+.mail .v-toolbar{
+  flex: 0;
 }
 .mail-header{
   flex: 0;
-  overflow-y: scroll;
-  min-height: 1.5em;
+  overflow-y: auto;
+  min-height: 1.6em;
   border-bottom: 1px solid #ccc;
+}
+.mail-content{
+  flex: 1;
+  overflow-y: scroll;
 }
 </style>

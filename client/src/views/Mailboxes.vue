@@ -65,24 +65,19 @@ export default {
 
 <style scoped lang="less">
 .main{
-  height: 100%;
-  max-height: 100%;
+  height: 89vh; // TODO find a better way
+  max-height: 89vh;
   display: grid;
   grid-template-columns: 25% 30% auto;
 }
 .mailboxes{
-  height: 100%;
-  max-height: 100%;
   overflow-y: scroll;
 }
 .mailbox{
-  height: 100%;
-  max-height: 100%;
   overflow-y: scroll;
 }
 .mail{
-  height: 100%;
-  max-height: 100%;
-  overflow-y: scroll;
+  overflow-y: hidden;
+  display: flex;
 }
 </style>

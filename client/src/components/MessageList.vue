@@ -9,7 +9,8 @@
         :class="{'incoming': message.incoming}"
       >
         <v-list-tile-content>
-          <v-list-tile-title>{{message.subject}}</v-list-tile-title>
+          <v-list-tile-title v-if="message.subject">{{message.subject}}</v-list-tile-title>
+          <v-list-tile-title v-else>(No subject)</v-list-tile-title>
           <v-list-tile-sub-title><span>{{message.date.fromNow()}}</span>
             <span v-if="message.attachments.length">
               | {{message.attachments.length}} <v-icon>attach_file</v-icon>
