@@ -29,5 +29,5 @@ if __name__ == "__main__":
         try:
             msg = mail_from_file(arg)
             r = client.sendmail('from@localhost', ['to@localhost'], msg.as_bytes())
-        except:
-            print(f"EEEEEE - Fail to send {arg}")
+        except UnicodeEncodeError as e:
+            print(f"EEEEEE - Fail to send {arg} - {e}")
