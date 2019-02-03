@@ -9,7 +9,7 @@ Despite the explosion of social networks and new means of communication, the mai
 If we believe in the decentralization of the web, it is difficult to believe that most emails are managed by a handful of private companies that lead the market. Why ?
 
 Because, despite their long existence and the dependence of a large part of the population, 
-mail servers are still difficult to install, configure and maintain mainly because they implement features that are not necessary for most end users and their architectur is no longer adapted to today's uses.
+mail servers are still difficult to install, configure and maintain mainly because they implement features that are not necessary for most end users and their architecture is no longer adapted to today's uses.
 
 To create a complet mail system, we have to install a SMTP server to receive/send emails then an IMAP or POP3 server to gather the mails and finally a client to read them. Don't forget to configure your DNS and pray that your IP will not be banned for misuse.
 
@@ -21,22 +21,22 @@ To fulfill all ours needs we also need to add module like:
 - a mailing list manager,
 - ...
 
-All this results in a complex system to set up and which requires great skills to administer, not to mention the many security vulnerabilities that can be created without even noticing it. All the people who tried the adventure were afraid to create an open relay SMTP server so used by spammers or to be marked as spam from major mail systems.
+All this results in a complex system to set up and which requires great skills to administrate, not to mention the many security vulnerabilities that can be created without even noticing it. All the people who tried the adventure were afraid to create an open relay SMTP server so used by spammers or to be marked as spam from major mail systems.
 
-Byemail is fully compatible with the current email system but the objective is to create a simpler and more secure stack first,
+Byemail is **fully compatible** with the current email system but the objective is to create a simpler and more secure stack first,
 then add functionality that is currently inaccessible due to the complexity of the architecture and the aging of the technology to meet the expectations of users with new needs. 
 
 With Byemail, you install only one tool for your email communication.
 Some common use cases:
 
 - Access your webmail from everywhere,
-- Receiving mail for a family or small business,
+- Receiving and sending mail for a family or small business,
 - Create a mailing list on the fly,
 - Share huge attachment without thinking of it and without flooding the net,
 - Send "burn after reading" email,
 - Cancel mail sent by mistake,
 - Create tempory address on the fly for spam protection,
-- Really secure mail even if the recipient doesn't have configured his gpg key,
+- Really secure mail even if the recipient doesn't have configured any gpg key,
 - Auto update your DNS configuration,
 - Spam protect you with captcha,
 - Easy quitting by easily export all your data to import them in another instance,
