@@ -13,9 +13,11 @@ import subprocess
 from os import path
 from urllib import request
 
+
 import uvloop
 import begin
-from aiosmtpd.controller import Controller
+from aiosmtpd.smtp import SMTP
+
 
 import byemail
 from byemail.conf import settings
@@ -40,23 +42,28 @@ def main(loop):
     from byemail import smtp, httpserver
     from byemail.storage import storage
 
-    controller = Controller(smtp.MsgHandler(), **settings.SMTP_CONF)
-    controller.start()
-
+    # Start storage
     loop.run_until_complete(storage.start())
 
+    # Start stmp server
+    def smtp_factory():
+        return SMTP(smtp.MsgHandler(loop=loop), enable_SMTPUTF8=True)
+
+    # Can't use the aioSMTP controller here
+    smtp_server = loop.create_server(smtp_factory, **settings.SMTP_CONF)
+    asyncio.ensure_future(smtp_server, loop=loop)
+
+    # Start http server
     app = httpserver.get_app()
     server = app.create_server(**settings.HTTP_CONF)
     asyncio.ensure_future(server, loop=loop)
 
     try:
-        print("Server started on %s:%d" % (controller.hostname, controller.port))
         loop.run_forever()
     except KeyboardInterrupt:
         print("Stopping")
 
     loop.run_until_complete(storage.stop())
-    controller.stop()
 
 @begin.subcommand
 def start(reload: 'Make server autoreload (Dev only)'=False,):
