@@ -18,10 +18,11 @@ async def check_for_newerfile(future, lockfile, interval, loop):
 
     for module in list(sys.modules.values()):
         path = getattr(module, '__file__', '')
-        if path[-4:] in ('.pyo', '.pyc'):
-            path = path[:-1]
-        if path and exists(path):
-            files[path] = mtime(path)
+        if path:
+            if path[-4:] in ('.pyo', '.pyc'):
+                path = path[:-1]
+            if exists(path):
+                files[path] = mtime(path)
 
     async def reccur():
         status = None
