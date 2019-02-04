@@ -1,3 +1,4 @@
+import re
 import time
 import base64
 import datetime
@@ -121,6 +122,8 @@ async def extract_data_from_msg(msg):
     return msg_out
 
 async def apply_middlewares(msg, from_addr, recipients, incoming=True):
+    """ Apply all configured incoming and outgoing middlewares """
+
     if incoming:
         middlewares = settings.INCOMING_MIDDLEWARES 
     else:
@@ -140,3 +143,26 @@ async def apply_middlewares(msg, from_addr, recipients, incoming=True):
                 recipients=recipients, 
                 incoming=incoming
             )
+
+
+RE_CID = re.compile(r'cid:([^">]+)[">]?')
+
+async def convert_cid_link(msg):
+    """ Convert content-id tag to url """
+    
+    if msg['body-type'] == 'text/html':
+        cids = {att['content-id']: att for att in msg['attachments']}
+
+        body = msg['body']
+
+        result = RE_CID.findall(body)
+        for cid in result:
+            if cid in cids:
+                url = cids[cid]['url']
+                body = body.replace(f'cid:{cid}', f'{settings.DOMAIN}{url}')
+
+        msg['body'] = body
+
+    return msg
+
+

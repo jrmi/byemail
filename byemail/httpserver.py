@@ -145,6 +145,10 @@ def init_app():
 
         mail_to_return['date'] = mail_to_return['date'].isoformat()
 
+        # Change link to attached file
+
+        await mailutils.convert_cid_link(mail_to_return)
+
         return json(mail_to_return)
 
     @app.route("/api/mail/<mail_id>/mark_read", methods=['POST'])
