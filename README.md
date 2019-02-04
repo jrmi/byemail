@@ -27,7 +27,7 @@ Byemail is **fully compatible** with the current email system but the objective 
 then add functionality that is currently inaccessible due to the complexity of the architecture and the aging of the technology to meet the expectations of users with new needs. 
 
 With Byemail, you install only one tool for your email communication.
-Some common use cases:
+Some common use cases on the roadmap:
 
 - Access your webmail from everywhere,
 - Receiving and sending mail for a family or small business,
@@ -40,6 +40,7 @@ Some common use cases:
 - Auto update your DNS configuration,
 - Spam protect you with captcha,
 - Easy quitting by easily export all your data to import them in another instance,
+- ActivityPub compatibility,
 - and more ...
 
 Some technical advantages:
