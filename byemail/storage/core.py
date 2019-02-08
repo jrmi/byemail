@@ -47,6 +47,7 @@ class Backend():
 
     async def store_mail(self, account, msg, from_addr, recipients, incoming=True):
         """ Store a mail """
+
         msg_data = await mailutils.extract_data_from_msg(msg)
 
         await mailutils.apply_middlewares(msg_data, from_addr, recipients, incoming)
@@ -66,6 +67,7 @@ class Backend():
 
         stored_msg['status'] = 'received' if incoming else 'sending'
 
+        # TODO use db transaction here
         await self.update_mail(account, stored_msg)
 
         return stored_msg

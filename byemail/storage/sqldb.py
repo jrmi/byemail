@@ -359,13 +359,13 @@ class Backend(core.Backend):
     @translate_exception()
     async def get_mail(self, account, mail_uid):
         """ Get message by uid """
-        mail = await Message.get(uid=mail_uid, mailboxes__account=account.name)
+        mail = await Message.get(uid=mail_uid, mailboxes__account=account.name).distinct()
         return mail.as_dict()
 
     @translate_exception()
     async def update_mail(self, account, mail):
         """ Update any mail """
-        dbmsg = await Message.get(uid=mail['uid'], mailboxes__account=account.name)
+        dbmsg = (await Message.get(uid=mail['uid'], mailboxes__account=account.name)).distinct()
         dbmsg.update_from_dict(mail)
 
         await dbmsg.save()

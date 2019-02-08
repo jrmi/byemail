@@ -281,7 +281,6 @@ class MsgSender():
 
 async def send_mail(account, msg, from_addr, recipients, loop=None):
     """ Complete process to send an email """
-
     saved_msg = await storage.store_mail(
         account,
         msg,
