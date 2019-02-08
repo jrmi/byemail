@@ -2,6 +2,8 @@
   "name": "byemail-client",
   "version": "0.1.0",
   "private": true,
+  "description": "The byemail web client",
+  "author": "Jeremie Pardou-Piquemal <jrmi@jeremiez.net>",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
@@ -13,7 +15,7 @@
     "lodash": "^4.17.4",
     "material-icons": "^0.1.0",
     "moment": "^2.18.1",
-    "register-service-worker": "^1.0.0",
+    "register-service-worker": "^1.5.2",
     "vue": "^2.5.16",
     "vue-multipane": "^0.9.5",
     "vue-resource": "^1.5.1",
@@ -24,7 +26,7 @@
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.0.0-beta.15",
     "@vue/cli-plugin-eslint": "^3.0.0-beta.15",
-    "@vue/cli-plugin-pwa": "^3.0.0-beta.15",
+    "@vue/cli-plugin-pwa": "^3.4.0",
     "@vue/cli-plugin-unit-jest": "^3.0.0-beta.15",
     "@vue/cli-service": "^3.0.0-beta.15",
     "@vue/eslint-config-standard": "^3.0.0-rc.3",
@@ -40,7 +42,5 @@
     "> 1%",
     "last 2 versions",
     "not ie <= 8"
-  ],
-  "description": "The byemail web client",
-  "author": "Jeremie Pardou-Piquemal <jrmi@jeremiez.net>"
+  ]
 }
