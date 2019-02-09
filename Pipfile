@@ -22,6 +22,8 @@ python-magic = "*"
 dkimpy = "*"
 tortoise-orm = "*"
 asynctest = "*"
+py-vapid = "*"
+pywebpush = "*"
 
 [dev-packages]
 pylint = "*"
@@ -32,7 +34,7 @@ icecream = "*"
 aiohttp = "*"
 faker = "*"
 pipenv = "*"
-tox-pipenv = {editable = true, ref = "master", git = "https://github.com/tox-dev/tox-pipenv.git"}
+tox-pipenv = {editable = true,ref = "master",git = "https://github.com/tox-dev/tox-pipenv.git"}
 rope = ">=0.11.0"
 ipython = "*"
 docutils = "*"

@@ -21,6 +21,7 @@
 
 <script>
 import { mapGetters, mapActions, mapMutations } from 'vuex'
+import _ from 'lodash'
 import MessageList from '@/components/MessageList'
 
 export default {
@@ -59,7 +60,7 @@ export default {
     ]),
     ...mapMutations([
       'resetDraft',
-      'addDraftRecipient',
+      'addDraftRecipient'
     ])
   },
   components: {

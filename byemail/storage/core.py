@@ -105,6 +105,14 @@ class Backend():
         """ Load user session """
         raise NotImplementedError()
 
+    async def save_subscription(self, account, subscription):
+        """ Save user subscription """
+        raise NotImplementedError()
+
+    async def get_subscriptions(self, account, subscriptions):
+        """ Get all user subscriptions """
+        raise NotImplementedError()
+
     async def contacts_search(self, account, text):
         """ Search a contact from mailboxes """
         raise NotImplementedError()

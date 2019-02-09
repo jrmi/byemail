@@ -43,6 +43,8 @@ setup(name='byemail',
           'ujson',
           'aiodns',
           'sanic-auth',
+          'py-vapid',
+          'pywebpush'
       ],
       extras_require={
       },

@@ -69,9 +69,6 @@ class AccountManager():
             return account
         return None
 
-    def get_from_token(self, token):
-        return
-
     def is_local_address(self, address):
         return self.get_account_for_address(address) is not None
 

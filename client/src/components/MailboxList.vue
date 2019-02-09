@@ -8,7 +8,7 @@
             :to="{name: 'mailbox', params: { id: mailbox.uid }}"
         >
             <v-list-tile-avatar>
-            <img :src="gravatarUrl(mailbox)">
+            <!--img :src="gravatarUrl(mailbox)"-->
             </v-list-tile-avatar>
 
             <v-list-tile-content>

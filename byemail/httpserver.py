@@ -4,12 +4,13 @@ import datetime
 import logging
 import uuid
 import mimetypes
+import base64
 from collections import defaultdict
 
 from sanic import Sanic
-from sanic.response import json, redirect, stream
+from sanic.response import json, redirect, stream, file_stream, text
 from sanic_auth import Auth
-from sanic.exceptions import Forbidden
+from sanic.exceptions import Forbidden, NotFound
 
 from byemail.storage import storage
 from byemail.smtp import MsgSender
@@ -17,6 +18,7 @@ from byemail.account import account_manager
 from byemail import mailutils
 from byemail.conf import settings
 from byemail.smtp import send_mail, resend_mail
+from byemail import push
 
 logger = logging.getLogger(__name__)
 
@@ -43,11 +45,28 @@ def init_app():
 
     BASE_DIR = os.path.dirname(__file__)
 
-    app.static('/static', os.path.join(BASE_DIR, '../client/dist/static'))
+    # Static routes
     app.static('/index.html', os.path.join(BASE_DIR, '../client/dist/index.html'))
+    app.static('/favicon.ico', os.path.join(BASE_DIR, '../client/dist/favicon.ico'))
+    app.static('/manifest.json', os.path.join(BASE_DIR, '../client/dist/manifest.json'))
+    app.static('/robots.txt', os.path.join(BASE_DIR, '../client/dist/robots.txt'))
+    app.static('/service-worker.js', os.path.join(BASE_DIR, '../client/dist/service-worker.js'))
+    app.static('/img', os.path.join(BASE_DIR, '../client/dist/img'))
+    app.static('/js', os.path.join(BASE_DIR, '../client/dist/js'))
+    app.static('/css', os.path.join(BASE_DIR, '../client/dist/css'))
 
     auth = Auth(app)
     auth.user_loader(account_manager.get)
+
+    # Dynamic manifest route
+    @app.route('/precache-manifest.<manifest_id>.js', stream=True)
+    async def precache_manifest(request, manifest_id):
+        path = os.path.join(BASE_DIR, f'../client/dist/precache-manifest.{manifest_id}.js')
+
+        if os.path.exists(path):
+            return await file_stream(path)
+        else:
+            raise NotFound(f'{path} not found')
 
     @app.middleware('request')
     async def add_session_to_request(request):
@@ -220,3 +239,29 @@ def init_app():
         results = await storage.contacts_search(account, text)
 
         return json(results)
+
+ 
+    @app.get("/subscription/")
+    #@auth.login_required(user_keyword='account', handle_no_auth=handle_no_auth)
+    async def subscription_get(request):
+        """
+        GET returns vapid public key which clients uses to send around push notification
+        """
+        pub = push.get_application_server_key()
+
+        return text(pub, headers={"Access-Control-Allow-Origin": "*"})
+            
+
+    @app.post("/subscription/")
+    #@auth.login_required(user_keyword='account', handle_no_auth=handle_no_auth)
+    async def subscription_post(request):
+        """
+        POST creates a subscription
+        """
+        
+        subscription_token = request.json["subscription"]
+
+        # TODO do something
+        push.send_web_push(subscription_token, 'data graammm')
+
+        return json({}, status=201)

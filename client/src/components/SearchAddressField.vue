@@ -37,7 +37,6 @@ export default {
         {text: 'Bcc', value: 'bcc'}
       ],
       type: 'to',
-      value: null,
       entries: [],
       loading: false,
       search: ''
