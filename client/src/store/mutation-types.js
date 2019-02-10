@@ -1,5 +1,7 @@
 // General
 export const SET_LOADING = 'SET_LOADING'
+export const SET_NOTIFICATION = 'SET_NOTIFICATION'
+export const SET_SERVICE_WORKER = 'setServiceWorker'
 export const SET_MESSAGE = 'setMessage'
 
 // Mail

@@ -11,7 +11,6 @@ from byemail.conf import settings
 logger = logging.getLogger(__name__)
 
 def send_web_push(subscription_information, message_body):
-    print(settings.VAPID_CLAIMS)
     try:
         return webpush(
             subscription_info=subscription_information,
