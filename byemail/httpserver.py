@@ -260,7 +260,6 @@ def init_app():
         return json(results)
 
     @app.get("/api/subscription/")
-    # @auth.login_required(user_keyword='account', handle_no_auth=handle_no_auth)
     async def subscription_get(request):
         """
         GET returns vapid public key which clients uses to send around push notification
@@ -270,29 +269,28 @@ def init_app():
         return text(pub, headers={"Access-Control-Allow-Origin": "*"})
 
     @app.post("/api/subscription/")
-    # @auth.login_required(user_keyword='account', handle_no_auth=handle_no_auth)
-    async def subscription_post(request):
+    @auth.login_required(user_keyword="account", handle_no_auth=handle_no_auth)
+    async def subscription_post(request, account):
         """
         POST creates a subscription
         """
 
-        subscription_token = request.json["subscription"]
+        subscription = request.json["subscription"]
 
-        # TODO add subscription for this user
-        push.send_web_push(subscription_token, "data graammm")
+        await storage.add_subscription(account, subscription)
+        await push.send_web_push(subscription, "You have subscribed to notification")
 
         return json({}, status=201)
 
     @app.post("/api/unsubscription/")
-    # @auth.login_required(user_keyword='account', handle_no_auth=handle_no_auth)
-    async def unsubscription_post(request):
+    @auth.login_required(user_keyword="account", handle_no_auth=handle_no_auth)
+    async def unsubscription_post(request, account):
         """
         POST creates a subscription
         """
 
-        subscription_token = request.json["subscription"]
-
-        # TODO Remove subscription for this account
-        print(subscription_token)
+        subscription = request.json["subscription"]
+        # Remove subscription for this account
+        await storage.remove_subscription(account, subscription)
 
         return json({}, status=201)

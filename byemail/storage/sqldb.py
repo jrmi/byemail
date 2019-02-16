@@ -22,55 +22,57 @@ from byemail.storage import core, DoesntExists, MultipleResults
 
 logger = logging.getLogger(__name__)
 
-class DateTimeSerializer():
+
+class DateTimeSerializer:
     OBJ_CLASS = datetime.datetime  # The class this serializer handles
 
     def encode(self, obj):
         return {
-            '_object_class': self.OBJ_CLASS.__name__,
-            'date': arrow.get(obj).for_json()
-        } 
+            "_object_class": self.OBJ_CLASS.__name__,
+            "date": arrow.get(obj).for_json(),
+        }
 
     def decode(self, s):
-        return arrow.get(s['date']).datetime
+        return arrow.get(s["date"]).datetime
 
-class AddressSerializer():
+
+class AddressSerializer:
     OBJ_CLASS = Address  # The class this serializer handles
 
     def encode(self, obj):
         return {
-            '_object_class': self.OBJ_CLASS.__name__,
-            'addr_spec': obj.addr_spec,
-            'display_name': obj.display_name
+            "_object_class": self.OBJ_CLASS.__name__,
+            "addr_spec": obj.addr_spec,
+            "display_name": obj.display_name,
         }
 
     def decode(self, s):
         try:
-            return Address(display_name=s['display_name'], addr_spec=s['addr_spec'])
+            return Address(display_name=s["display_name"], addr_spec=s["addr_spec"])
         except InvalidHeaderDefect:
-            return ''
+            return ""
 
-        
 
 encoders = [DateTimeSerializer(), AddressSerializer()]
 
+
 class MyJSONEncoder(JSONEncoder):
-   def default(self, obj):
+    def default(self, obj):
         for encoder in encoders:
             if isinstance(obj, encoder.OBJ_CLASS):
                 return encoder.encode(obj)
         else:
             return super().default(obj)
 
-class MyJSONDecoder(JSONDecoder):
 
+class MyJSONDecoder(JSONDecoder):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, object_hook=self.object_hook, **kwargs)
-    
+
     def object_hook(self, obj):
-        if '_object_class' in obj:
+        if "_object_class" in obj:
             for decoder in encoders:
-                if decoder.OBJ_CLASS.__name__ == obj['_object_class']:
+                if decoder.OBJ_CLASS.__name__ == obj["_object_class"]:
                     return decoder.decode(obj)
         return obj
 
@@ -85,12 +87,13 @@ def translate_exception():
                 raise DoesntExists()
             except exceptions.MultipleObjectsReturned:
                 raise MultipleResults()
-            
+
         return func_wrap
 
     return translate
 
-# Mailbox
+
+#  Mailbox
 class Mailbox(Model):
     id = fields.IntField(pk=True)
     uid = fields.CharField(max_length=255)
@@ -106,14 +109,14 @@ class Mailbox(Model):
 
     def as_dict(self):
         return {
-            'id': self.id,
-            'uid': self.uid,
-            'account': self.account,
-            'address': self.address,
-            'name': self.name,
-            'total': self.total,
-            'unreads': self.unreads,
-            'last_message': self.last_message,
+            "id": self.id,
+            "uid": self.uid,
+            "account": self.account,
+            "address": self.address,
+            "name": self.name,
+            "total": self.total,
+            "unreads": self.unreads,
+            "last_message": self.last_message,
         }
 
 
@@ -122,77 +125,82 @@ class Message(Model):
     id = fields.IntField(pk=True)
     uid = fields.CharField(max_length=255)
 
-    mailboxes = fields.ManyToManyField('models.Mailbox', related_name='messages')
+    mailboxes = fields.ManyToManyField("models.Mailbox", related_name="messages")
 
     status = fields.CharField(max_length=255)
     timestamp = fields.DatetimeField()
     unread = fields.BooleanField()
     incoming = fields.BooleanField()
-    #body = fields.TextField()
+    # body = fields.TextField()
 
     attachments = fields.JSONField(default=[])
-    data = fields.JSONField(encoder=MyJSONEncoder().encode, decoder=MyJSONDecoder().decode)
+    data = fields.JSONField(
+        encoder=MyJSONEncoder().encode, decoder=MyJSONDecoder().decode
+    )
 
     def update_from_dict(self, data):
         data = dict(data)
-        self.uid = data.pop('uid')
-        self.status = data.pop('status')
-        self.unread = data.pop('unread')
-        self.timestamp = data.pop('date')
-        self.incoming = data.pop('incoming')
-        self.attachments = data.pop('attachments')
+        self.uid = data.pop("uid")
+        self.status = data.pop("status")
+        self.unread = data.pop("unread")
+        self.timestamp = data.pop("date")
+        self.incoming = data.pop("incoming")
+        self.attachments = data.pop("attachments")
         self.data = data
 
     def as_dict(self):
         data = dict(self.data)
-        data['uid'] = self.uid
-        data['status'] = self.status
-        data['unread'] = self.unread
-        data['date'] = self.timestamp
-        data['incoming'] = self.incoming
-        data['attachments'] = self.attachments
-        
+        data["uid"] = self.uid
+        data["status"] = self.status
+        data["unread"] = self.unread
+        data["date"] = self.timestamp
+        data["incoming"] = self.incoming
+        data["attachments"] = self.attachments
+
         return data
 
     def as_mini_dict(self):
         data = self.as_dict()
-        del data['body']
+        del data["body"]
 
         return data
 
 
 class RawMessage(Model):
     """ Raw message content is stored here """
+
     id = fields.IntField(pk=True)
     uid = fields.CharField(max_length=255)
 
     content = fields.TextField()
 
+
 class RawMail(Model):
     id = fields.IntField(pk=True)
     status = fields.CharField(max_length=255)
-    peer = fields.CharField(max_length=255),
-    host_name =  fields.CharField(max_length=255),
-    mail_from = fields.CharField(max_length=255),
-    tos =  fields.CharField(max_length=255),
-    subject = fields.CharField(max_length=255),
-    received = fields.DatetimeField(),
+    peer = (fields.CharField(max_length=255),)
+    host_name = (fields.CharField(max_length=255),)
+    mail_from = (fields.CharField(max_length=255),)
+    tos = (fields.CharField(max_length=255),)
+    subject = (fields.CharField(max_length=255),)
+    received = (fields.DatetimeField(),)
 
     data = fields.TextField()
 
     @staticmethod
     def from_dict(data):
         rm = RawMail()
-        rm.status = data['status']
-        rm.peer = data['peer']
-        rm.host_name = data['host_name']
-        rm.mail_from = data['from']
-        rm.tos = data['tos']
-        rm.subject = data['subject']
+        rm.status = data["status"]
+        rm.peer = data["peer"]
+        rm.host_name = data["host_name"]
+        rm.mail_from = data["from"]
+        rm.tos = data["tos"]
+        rm.subject = data["subject"]
         rm.received = datetime.datetime.now().isoformat()
-        rm.data = data['data']
+        rm.data = data["data"]
 
         return rm
+
 
 class Session(Model):
     """ Users session """
@@ -206,32 +214,46 @@ class Session(Model):
         return self.content
 
 
-class Backend(core.Backend):
+class Subscription(Model):
+    """ Saved Subscription for an account """
 
+    id = fields.IntField(pk=True)
+    account = fields.CharField(max_length=255)
+    content = fields.JSONField(default=dict)
+
+    def __str__(self):
+        return f"<Subscription {self.account}({self.id})>"
+
+    def as_dict(self):
+        return {"id": self.id, "content": self.content, "account": self.account}
+
+
+class Backend(core.Backend):
     def __init__(self, config=None, uri=None, **kwargs):
         super().__init__(**kwargs)
-        assert config != None or uri != None, "You need to specify at least one of uri or config param"
+        assert (
+            config != None or uri != None
+        ), "You need to specify at least one of uri or config param"
         self.config = config
         self.uri = uri
 
     async def start(self):
         if self.config:
             config = {
-                'connections': self.config,
-                'apps': {
-                    'models': {
-                        'models': ['byemail.storage.sqldb'],
-                        'default_connection': 'default',
+                "connections": self.config,
+                "apps": {
+                    "models": {
+                        "models": ["byemail.storage.sqldb"],
+                        "default_connection": "default",
                     }
-                }
+                },
             }
 
             await Tortoise.init(config=config)
 
         if self.uri:
             await Tortoise.init(
-                db_url=self.uri,
-                modules={'models': ['byemail.storage.sqldb']}
+                db_url=self.uri, modules={"models": ["byemail.storage.sqldb"]}
             )
 
         try:
@@ -249,7 +271,7 @@ class Backend(core.Backend):
 
     async def store_content(self, uid, content):
         """ Store raw message content """
-        b64_content = base64.b64encode(content).decode('utf-8')
+        b64_content = base64.b64encode(content).decode("utf-8")
 
         rmsg = RawMessage(uid=uid, content=b64_content)
         return await rmsg.save()
@@ -261,7 +283,9 @@ class Backend(core.Backend):
 
         b64_content = rmsg.content
 
-        msg = BytesParser(policy=policy.default).parsebytes(base64.b64decode(b64_content))
+        msg = BytesParser(policy=policy.default).parsebytes(
+            base64.b64decode(b64_content)
+        )
 
         return msg
 
@@ -270,12 +294,10 @@ class Backend(core.Backend):
         """ Create a mailbox """
 
         mailbox, _ = await Mailbox.get_or_create(
-            defaults=dict(
-                uid=uuid.uuid4().hex
-            ),
-            account=account.name, 
-            address=address, 
-            name=name
+            defaults=dict(uid=uuid.uuid4().hex),
+            account=account.name,
+            address=address,
+            name=name,
         )
 
         return mailbox
@@ -288,33 +310,27 @@ class Backend(core.Backend):
     @translate_exception()
     async def get_mailbox(self, account, mailbox_id):
         """ Return the selected mailbox """
-        
+
         mailbox = await Mailbox.get(uid=mailbox_id, account=account.name)
 
-        msgs = await Message.filter(mailboxes = mailbox.id).order_by('timestamp')
+        msgs = await Message.filter(mailboxes=mailbox.id).order_by("timestamp")
 
         result = mailbox.as_dict()
-        result['messages'] = [msg.as_mini_dict() for msg in msgs]
+        result["messages"] = [msg.as_mini_dict() for msg in msgs]
 
         return result
 
     @translate_exception()
     async def store_msg(
-        self, 
-        msg, 
-        account, 
-        from_addr, 
-        to_addrs, 
-        incoming=True, 
-        extra_data=None
+        self, msg, account, from_addr, to_addrs, incoming=True, extra_data=None
     ):
         """ Store message in database """
 
         # Add information
-        msg['uid'] = uuid.uuid4().hex
-        msg['incoming'] = incoming
-        msg['unread'] = incoming
-        msg['status'] = 'new'
+        msg["uid"] = uuid.uuid4().hex
+        msg["incoming"] = incoming
+        msg["unread"] = incoming
+        msg["status"] = "new"
 
         # Create dbmessage
         dbmsg = Message()
@@ -324,18 +340,22 @@ class Backend(core.Backend):
         # Mailbox to link mail
         mailboxes = []
         if incoming:
-            mailboxes.append((msg['from'].addr_spec, msg['from'].display_name)) # store only in `from` box
+            mailboxes.append(
+                (msg["from"].addr_spec, msg["from"].display_name)
+            )  # store only in `from` box
         else:
             if len(to_addrs) == 1:
                 to = to_addrs[0]
                 mailboxes.append((to.addr_spec, to.display_name))
-            else: # TODO Create group mailboxes
-                for to in to_addrs: # Put in all recipients boxes
+            else:  # TODO Create group mailboxes
+                for to in to_addrs:  # Put in all recipients boxes
                     mailboxes.append((to.addr_spec, to.display_name))
 
         for mailbox_address, mailbox_name in mailboxes:
             # Get mailbox if exists or create it
-            mailbox = await self.get_or_create_mailbox(account, mailbox_address, mailbox_name)
+            mailbox = await self.get_or_create_mailbox(
+                account, mailbox_address, mailbox_name
+            )
 
             await dbmsg.mailboxes.add(mailbox)
 
@@ -343,14 +363,14 @@ class Backend(core.Backend):
                 msg.data.update(extra_data)
 
             # Update last_message date
-            if mailbox.last_message is None or mailbox.last_message <  msg['date']:
-                mailbox.last_message = msg['date']
+            if mailbox.last_message is None or mailbox.last_message < msg["date"]:
+                mailbox.last_message = msg["date"]
 
             # Update unread count
-            #print(await mailbox.messages.filter(unread=1).count()) # TODO fails
-            #print(list(mailbox.messages.all())) # TODO fails
+            # print(await mailbox.messages.filter(unread=1).count()) # TODO fails
+            # print(list(mailbox.messages.all())) # TODO fails
             mailbox.unreads = len(list(await mailbox.messages.filter(unread=1)))
-            mailbox.total = len(list(await mailbox.messages.filter(uid__icontains='')))
+            mailbox.total = len(list(await mailbox.messages.filter(uid__icontains="")))
 
             await mailbox.save()
 
@@ -359,13 +379,17 @@ class Backend(core.Backend):
     @translate_exception()
     async def get_mail(self, account, mail_uid):
         """ Get message by uid """
-        mail = await Message.get(uid=mail_uid, mailboxes__account=account.name).distinct()
+        mail = await Message.get(
+            uid=mail_uid, mailboxes__account=account.name
+        ).distinct()
         return mail.as_dict()
 
     @translate_exception()
     async def update_mail(self, account, mail):
         """ Update any mail """
-        dbmsg = (await Message.get(uid=mail['uid'], mailboxes__account=account.name)).distinct()
+        dbmsg = await Message.get(
+            uid=mail["uid"], mailboxes__account=account.name
+        ).distinct()
         dbmsg.update_from_dict(mail)
 
         await dbmsg.save()
@@ -379,7 +403,7 @@ class Backend(core.Backend):
         mail = await self.get_mail(account, mail_uid)
         raw_mail = await self.get_content_msg(mail_uid)
 
-        attachment = mail['attachments'][att_index]
+        attachment = mail["attachments"][att_index]
 
         atts = list(raw_mail.iter_attachments())
         stream = atts[att_index]
@@ -391,10 +415,7 @@ class Backend(core.Backend):
     async def save_user_session(self, session_key, session):
         """ Save modified user session """
         dbsession, _ = await Session.get_or_create(
-            defaults = {
-                'content': {}
-            },
-            key=session_key
+            defaults={"content": {}}, key=session_key
         )
 
         dbsession.content = session
@@ -404,21 +425,35 @@ class Backend(core.Backend):
     async def get_user_session(self, session_key):
         """ Load user session """
         session, _ = await Session.get_or_create(
-            defaults = {
-                'content': {}
-            },
-            key=session_key
+            defaults={"content": {}}, key=session_key
         )
         return session.as_dict()
 
     @translate_exception()
+    async def add_subscription(self, account, subscription):
+        """ Add user subscription """
+        sub = await Subscription.create(account=account.name, content=subscription)
+        return sub
+
+    @translate_exception()
+    async def remove_subscription(self, account, subscription):
+        """ Remove user subscription """
+        for sub in await Subscription.filter(account=account.name):
+            if not sub.content:
+                await sub.delete()
+            elif sub.content.get("endpoint") == subscription["endpoint"]:
+                await sub.delete()
+
+    @translate_exception()
+    async def get_subscriptions(self, account):
+        """ Get all user subscriptions """
+        return [sub.content for sub in await Subscription.filter(account=account.name)]
+
+    @translate_exception()
     async def contacts_search(self, account, text):
         """ Search a contact from mailboxes """
-        matching_mailboxes = await Mailbox.filter(address__icontains=text, account=account.name)
+        matching_mailboxes = await Mailbox.filter(
+            address__icontains=text, account=account.name
+        )
         return [m.address for m in matching_mailboxes]
-
-
-
-
-
 

@@ -1,10 +1,11 @@
 <template>
   <div>
+    <span>{{notificationEnabled()?'Notification allowed':'Notification blolcked'}}</span>
     <v-btn
-      :color="notificationEnabled()?'success':'error'"
+      :color="notificationEnabled()?'normal':'success'"
       :disabled="!serviceWorkerRegistered()"
       @click="togglePermission()"
-    >{{notificationEnabled()?'Block notifications':'Allow notifications'}}</v-btn>
+    >{{notificationEnabled()?'Block':'Allow'}}</v-btn>
   </div>
 </template>
 

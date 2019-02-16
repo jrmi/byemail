@@ -7,27 +7,43 @@ from cryptography.hazmat.primitives import serialization
 from pywebpush import webpush, WebPushException
 
 from byemail.conf import settings
+from byemail.storage import storage
 
 logger = logging.getLogger(__name__)
 
-def send_web_push(subscription_information, message_body):
+
+async def send_web_push(subscription_information, message_body):
     try:
         return webpush(
             subscription_info=subscription_information,
             data=message_body,
             vapid_private_key=settings.VAPID_PRIVATE_KEY,
-            vapid_claims=settings.VAPID_CLAIMS
+            vapid_claims=settings.VAPID_CLAIMS,
         )
     except WebPushException as ex:
         logger.exception("Exception while trying to send push notification")
 
         if ex.response and ex.response.json():
             extra = ex.response.json()
-            logger.info("Remote service replied with a %s:%s, %s",
+            logger.info(
+                "Remote service replied with a %s:%s, %s",
                 extra.code,
                 extra.errno,
-                extra.message
+                extra.message,
             )
+        return None
+
+
+async def notify_account(account, payload):
+    """
+    Notify user on all subscription
+    """
+    for subscription in await storage.get_subscriptions(account):
+        if subscription:
+            result = await send_web_push(subscription, payload)
+            if result is None:
+                storage.remove_subscription(account, subscription)
+
 
 def get_application_server_key():
     """
@@ -35,9 +51,12 @@ def get_application_server_key():
     """
 
     vapid = Vapid.from_file(settings.VAPID_PRIVATE_KEY)
-    raw_pub = vapid.public_key.public_bytes(serialization.Encoding.X962, serialization.PublicFormat.UncompressedPoint)
+    raw_pub = vapid.public_key.public_bytes(
+        serialization.Encoding.X962, serialization.PublicFormat.UncompressedPoint
+    )
 
     return b64urlencode(raw_pub)
+
 
 # To generate with openssl command line
 # See https://mushfiq.me/2017/09/25/web-push-notification-using-python/

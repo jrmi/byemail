@@ -1,10 +1,9 @@
 import asyncio
-import uuid 
+import uuid
 from byemail import mailutils
 
 
-class Backend():
-
+class Backend:
     def __init__(self, loop=None):
         # Get asyncio loop
         self.loop = loop or asyncio.get_event_loop()
@@ -52,20 +51,20 @@ class Backend():
 
         await mailutils.apply_middlewares(msg_data, from_addr, recipients, incoming)
 
-        msg_data['original-sender'] = from_addr
-        msg_data['original-recipients'] = recipients
+        msg_data["original-sender"] = from_addr
+        msg_data["original-recipients"] = recipients
 
         stored_msg = await self.store_msg(
             msg_data,
             account=account,
             from_addr=from_addr,
             to_addrs=recipients,
-            incoming=incoming
+            incoming=incoming,
         )
 
-        await self.store_content(stored_msg['uid'], msg.as_bytes())
+        await self.store_content(stored_msg["uid"], msg.as_bytes())
 
-        stored_msg['status'] = 'received' if incoming else 'sending'
+        stored_msg["status"] = "received" if incoming else "sending"
 
         # TODO use db transaction here
         await self.update_mail(account, stored_msg)
@@ -73,14 +72,14 @@ class Backend():
         return stored_msg
 
     async def store_msg(
-        self, 
-        msg, 
-        account, 
-        from_addr, 
-        to_addrs, 
-        incoming=True, 
-        extra_data=None, 
-        extra_mailbox_message_data=None
+        self,
+        msg,
+        account,
+        from_addr,
+        to_addrs,
+        incoming=True,
+        extra_data=None,
+        extra_mailbox_message_data=None,
     ):
         """ Store message in database """
         raise NotImplementedError()
@@ -105,20 +104,19 @@ class Backend():
         """ Load user session """
         raise NotImplementedError()
 
-    async def save_subscription(self, account, subscription):
-        """ Save user subscription """
+    async def add_subscription(self, account, subscription):
+        """ Add user subscription """
         raise NotImplementedError()
 
-    async def get_subscriptions(self, account, subscriptions):
+    async def remove_subscription(self, account, subscription):
+        """ Remove user subscription """
+        raise NotImplementedError()
+
+    async def get_subscriptions(self, account):
         """ Get all user subscriptions """
         raise NotImplementedError()
 
     async def contacts_search(self, account, text):
         """ Search a contact from mailboxes """
         raise NotImplementedError()
-
-
-
-
-
 
