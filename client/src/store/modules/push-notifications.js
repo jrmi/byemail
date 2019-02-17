@@ -13,6 +13,7 @@ function urlBase64ToUint8Array (base64String) {
 }
 
 function pushRegister () {
+  console.log('Start notification subscription process')
   navigator.serviceWorker.ready.then(async function (registration) {
     registration.pushManager
       .getSubscription()
@@ -84,7 +85,7 @@ const actions = {
         if (subscription) {
           commit(types.SET_NOTIFICATION, true)
         } else {
-          commit(types.SET_NOTIFICATION, true)
+          commit(types.SET_NOTIFICATION, false)
         }
       })
   },
