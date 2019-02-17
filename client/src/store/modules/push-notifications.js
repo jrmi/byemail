@@ -77,17 +77,22 @@ const mutations = {
 // actions
 const actions = {
   checkNotificationStatus ({ commit }) {
-    return navigator.serviceWorker.ready
-      .then(registration => {
-        return registration.pushManager.getSubscription()
-      })
-      .then(subscription => {
-        if (subscription) {
-          commit(types.SET_NOTIFICATION, true)
-        } else {
-          commit(types.SET_NOTIFICATION, false)
-        }
-      })
+    if ('serviceWorker' in navigator) {
+      return navigator.serviceWorker.ready
+        .then(registration => {
+          return registration.pushManager.getSubscription()
+        })
+        .then(subscription => {
+          if (subscription) {
+            return commit(types.SET_NOTIFICATION, true)
+          } else {
+            return commit(types.SET_NOTIFICATION, false)
+          }
+        })
+    } else {
+      console.log('Notification subscription unaviable')
+      return commit(types.SET_NOTIFICATION, false)
+    }
   },
 
   subscribeNotification ({ commit }) {

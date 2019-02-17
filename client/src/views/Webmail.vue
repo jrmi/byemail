@@ -1,10 +1,10 @@
 <template>
   <div class="content" :class="{loading: isLoading()}" v-if="account">
     <v-toolbar app dense>
-      <v-btn :to="{ name: 'mailboxes' }" icon>
-        <v-icon>home</v-icon>
+      <v-btn icon @click="$router.back()" v-if="$route.name !== 'mailboxes'">
+        <v-icon>arrow_back</v-icon>
       </v-btn>
-      <v-toolbar-title>Maiboxes for {{account.name}}</v-toolbar-title>
+      <v-toolbar-title>Account: {{account.name}}</v-toolbar-title>
       <v-spacer></v-spacer>
       <notification-button/>
       <v-btn icon @click="logout()">
@@ -12,7 +12,7 @@
       </v-btn>
     </v-toolbar>
 
-    <v-content style="height: 100%">
+    <v-content>
       <router-view></router-view>
     </v-content>
 
@@ -97,6 +97,8 @@ export default {
 <style scoped lang="less">
 .content {
   height: 100%;
+  //margin-top: 10px;
+  //margin-bottom: -10px;
 
   .waiter {
     display: none;

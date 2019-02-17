@@ -20,42 +20,6 @@ export default new Router({
       name: 'login',
       component: Login
     },
-    /* {
-      path: '/webmail',
-      name: 'webmail',
-      component: Webmail,
-      children: [
-        {
-          path: '/mailboxes/',
-          name: 'mailboxes',
-          component: Mailboxes,
-          children: [
-            {
-              path: 'show_mailbox/:id',
-              name: 'mailbox',
-              component: Mailbox,
-              children: [
-                {
-                  path: 'show_mail/:mail_id',
-                  name: 'mail',
-                  component: Mail
-                }
-              ]
-            }
-          ]
-        },
-        {
-          path: '/mailedit',
-          name: 'mailedit',
-          component: MailEdit
-        },
-        {
-          path: '/config',
-          name: 'config',
-          component: null
-        }
-      ]
-    }, */
     {
       path: '/webmail',
       name: 'webmail',

@@ -3,7 +3,7 @@
 import { register } from 'register-service-worker'
 import store from './store'
 
-if (process.env.NODE_ENV === 'production' || true) {
+if (process.env.NODE_ENV === 'production') {
   console.log('Try to register service worker')
   register(`${process.env.BASE_URL}service-worker.js`, {
     ready (registration) {
