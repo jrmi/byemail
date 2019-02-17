@@ -60,6 +60,7 @@ def init_app():
     app.static("/img", os.path.join(BASE_DIR, "../client/dist/img"))
     app.static("/js", os.path.join(BASE_DIR, "../client/dist/js"))
     app.static("/css", os.path.join(BASE_DIR, "../client/dist/css"))
+    app.static("/.well-known", os.path.join('./', ".well-known"))
 
     auth = Auth(app)
     auth.user_loader(account_manager.get)

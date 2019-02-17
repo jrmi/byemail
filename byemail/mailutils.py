@@ -75,6 +75,7 @@ def make_msg(subject, content, from_addr, tos=None, ccs=None, attachments=None):
 
 async def extract_data_from_msg(msg):
     """ Extract data from a message to save it """
+    logger.debug(msg)
 
     body = msg.get_body(('html', 'plain',))
 
@@ -97,9 +98,9 @@ async def extract_data_from_msg(msg):
         'date': msg['Date'].datetime,
         'return': msg['Return-Path'] or msg['Reply-To'],
         'in-thread': False,
-        'body-type': body.get_content_type(),
-        'body-charset': body.get_content_charset(),
-        'body': body.get_content(),
+        'body-type': body.get_content_type() if body else "text/plain",
+        'body-charset': body.get_content_charset() if body else "utf-8",
+        'body': body.get_content() if body else "Body not found",
         'attachments': []
     }
 

@@ -39,7 +39,7 @@ class AddressSerializer(Serializer):
         try:
             return Address(display_name=display_name, addr_spec=addr_spec)
         except InvalidHeaderDefect:
-            return ''
+            return "not decoded %s" % s
 
 class Backend(core.Backend):
     def __init__(self, datadir="data/", **kwargs):
