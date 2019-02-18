@@ -1,11 +1,12 @@
 <template>
-  <div v-if="serviceWorkerRegistered()">
-    <span>{{notificationEnabled()?'Notification allowed':'Notification blolcked'}}</span>
-    <v-btn
-      :color="notificationEnabled()?'normal':'success'"
-      @click="togglePermission()"
-    >{{notificationEnabled()?'Block':'Allow'}}</v-btn>
-  </div>
+  <v-btn
+    icon
+    :color="notificationEnabled()?'success':'normal'"
+    @click="togglePermission()"
+    v-if="serviceWorkerRegistered()"
+  >
+    <v-icon>{{notificationEnabled()?'notifications':'notifications_off'}}</v-icon>
+  </v-btn>
 </template>
 
 <script>
