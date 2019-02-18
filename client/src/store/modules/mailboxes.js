@@ -10,7 +10,9 @@ var tagsToReplace = {
 }
 
 function sanitizeText (str) {
-  return str.replace(/[&<>]/g, (tag) => { return tagsToReplace[tag] || tag })
+  return str.replace(/[&<>]/g, tag => {
+    return tagsToReplace[tag] || tag
+  })
 }
 
 // initial state
@@ -74,37 +76,43 @@ const mutations = {
 // actions
 const actions = {
   getAllMailboxes ({ commit }) {
-    return Vue.http.get('/api/mailboxes', {responseType: 'json'}).then((response) => {
-      let mailboxes = response.body
-      for (let mb of mailboxes) {
-        mb.last_message = Moment(mb.last_message)
-      }
-      commit({ type: types.SET_MAILBOXES, mailboxes })
-    })
+    return Vue.http
+      .get('/api/mailboxes', { responseType: 'json' })
+      .then(response => {
+        let mailboxes = response.body
+        for (let mb of mailboxes) {
+          mb.last_message = Moment(mb.last_message)
+        }
+        commit({ type: types.SET_MAILBOXES, mailboxes })
+      })
   },
-  getMailbox ({commit}, { mailboxId }) {
-    return Vue.http.get('/api/mailbox/' + mailboxId, {responseType: 'json'}).then(function (response) {
-      let mailbox = response.body
-      for (let msg of mailbox.messages) {
-        msg.date = Moment(msg.date)
-      }
-      mailbox.messages = _.orderBy(mailbox.messages, 'date', 'desc')
-      commit({ type: types.SET_CURRENT_MAILBOX, mailbox })
-    })
+  getMailbox ({ commit }, { mailboxId }) {
+    return Vue.http
+      .get('/api/mailbox/' + mailboxId, { responseType: 'json' })
+      .then(function (response) {
+        let mailbox = response.body
+        for (let msg of mailbox.messages) {
+          msg.date = Moment(msg.date)
+        }
+        mailbox.messages = _.orderBy(mailbox.messages, 'date', 'desc')
+        commit({ type: types.SET_CURRENT_MAILBOX, mailbox })
+      })
   },
-  getMail ({commit}, {mailId}) {
-    return Vue.http.get('/api/mail/' + mailId, { responseType: 'json' }).then(function (response) {
-      const mail = response.body
-      mail.date = Moment(mail.date)
-      if (mail['body-type'] === 'text/html') {
-        mail.iframeSrc = 'data:text/html;charset=' + mail['body-charset'] + ',' + escape(mail.body)
-      } else {
-        mail.body = sanitizeText(mail.body).replace(/\n/g, '<br />')
-      }
-      commit({ type: types.SET_CURRENT_MAIL, mail })
-    })
+  getMail ({ commit }, { mailId }) {
+    return Vue.http
+      .get('/api/mail/' + mailId, { responseType: 'json' })
+      .then(function (response) {
+        const mail = response.body
+        mail.date = Moment(mail.date)
+        if (mail['body-type'] === 'text/html') {
+          // mail.iframeSrc = 'data:text/html;charset=' + mail['body-charset'] + ',' + escape(mail.body)
+        } else {
+          mail.body = sanitizeText(mail.body).replace(/\n/g, '<br />')
+        }
+        commit({ type: types.SET_CURRENT_MAIL, mail })
+      })
   },
-  markAllMailRead ({commit}) {
+  markAllMailRead ({ commit }) {
     let promises = []
     for (let msg of state.current.messages) {
       if (msg.unread) {
@@ -115,28 +123,43 @@ const actions = {
       commit({ type: types.SET_ALL_MAIL_READ })
     })
   },
-  markMailRead ({commit}) {
-    return Vue.http.post('/api/mail/' + state.mail.uid + '/mark_read').then((response) => {
-      commit({ type: types.SET_CURRENT_MAIL_READ })
-    })
+  markMailRead ({ commit }) {
+    return Vue.http
+      .post('/api/mail/' + state.mail.uid + '/mark_read')
+      .then(response => {
+        commit({ type: types.SET_CURRENT_MAIL_READ })
+      })
   },
-  sendMail ({dispatch, commit}, {recipients, subject, content, attachments, replyTo}) {
-    return Vue.http.post('/api/sendmail/', {recipients, subject, content, attachments, replyTo}).then(function (response) {
-      let promise = dispatch('getAllMailboxes')
-      if (state.current) {
-        promise = dispatch('getMailbox', {mailboxId: state.current.uid})
-      }
-      return promise
-    })
+  sendMail (
+    { dispatch, commit },
+    { recipients, subject, content, attachments, replyTo }
+  ) {
+    return Vue.http
+      .post('/api/sendmail/', {
+        recipients,
+        subject,
+        content,
+        attachments,
+        replyTo
+      })
+      .then(function (response) {
+        let promise = dispatch('getAllMailboxes')
+        if (state.current) {
+          promise = dispatch('getMailbox', { mailboxId: state.current.uid })
+        }
+        return promise
+      })
   },
-  resendMail ({dispatch, commit}, {to}) {
-    return Vue.http.post('/api/mail/' + state.mail.uid + '/resend', {to}).then(function (response) {
-      let promise = dispatch('getAllMailboxes')
-      if (state.current) {
-        promise = dispatch('getMailbox', {mailboxId: state.current.uid})
-      }
-      return promise
-    })
+  resendMail ({ dispatch, commit }, { to }) {
+    return Vue.http
+      .post('/api/mail/' + state.mail.uid + '/resend', { to })
+      .then(function (response) {
+        let promise = dispatch('getAllMailboxes')
+        if (state.current) {
+          promise = dispatch('getMailbox', { mailboxId: state.current.uid })
+        }
+        return promise
+      })
   }
 }
 
