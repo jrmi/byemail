@@ -293,6 +293,9 @@ class Backend(core.Backend):
     async def get_or_create_mailbox(self, account, address, name):
         """ Create a mailbox """
 
+        # Fix case issue
+        address = address.lower()
+
         mailbox, _ = await Mailbox.get_or_create(
             defaults=dict(uid=uuid.uuid4().hex),
             account=account.name,
