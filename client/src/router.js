@@ -6,6 +6,7 @@ import Mailboxes from '@/views/Mailboxes'
 import Mailbox from '@/views/Mailbox'
 import Mail from '@/views/Mail'
 import MailEdit from '@/views/MailEdit'
+import Settings from '@/views/Settings'
 
 Vue.use(Router)
 
@@ -60,6 +61,11 @@ export default new Router({
           component: null
         }
       ]
+    },
+    {
+      path: '/settings',
+      name: 'settings',
+      component: Settings
     }
   ]
 })

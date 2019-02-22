@@ -52,7 +52,11 @@ def init_app():
     # Static routes
     app.static("/index.html", os.path.join(BASE_DIR, "../client/dist/index.html"))
     app.static("/favicon.ico", os.path.join(BASE_DIR, "../client/dist/favicon.ico"))
-    app.static("/manifest.json", os.path.join(BASE_DIR, "../client/dist/manifest.json"))
+    app.static(
+        "/manifest.webmanefist",
+        os.path.join(BASE_DIR, "../client/dist/manifest.webmanifest"),
+        content_type="application/manifest+json",
+    )
     app.static("/robots.txt", os.path.join(BASE_DIR, "../client/dist/robots.txt"))
     app.static(
         "/service-worker.js", os.path.join(BASE_DIR, "../client/dist/service-worker.js")
@@ -60,7 +64,7 @@ def init_app():
     app.static("/img", os.path.join(BASE_DIR, "../client/dist/img"))
     app.static("/js", os.path.join(BASE_DIR, "../client/dist/js"))
     app.static("/css", os.path.join(BASE_DIR, "../client/dist/css"))
-    app.static("/.well-known", os.path.join('./', ".well-known"))
+    app.static("/.well-known", os.path.join("./", ".well-known"))
 
     auth = Auth(app)
     auth.user_loader(account_manager.get)

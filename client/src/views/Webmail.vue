@@ -6,7 +6,9 @@
       </v-btn>
       <v-toolbar-title>Account: {{account.name}}</v-toolbar-title>
       <v-spacer></v-spacer>
-      <notification-button/>
+      <v-btn icon :to="{ name: 'settings' }">
+        <v-icon>settings</v-icon>
+      </v-btn>
       <v-btn icon @click="logout()">
         <v-icon>input</v-icon>
       </v-btn>
@@ -28,7 +30,6 @@
 
 <script>
 import { mapGetters, mapActions, mapMutations } from "vuex";
-import NotificationButton from "@/components/NotificationButton";
 
 export default {
   name: "webmail",
@@ -58,9 +59,6 @@ export default {
     ...mapGetters(["isLoading"]),
     ...mapActions(["setLoading"]),
     ...mapMutations(["resetMailboxes"])
-  },
-  components: {
-    NotificationButton
   },
   data() {
     return {

@@ -1,29 +1,31 @@
 <template>
   <div class="main" :class="`route_${$route.name}`">
-    <div class="mailboxes">
-      <v-card class="mailboxlist">
-        <v-toolbar color="grey" dark flat>
-          <v-toolbar-title>Mailboxes</v-toolbar-title>
+    <vue-pull-refresh :on-refresh="refreshMailboxes">
+      <div class="mailboxes">
+        <v-card class="mailboxlist">
+          <v-toolbar color="grey" dark flat>
+            <v-toolbar-title>Mailboxes</v-toolbar-title>
 
-          <v-spacer></v-spacer>
+            <v-spacer></v-spacer>
 
-          <v-btn icon :to="{ name: 'mailedit' }">
-            <v-icon>email</v-icon>
-          </v-btn>
+            <v-btn icon :to="{ name: 'mailedit' }">
+              <v-icon>email</v-icon>
+            </v-btn>
 
-          <v-btn icon @click="refreshMailboxes()">
-            <v-icon>refresh</v-icon>
-          </v-btn>
-        </v-toolbar>
-        <mailbox-list :mailboxes="allMailboxes()"/>
-      </v-card>
-    </div>
+            <v-btn icon @click="refreshMailboxes()">
+              <v-icon>refresh</v-icon>
+            </v-btn>
+          </v-toolbar>
+          <mailbox-list :mailboxes="allMailboxes()"/>
+        </v-card>
+      </div>
+    </vue-pull-refresh>
     <div class="mailbox">
       <div class="filler" v-if="$route.name === 'mailboxes'">Select a mailbox from left...</div>
       <router-view></router-view>
     </div>
     <div class="mail">
-      <router-view name="mail"></router-view>
+      <router-view name="mail" :config="pull2RefreshConfig"></router-view>
     </div>
   </div>
 </template>
@@ -31,9 +33,21 @@
 <script>
 import MailboxList from "@/components/MailboxList";
 import { mapGetters, mapActions } from "vuex";
+import VuePullRefresh from "vue-pull-refresh";
 
 export default {
   name: "mailboxes",
+  data() {
+    return {
+      pull2RefreshConfig: {
+        errorLabel: "label shows when error",
+        startLabel: "label shows when pull down start",
+        readyLabel: "label shows when ready to refresh",
+        loadingLabel: "label shows when loading",
+        pullDownHeight: "50px"
+      }
+    };
+  },
   created() {
     this.fetchData();
   },
@@ -51,7 +65,8 @@ export default {
     ...mapActions(["getAllMailboxes", "setLoading"])
   },
   components: {
-    MailboxList
+    MailboxList,
+    "vue-pull-refresh": VuePullRefresh
   }
 };
 </script>
