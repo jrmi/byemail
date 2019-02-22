@@ -53,8 +53,8 @@ def init_app():
     app.static("/index.html", os.path.join(BASE_DIR, "../client/dist/index.html"))
     app.static("/favicon.ico", os.path.join(BASE_DIR, "../client/dist/favicon.ico"))
     app.static(
-        "/manifest.webmanefist",
-        os.path.join(BASE_DIR, "../client/dist/manifest.webmanifest"),
+        "/manifest.json",
+        os.path.join(BASE_DIR, "../client/dist/manifest.json"),
         content_type="application/manifest+json",
     )
     app.static("/robots.txt", os.path.join(BASE_DIR, "../client/dist/robots.txt"))

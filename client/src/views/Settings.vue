@@ -56,12 +56,14 @@
 
 <script>
 import { mapGetters, mapActions } from "vuex";
+import { deferedPrompt } from "../registerServiceWorker.js";
 import NotificationButton from "@/components/NotificationButton";
 
 export default {
   data() {
     return {
-      account: { name: "" }
+      account: { name: "" },
+      installable: false
     };
   },
   components: {
@@ -69,10 +71,24 @@ export default {
   },
   created() {
     this.fetchData();
+    this.installable = deferedPrompt !== null;
   },
   methods: {
     install() {
-      console.log("install");
+      if (this.installable) {
+        console.log("install");
+        deferedPrompt.prompt();
+        deferredPrompt.userChoice.then(choiceResult => {
+          if (choiceResult.outcome === "accepted") {
+            console.log("User accepted to install application");
+          } else {
+            console.log("User dismissed installation");
+          }
+          deferredPrompt = null;
+        });
+      } else {
+        console.log("Cant be installed");
+      }
     },
 
     fetchData() {

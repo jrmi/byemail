@@ -14,7 +14,7 @@ export default new Router({
   routes: [
     {
       path: '/',
-      redirect: { name: 'webmail' }
+      redirect: { name: 'mailboxes' }
     },
     {
       path: '/login',
