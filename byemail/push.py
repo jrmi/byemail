@@ -1,5 +1,6 @@
 import os
 import logging
+import time
 
 from py_vapid import Vapid01 as Vapid
 from py_vapid import b64urlencode
@@ -13,12 +14,13 @@ logger = logging.getLogger(__name__)
 
 
 async def send_web_push(subscription_information, message_body):
+    claims = dict(settings.VAPID_CLAIMS)
     try:
         return webpush(
             subscription_info=subscription_information,
             data=message_body,
             vapid_private_key=settings.VAPID_PRIVATE_KEY,
-            vapid_claims=settings.VAPID_CLAIMS,
+            vapid_claims=claims,
         )
     except WebPushException as ex:
         logger.exception("Exception while trying to send push notification")
