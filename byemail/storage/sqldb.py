@@ -17,6 +17,7 @@ from tortoise import Tortoise
 from tortoise import fields
 from tortoise import exceptions
 from tortoise.models import Model
+from tortoise.transactions import in_transaction
 
 from byemail.storage import core, DoesntExists, MultipleResults
 
@@ -390,12 +391,17 @@ class Backend(core.Backend):
     @translate_exception()
     async def update_mail(self, account, mail):
         """ Update any mail """
-        dbmsg = await Message.get(
-            uid=mail["uid"], mailboxes__account=account.name
-        ).distinct()
-        dbmsg.update_from_dict(mail)
+        async with in_transaction():
+            dbmsg = await Message.get(
+                uid=mail["uid"], mailboxes__account=account.name
+            ).distinct()
+            dbmsg.update_from_dict(mail)
 
-        await dbmsg.save()
+            await dbmsg.save()
+
+            for mailbox in await dbmsg.mailboxes.filter(account=account.name):
+                mailbox.unreads = len(list(await mailbox.messages.filter(unread=1)))
+                await mailbox.save()
 
         return dbmsg.as_dict()
 

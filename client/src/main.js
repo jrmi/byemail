@@ -34,6 +34,10 @@ window.addEventListener('beforeinstallprompt', e => {
   })
 }) */
 
+window.addEventListener('beforeinstallprompt', e => {
+  console.log(e)
+})
+
 Vue.http.interceptors.push(function (request) {
   // return response callback
   return function (response) {

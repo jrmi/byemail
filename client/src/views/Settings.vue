@@ -61,7 +61,7 @@ import NotificationButton from "@/components/NotificationButton";
 export default {
   data() {
     return {
-      account: null
+      account: { name: "" }
     };
   },
   components: {
@@ -76,7 +76,6 @@ export default {
     },
 
     fetchData() {
-      console.log("toto");
       this.setLoading(true);
       this.$http.get("/api/account").then(
         response => {

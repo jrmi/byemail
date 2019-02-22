@@ -21,6 +21,7 @@
                   :append-icon="show ? 'visibility_off' : 'visibility'"
                   :type="show ? 'text' : 'password'"
                   @click:append="show = !show"
+                  @keyup.enter="submit"
                 ></v-text-field>
               </v-form>
             </v-card-text>
