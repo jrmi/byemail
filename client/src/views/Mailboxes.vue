@@ -1,8 +1,8 @@
 <template>
   <div class="main" :class="`route_${$route.name}`">
-    <vue-pull-refresh :on-refresh="refreshMailboxes">
-      <div class="mailboxes">
-        <v-card class="mailboxlist">
+    <div class="mailboxes">
+      <v-card class="mailboxlist">
+        <vue-pull-refresh :on-refresh="refreshMailboxes" :config="pull2RefreshConfig">
           <v-toolbar color="grey" dark flat>
             <v-toolbar-title>Mailboxes</v-toolbar-title>
 
@@ -17,15 +17,15 @@
             </v-btn>
           </v-toolbar>
           <mailbox-list :mailboxes="allMailboxes()"/>
-        </v-card>
-      </div>
-    </vue-pull-refresh>
+        </vue-pull-refresh>
+      </v-card>
+    </div>
     <div class="mailbox">
       <div class="filler" v-if="$route.name === 'mailboxes'">Select a mailbox from left...</div>
       <router-view></router-view>
     </div>
     <div class="mail">
-      <router-view name="mail" :config="pull2RefreshConfig"></router-view>
+      <router-view name="mail"></router-view>
     </div>
   </div>
 </template>
@@ -40,11 +40,11 @@ export default {
   data() {
     return {
       pull2RefreshConfig: {
-        errorLabel: "label shows when error",
-        startLabel: "label shows when pull down start",
-        readyLabel: "label shows when ready to refresh",
-        loadingLabel: "label shows when loading",
-        pullDownHeight: "50px"
+        errorLabel: "Refresh failed !",
+        startLabel: "Pull to refresh",
+        readyLabel: "Release now",
+        loadingLabel: "Loading...",
+        pullDownHeight: "100"
       }
     };
   },

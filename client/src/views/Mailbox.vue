@@ -8,7 +8,7 @@
       <v-btn icon @click="writeMail()">
         <v-icon>email</v-icon>
       </v-btn>
-      <v-btn icon v-if="currentMailbox().unreads" @click="markAllMailRead()">
+      <v-btn icon v-if="currentMailbox().unreads" @click="markAllMailRead">
         <v-icon>visibility_off</v-icon>
       </v-btn>
     </v-toolbar>
