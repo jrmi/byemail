@@ -1,5 +1,60 @@
-if (workbox) {
+if (window.workbox) {
+  let workbox = window.workbox
+
   console.log(`Yay! Workbox is loaded 🎉`)
+  workbox.setConfig({ debug: true })
+  workbox.core.setLogLevel(workbox.core.LOG_LEVELS.debug)
+  workbox.precaching.precacheAndRoute(self.__precacheManifest)
+
+  workbox.routing.registerRoute(
+    '/api/account',
+    workbox.strategies.cacheFirst({
+      cacheName: 'account-cache'
+    })
+  )
+
+  workbox.routing.registerRoute(
+    new RegExp('/api/mailboxes'),
+    workbox.strategies.cacheFirst({
+      cacheName: 'mailbox-cache'
+    })
+  )
+
+  workbox.routing.registerRoute(
+    new RegExp('/api/mailbox/.+'),
+    workbox.strategies.cacheFirst({
+      cacheName: 'mailbox-cache'
+    })
+  )
+
+  workbox.routing.registerRoute(
+    new RegExp('/api/mail/.+'),
+    workbox.strategies.cacheFirst({
+      cacheName: 'mail-cache'
+    })
+  )
+
+  workbox.routing.registerRoute(
+    /^https:\/\/fonts\.googleapis\.com/,
+    workbox.strategies.staleWhileRevalidate({
+      cacheName: 'google-fonts-stylesheets'
+    })
+  )
+
+  workbox.routing.registerRoute(
+    /\.(?:png|gif|jpg|jpeg|svg)$/,
+    workbox.strategies.cacheFirst({
+      cacheName: 'images',
+      plugins: [
+        new workbox.expiration.Plugin({
+          maxEntries: 60,
+          maxAgeSeconds: 30 * 24 * 60 * 60 // 30 Days
+        })
+      ]
+    })
+  )
+
+  console.log(`And everything's fine 🎉`)
 } else {
   console.log(`Boo! Workbox didn't load 😬`)
 }
