@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import mailboxes from './modules/mailboxes'
 import draft from './modules/draft'
+import account from './modules/account'
 import notification from './modules/push-notifications'
 import createLogger from 'vuex/dist/logger'
 import * as types from './mutation-types'
@@ -65,7 +66,8 @@ export default new Vuex.Store({
   modules: {
     mailboxes,
     draft,
-    notification
+    notification,
+    account
   },
   strict: debug,
   plugins: debug ? [createLogger()] : []

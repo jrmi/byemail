@@ -16,7 +16,7 @@
               <v-icon>refresh</v-icon>
             </v-btn>
           </v-toolbar>
-          <mailbox-list :mailboxes="allMailboxes()"/>
+          <mailbox-list :mailboxes="allMailboxes()" :userId="$route.params.userId"/>
         </vue-pull-refresh>
       </v-card>
     </div>
@@ -53,15 +53,20 @@ export default {
   },
   methods: {
     fetchData() {
-      this.refreshMailboxes();
+      this.refreshMailboxes({ userId: this.$route.params.userId });
     },
     refreshMailboxes() {
       this.setLoading(true);
-      this.getAllMailboxes().then(() => {
-        this.setLoading(false);
-      });
+      this.getAllMailboxes({ userId: this.$route.params.userId }).then(
+        () => {
+          this.setLoading(false);
+        },
+        () => {
+          console.log("Can't get mailboxes");
+        }
+      );
     },
-    ...mapGetters(["allMailboxes"]),
+    ...mapGetters(["allMailboxes", "account"]),
     ...mapActions(["getAllMailboxes", "setLoading"])
   },
   components: {

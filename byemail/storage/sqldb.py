@@ -101,7 +101,7 @@ class Mailbox(Model):
     account = fields.CharField(max_length=255)
     address = fields.CharField(max_length=255)
     name = fields.CharField(max_length=255)
-    unreads = fields.IntField(default=0)
+    # unreads = fields.IntField(default=0)
     total = fields.IntField(default=0)
     last_message = fields.DatetimeField(null=True)
 
@@ -116,7 +116,7 @@ class Mailbox(Model):
             "address": self.address,
             "name": self.name,
             "total": self.total,
-            "unreads": self.unreads,
+            # "unreads": self.unreads,
             "last_message": self.last_message,
         }
 
@@ -229,6 +229,20 @@ class Subscription(Model):
         return {"id": self.id, "content": self.content, "account": self.account}
 
 
+class Unread(Model):
+    """ Unread message for a mailbox """
+
+    id = fields.IntField(pk=True)
+    mailbox = fields.ForeignKeyField("models.Mailbox", related_name="unreads")
+    message = fields.ForeignKeyField("models.Message")
+
+    def __str__(self):
+        return f"<Unread mb({self.mailbox.uid}) - msg({self.message.uid})>"
+
+    def as_dict(self):
+        return {"id": self.id, "mailbox": self.mailbox.uid, "account": self.message.uid}
+
+
 class Backend(core.Backend):
     def __init__(self, config=None, uri=None, **kwargs):
         super().__init__(**kwargs)
@@ -307,20 +321,31 @@ class Backend(core.Backend):
         return mailbox
 
     @translate_exception()
-    async def get_mailboxes(self, account):
+    async def get_mailboxes(self, account, offset=0, limit=None):
         """ Return all mailboxes in db with unread message count and total """
-        return [m.as_dict() for m in await Mailbox.filter(account=account.name)]
+
+        mb_query = Mailbox.filter(account=account.name).offset(offset)
+
+        if limit:
+            mb_query.limit(limit)
+
+        return [m.as_dict() for m in await mb_query]
 
     @translate_exception()
-    async def get_mailbox(self, account, mailbox_id):
+    async def get_mailbox(self, account, mailbox_id, offset=0, limit=None):
         """ Return the selected mailbox """
 
         mailbox = await Mailbox.get(uid=mailbox_id, account=account.name)
-
-        msgs = await Message.filter(mailboxes=mailbox.id).order_by("timestamp")
-
         result = mailbox.as_dict()
-        result["messages"] = [msg.as_mini_dict() for msg in msgs]
+
+        msg_query = (
+            Message.filter(mailboxes=mailbox.id).order_by("timestamp").offset(offset)
+        )
+
+        if limit:
+            msg_query = msg_query.limit(limit)
+
+        result["messages"] = [msg.as_mini_dict() for msg in await msg_query]
 
         return result
 
@@ -373,10 +398,12 @@ class Backend(core.Backend):
             # Update unread count
             # print(await mailbox.messages.filter(unread=1).count()) # TODO fails
             # print(list(mailbox.messages.all())) # TODO fails
-            mailbox.unreads = len(list(await mailbox.messages.filter(unread=1)))
-            mailbox.total = len(list(await mailbox.messages.filter(uid__icontains="")))
+            # mailbox.unreads = len(list(await mailbox.messages.filter(unread=1)))
+            # mailbox.total = len(list(await mailbox.messages.filter(uid__icontains="")))
 
             await mailbox.save()
+
+            unread = await Unread.create(mailbox=mailbox, message=dbmsg)
 
         return dbmsg.as_dict()
 
@@ -391,19 +418,26 @@ class Backend(core.Backend):
     @translate_exception()
     async def update_mail(self, account, mail):
         """ Update any mail """
-        async with in_transaction():
-            dbmsg = await Message.get(
-                uid=mail["uid"], mailboxes__account=account.name
-            ).distinct()
-            dbmsg.update_from_dict(mail)
+        # async with in_transaction():
+        dbmsg = await Message.get(
+            uid=mail["uid"], mailboxes__account=account.name
+        ).distinct()
+        dbmsg.update_from_dict(mail)
 
-            await dbmsg.save()
+        await dbmsg.save()
 
-            for mailbox in await dbmsg.mailboxes.filter(account=account.name):
-                mailbox.unreads = len(list(await mailbox.messages.filter(unread=1)))
-                await mailbox.save()
+        """for mailbox in await dbmsg.mailboxes.filter(account=account.name):
+            mailbox.unreads = len(list(await mailbox.messages.filter(unread=1)))
+            await mailbox.save()"""
 
         return dbmsg.as_dict()
+
+    @translate_exception()
+    async def mark_mail_read(self, account, mail):
+        """ Mark a mail as read for an account """
+        await Message.filter(
+            message__uid=mail["uid"], mailbox__account=account.name
+        ).delete()
 
     @translate_exception()
     async def get_mail_attachment(self, account, mail_uid, att_index):

@@ -4,6 +4,9 @@ export const SET_NOTIFICATION = 'SET_NOTIFICATION'
 export const SET_SERVICE_WORKER = 'setServiceWorker'
 export const SET_MESSAGE = 'setMessage'
 
+// Account
+export const SET_ACCOUNT = 'SET_ACCOUNT'
+
 // Mail
 export const SET_MAILBOXES = 'SET_MAILBOXES'
 export const RESET_MAILBOXES = 'resetMailboxes'

@@ -1,7 +1,11 @@
 <template>
   <v-list class="blist" two-line>
     <template v-for="(mailbox, index) in mailboxes">
-      <v-list-tile :key="mailbox.uid" avatar :to="{name: 'mailbox', params: { id: mailbox.uid }}">
+      <v-list-tile
+        :key="mailbox.uid"
+        avatar
+        :to="{name: 'mailbox', params: { mailboxId: mailbox.uid, userId: userId }}"
+      >
         <!-- v-list-tile-avatar>
           <img :src="gravatarUrl(mailbox)">
         </v-list-tile-avatar-->
@@ -30,7 +34,7 @@ import md5 from "crypto-js/md5";
 
 export default {
   name: "mailbox-list",
-  props: ["mailboxes"],
+  props: ["mailboxes", "userId"],
   created() {},
   methods: {
     gravatarUrl(mailbox) {

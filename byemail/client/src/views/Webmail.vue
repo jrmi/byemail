@@ -1,12 +1,12 @@
 <template>
-  <div class="content" :class="{loading: isLoading()}" v-if="account">
+  <div class="content" :class="{loading: isLoading()}" v-if="account()">
     <v-toolbar app dense>
       <v-btn icon @click="$router.back()" v-if="$route.name !== 'mailboxes'">
         <v-icon>arrow_back</v-icon>
       </v-btn>
-      <v-toolbar-title>Account: {{account.name}}</v-toolbar-title>
+      <v-toolbar-title>Account: {{account().address}}</v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn icon :to="{ name: 'settings' }">
+      <v-btn icon :to="{ name: 'settings', userId: $route.params.userId }">
         <v-icon>settings</v-icon>
       </v-btn>
       <v-btn icon @click="logout()">
@@ -39,9 +39,8 @@ export default {
   methods: {
     fetchData() {
       this.setLoading(true);
-      this.$http.get("/api/account").then(
+      this.loadAccount({ userId: this.$route.params.userId }).then(
         response => {
-          this.account = response.body;
           this.setLoading(false);
         },
         response => {
@@ -56,8 +55,8 @@ export default {
         this.$router.push({ name: "login" });
       });
     },
-    ...mapGetters(["isLoading"]),
-    ...mapActions(["setLoading"]),
+    ...mapGetters(["isLoading", "account"]),
+    ...mapActions(["setLoading", "loadAccount"]),
     ...mapMutations(["resetMailboxes"])
   },
   data() {
@@ -84,8 +83,7 @@ export default {
           }
         }
       ],
-      miniVariant: false,
-      account: null
+      miniVariant: false
     };
   }
 };
