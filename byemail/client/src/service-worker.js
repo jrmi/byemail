@@ -1,6 +1,4 @@
-if (window.workbox) {
-  let workbox = window.workbox
-
+if (workbox) {
   console.log(`Yay! Workbox is loaded 🎉`)
   workbox.setConfig({ debug: true })
   workbox.core.setLogLevel(workbox.core.LOG_LEVELS.debug)
@@ -107,4 +105,10 @@ self.addEventListener('notificationclick', function (event) {
       return self.clients.openWindow('/index.html')
     })
   )
+})
+
+self.addEventListener('activate', event => {
+  // Calling claim() to force a "controllerchange" event on navigator.serviceWorker
+  console.log('activate called')
+  event.waitUntil(self.clients.claim())
 })

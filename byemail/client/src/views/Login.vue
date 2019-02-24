@@ -54,7 +54,10 @@ export default {
       };
       this.$http.post("/login/", credentials).then(
         response => {
-          this.$router.push({ name: "mailboxes" });
+          this.$router.push({
+            name: "mailboxes",
+            params: { userId: this.name }
+          });
         },
         response => {
           this.loginFailed = true;

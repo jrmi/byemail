@@ -25,7 +25,7 @@ function pushRegister () {
           console.log('New push registration')
 
           // Get public key from server
-          const response = await fetch('/api/subscription/')
+          const response = await fetch('/api/publickey')
           const vapidPublicKey = await response.text()
           const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey)
 
@@ -38,7 +38,7 @@ function pushRegister () {
       .then(
         subscription => {
           console.log('Send/update push subscription to server')
-          fetch('/api/subscription/', {
+          fetch(`/api/subscription/`, {
             method: 'post',
             headers: {
               'Content-type': 'application/json'

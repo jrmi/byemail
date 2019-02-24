@@ -32,16 +32,12 @@ class Backend:
         """ Create a mailbox """
         raise NotImplementedError()
 
-    async def get_mailboxes(self, account):
+    async def get_mailboxes(self, account, offset=0, limit=None):
         """ Return all mailboxes in db with unread message count and total """
         raise NotImplementedError()
 
-    async def get_mailbox(self, account, mailbox_id):
+    async def get_mailbox(self, account, mailbox_id, offset=0, limit=None):
         """ Return the selected mailbox """
-        raise NotImplementedError()
-
-    async def get_mailbox_mails(self, account, mailbox_id):
-        """ Return the selected mailbox messages """
         raise NotImplementedError()
 
     async def store_mail(self, account, msg, from_addr, recipients, incoming=True):
@@ -94,6 +90,9 @@ class Backend:
 
     async def update_mail(self, account, mail):
         """ Update any mail """
+        raise NotImplementedError()
+
+    async def mark_mail_read(self, account, mail):
         raise NotImplementedError()
 
     async def save_user_session(self, session_key, session):

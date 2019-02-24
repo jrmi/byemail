@@ -22,26 +22,26 @@ export default new Router({
       component: Login
     },
     {
-      path: '/webmail',
+      path: '/webmail/:userId',
       name: 'webmail',
       component: Webmail,
       children: [
         {
-          path: '/mailboxes/',
+          path: 'mailboxes/',
           name: 'mailboxes',
           components: {
             default: Mailboxes
           },
           children: [
             {
-              path: 'mailbox/:id',
+              path: 'mailbox/:mailboxId',
               name: 'mailbox',
               components: {
                 default: Mailbox
               }
             },
             {
-              path: 'mailbox/:id/mail/:mail_id',
+              path: 'mailbox/:mailboxId/mail/:mailId',
               name: 'mail',
               components: {
                 default: Mailbox,
@@ -51,14 +51,9 @@ export default new Router({
           ]
         },
         {
-          path: '/mailedit',
+          path: 'mailedit',
           name: 'mailedit',
           component: MailEdit
-        },
-        {
-          path: '/config',
-          name: 'config',
-          component: null
         }
       ]
     },

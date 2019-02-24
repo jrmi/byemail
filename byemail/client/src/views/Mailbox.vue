@@ -13,7 +13,7 @@
       </v-btn>
     </v-toolbar>
 
-    <message-list :messages="currentMailbox().messages"/>
+    <message-list :messages="currentMailbox().messages" :userId="$route.params.userId"/>
   </v-card>
 </template>
 
@@ -34,8 +34,12 @@ export default {
   methods: {
     fetchData() {
       this.setLoading(true);
-      let mailboxId = this.$route.params.id;
-      this.$store.dispatch({ type: "getMailbox", mailboxId }).then(() => {
+      const mailboxId = this.$route.params.mailboxId;
+      const userId = this.$route.params.userId;
+      this.getMailbox({
+        mailboxId,
+        userId
+      }).then(() => {
         this.setLoading(false);
       });
     },
@@ -50,7 +54,7 @@ export default {
       this.$router.push({ name: "mailedit" });
     },
     ...mapGetters(["currentMailbox"]),
-    ...mapActions(["markAllMailRead", "setLoading"]),
+    ...mapActions(["markAllMailRead", "setLoading", "getMailbox"]),
     ...mapMutations(["resetDraft", "addDraftRecipient"])
   },
   components: {

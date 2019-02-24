@@ -180,8 +180,8 @@ class MsgSender:
         """ Relay message to other party """
 
         status = {}
-        for addr in to_addrs.items():
-            status[addr] = {"status": "NOTDELIVERED", "reason": "NOT_PROCESSED"}
+        for addr in to_addrs:
+            status[addr] = {"status": "UNDELIVERED", "reason": "NOT_PROCESSED"}
 
         for fqdn, addresses in self.group_by_fqdn(to_addrs).items():
             try:

@@ -131,18 +131,25 @@ def init_app():
         response.cookies["session_key"] = gen_session_key()
         return response
 
-    @app.route("/api/account")
+    @app.route("/api/users/<user_id>/account")
     @auth.login_required(user_keyword="account", handle_no_auth=handle_no_auth)
-    async def account(request, account):
-        return json(account.to_json())
+    async def account(request, user_id, account):
+        if account.name != user_id:
+            raise Forbidden("You can't consult another person account.")
+
+        response = account.to_json()
+        return json(response)
 
     @app.route("/")
     async def index(request):
         return redirect("/index.html")
 
-    @app.route("/api/mailboxes")
+    @app.route("/api/users/<user_id>/mailboxes")
     @auth.login_required(user_keyword="account", handle_no_auth=handle_no_auth)
-    async def mailboxes(request, account):
+    async def mailboxes(request, user_id, account):
+        if account.name != user_id:
+            raise Forbidden("You can't consult another person account.")
+
         mbxs = await storage.get_mailboxes(account)
 
         for mb in mbxs:
@@ -151,9 +158,12 @@ def init_app():
 
         return json(mbxs)
 
-    @app.route("/api/mailbox/<mailbox_id>")
+    @app.route("/api/users/<user_id>/mailbox/<mailbox_id>")
     @auth.login_required(user_keyword="account", handle_no_auth=handle_no_auth)
-    async def mailbox(request, mailbox_id, account):
+    async def mailbox(request, user_id, mailbox_id, account):
+        if account.name != user_id:
+            raise Forbidden("You can't consult another person account.")
+
         mailbox_to_return = await storage.get_mailbox(account, mailbox_id)
 
         for msg in mailbox_to_return["messages"]:
@@ -161,9 +171,12 @@ def init_app():
 
         return json(mailbox_to_return)
 
-    @app.route("/api/mail/<mail_id>")
+    @app.route("/api/users/<user_id>/mail/<mail_id>")
     @auth.login_required(user_keyword="account", handle_no_auth=handle_no_auth)
-    async def mail(request, mail_id, account):
+    async def mail(request, user_id, mail_id, account):
+        if account.name != user_id:
+            raise Forbidden("You can't consult another person account.")
+
         mail_to_return = await storage.get_mail(account, mail_id)
 
         for att in mail_to_return["attachments"]:
@@ -172,9 +185,7 @@ def init_app():
                 if not guessed_ext:
                     guessed_ext = ".bin"
                 att["filename"] = "file_{}{}".format(att["index"], guessed_ext)
-            att["url"] = "/api/mail/{}/attachment/{}/{}".format(
-                mail_id, att["index"], att["filename"]
-            )
+            att["url"] = f"/api/users/{user_id}/mail/{mail_id}/attachment/{att['index']}/{att['filename']}"
 
         mail_to_return["date"] = mail_to_return["date"].isoformat()
 
@@ -184,9 +195,12 @@ def init_app():
 
         return json(mail_to_return)
 
-    @app.route("/api/mail/<mail_id>/mark_read", methods=["POST"])
+    @app.route("/api/users/<user_id>/mail/<mail_id>/mark_read", methods=["POST"])
     @auth.login_required(user_keyword="account", handle_no_auth=handle_no_auth)
-    async def mail_mark_read(request, mail_id, account):
+    async def mail_mark_read(request, user_id, mail_id, account):
+        if account.name != user_id:
+            raise Forbidden("You can't consult another person account.")
+
         mail_to_mark = await storage.get_mail(account, mail_id)
 
         mail_to_mark["unread"] = False
@@ -195,9 +209,18 @@ def init_app():
 
         return json(mail_to_mark)
 
-    @app.route("/api/mail/<mail_id>/attachment/<att_index>/<filename>", methods=["GET"])
+    @app.route(
+        "/api/users/<user_id>/mail/<mail_id>/attachment/<att_index>/<filename>",
+        methods=["GET"],
+    )
     @auth.login_required(user_keyword="account", handle_no_auth=handle_no_auth)
-    async def mail_download_attachment(request, mail_id, att_index, filename, account):
+    async def mail_download_attachment(
+        request, user_id, mail_id, att_index, filename, account
+    ):
+
+        if account.name != user_id:
+            raise Forbidden("You can't consult another person account.")
+
         attachment, att_content = await storage.get_mail_attachment(
             account, mail_id, int(att_index)
         )
@@ -207,10 +230,14 @@ def init_app():
 
         return stream(streaming_att, content_type=attachment["type"])
 
-    @app.route("/api/sendmail/", methods=["POST"])
+    @app.route("/api/users/<user_id>/sendmail/", methods=["POST"])
     @auth.login_required(user_keyword="account", handle_no_auth=handle_no_auth)
-    async def sendmail(request, account):
+    async def sendmail(request, user_id, account):
         """ Send an email """
+
+        if account.name != user_id:
+            raise Forbidden("You can't consult another person account.")
+
         data = request.json
 
         from_addr = mailutils.parse_email(account.address)
@@ -236,10 +263,13 @@ def init_app():
 
         return json(result)
 
-    @app.route("/api/mail/<mail_id>/resend", methods=["POST"])
+    @app.route("/api/users/<user_id>/mail/<mail_id>/resend", methods=["POST"])
     @auth.login_required(user_keyword="account", handle_no_auth=handle_no_auth)
-    async def mail_resend(request, mail_id, account):
+    async def mail_resend(request, user_id, mail_id, account):
         """ Resend an email by uid for selected recipient"""
+
+        if account.name != user_id:
+            raise Forbidden("You can't consult another person account.")
 
         mail_to_resend = await storage.get_mail(mail_id)
 
@@ -254,9 +284,13 @@ def init_app():
 
         return json(result)
 
-    @app.route("/api/contacts/search", methods=["GET"])
+    @app.route("/api/users/<user_id>/contacts/search", methods=["GET"])
     @auth.login_required(user_keyword="account", handle_no_auth=handle_no_auth)
-    async def contacts_search(request, account):
+    async def contacts_search(request, user_id, account):
+
+        if account.name != user_id:
+            raise Forbidden("You can't consult another person account.")
+
         text = request.args.get("text", "")
 
         if not text:
@@ -266,8 +300,8 @@ def init_app():
 
         return json(results)
 
-    @app.get("/api/subscription/")
-    async def subscription_get(request):
+    @app.get("/api/publickey")
+    async def subscription_get(request, user_id):
         """
         GET returns vapid public key which clients uses to send around push notification
         """
@@ -277,10 +311,13 @@ def init_app():
 
     @app.post("/api/subscription/")
     @auth.login_required(user_keyword="account", handle_no_auth=handle_no_auth)
-    async def subscription_post(request, account):
+    async def subscription_post(request, user_id, account):
         """
         POST creates a subscription
         """
+
+        if account.name != user_id:
+            raise Forbidden("You can't consult another person account.")
 
         subscription = request.json["subscription"]
 
@@ -291,13 +328,17 @@ def init_app():
 
     @app.post("/api/unsubscription/")
     @auth.login_required(user_keyword="account", handle_no_auth=handle_no_auth)
-    async def unsubscription_post(request, account):
+    async def unsubscription_post(request, user_id, account):
         """
         POST creates a subscription
         """
+
+        if account.name != user_id:
+            raise Forbidden("You can't consult another person account.")
 
         subscription = request.json["subscription"]
         # Remove subscription for this account
         await storage.remove_subscription(account, subscription)
 
         return json({}, status=201)
+
