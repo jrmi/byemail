@@ -8,13 +8,13 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
-import MessageComposer from "@/components/MessageComposer";
+import { mapActions } from 'vuex'
+import MessageComposer from '@/components/MessageComposer'
 
 export default {
-  name: "mailedit",
+  name: 'mailedit',
   data() {
-    return {};
+    return {}
   },
   components: {
     MessageComposer
@@ -22,18 +22,18 @@ export default {
   methods: {
     goBack() {
       // TODO verify dirtyness
-      this.$router.go(-1);
+      this.$router.go(-1)
     },
     send(data) {
-      this.setLoading(true);
+      this.setLoading(true)
       this.sendMail(data).then(response => {
-        this.setLoading(false);
-        this.$router.go(-1);
-      });
+        this.setLoading(false)
+        this.$router.go(-1)
+      })
     },
-    ...mapActions(["sendMail", "setLoading"])
+    ...mapActions(['sendMail', 'setLoading'])
   }
-};
+}
 </script>
 
 <style scoped lang="less">

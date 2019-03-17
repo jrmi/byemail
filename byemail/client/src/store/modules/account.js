@@ -15,19 +15,17 @@ const getters = {
 
 // mutations
 const mutations = {
-  [types.SET_ACCOUNT] (state, account) {
+  [types.SET_ACCOUNT](state, account) {
     state.account = { ...account }
   }
 }
 
 // actions
 const actions = {
-  loadAccount ({ commit }, { userId }) {
-    return Vue.http
-      .get(`/api/users/${userId}/account`, { responseType: 'json' })
-      .then(response => {
-        return commit(types.SET_ACCOUNT, { account: response })
-      })
+  loadAccount({ commit }, { userId }) {
+    return Vue.http.get(`/api/users/${userId}/account`, { responseType: 'json' }).then(response => {
+      return commit(types.SET_ACCOUNT, { account: response })
+    })
   }
 }
 

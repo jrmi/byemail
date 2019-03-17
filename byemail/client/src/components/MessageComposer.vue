@@ -65,25 +65,25 @@
 </template>
 
 <script>
-import { mapGetters, mapActions, mapMutations } from "vuex";
-import SearchAddressField from "@/components/SearchAddressField";
-import AttachmentField from "@/components/AttachmentField";
+import { mapGetters, mapActions, mapMutations } from 'vuex'
+import SearchAddressField from '@/components/SearchAddressField'
+import AttachmentField from '@/components/AttachmentField'
 
 export default {
-  name: "message-composer",
-  props: ["userId"],
+  name: 'message-composer',
+  props: ['userId'],
   data() {
     return {
       recipientTypes: [
-        { text: "To", value: "to" },
-        { text: "Cc", value: "cc" },
-        { text: "Bcc", value: "bcc" }
+        { text: 'To', value: 'to' },
+        { text: 'Cc', value: 'cc' },
+        { text: 'Bcc', value: 'bcc' }
       ]
-    };
+    }
   },
   created() {
     if (this.draft().recipients.length < 1) {
-      this.addDraftEmptyRecipient();
+      this.addDraftEmptyRecipient()
     }
   },
   components: {
@@ -93,29 +93,29 @@ export default {
   computed: {
     subject: {
       get() {
-        return this.draft().subject;
+        return this.draft().subject
       },
       set(value) {
-        this.setDraftSubject({ subject: value });
+        this.setDraftSubject({ subject: value })
       }
     },
     content: {
       get() {
-        return this.draft().content;
+        return this.draft().content
       },
       set(value) {
-        this.setDraftContent({ content: value });
+        this.setDraftContent({ content: value })
       }
     }
   },
   methods: {
     updateRecipient(recipient, newfields) {
-      const newRecipient = Object.assign({ ...recipient }, newfields);
-      this.updateDraftRecipient({ recipient: newRecipient });
+      const newRecipient = Object.assign({ ...recipient }, newfields)
+      this.updateDraftRecipient({ recipient: newRecipient })
     },
     updateAttachment(attachment, newfields) {
-      const newAttachment = Object.assign({ ...attachment }, newfields);
-      this.updateDraftAttachment({ attachment: newAttachment });
+      const newAttachment = Object.assign({ ...attachment }, newfields)
+      this.updateDraftAttachment({ attachment: newAttachment })
     },
 
     sendData() {
@@ -125,23 +125,23 @@ export default {
         subject: this.draft().subject,
         content: this.draft().content,
         userId: this.userId
-      };
-      this.$emit("sendMessage", data);
+      }
+      this.$emit('sendMessage', data)
     },
-    ...mapActions(["addDraftEmptyRecipient", "addDraftEmptyAttachment"]),
-    ...mapGetters(["draft"]),
+    ...mapActions(['addDraftEmptyRecipient', 'addDraftEmptyAttachment']),
+    ...mapGetters(['draft']),
     ...mapMutations([
-      "setDraftSubject",
-      "setDraftContent",
-      "addDraftRecipient",
-      "updateDraftRecipient",
-      "removeDraftRecipient",
-      "addDraftAttachment",
-      "updateDraftAttachment",
-      "removeDraftAttachment"
+      'setDraftSubject',
+      'setDraftContent',
+      'addDraftRecipient',
+      'updateDraftRecipient',
+      'removeDraftRecipient',
+      'addDraftAttachment',
+      'updateDraftAttachment',
+      'removeDraftAttachment'
     ])
   }
-};
+}
 </script>
 
 <style scoped lang="less">

@@ -40,32 +40,32 @@
 export default {
   data() {
     return {
-      password: "",
-      name: "",
+      password: '',
+      name: '',
       show: false,
       loginFailed: false
-    };
+    }
   },
   methods: {
     submit() {
       let credentials = {
         name: this.name,
         password: this.password
-      };
-      this.$http.post("/login/", credentials).then(
+      }
+      this.$http.post('/login/', credentials).then(
         response => {
           this.$router.push({
-            name: "mailboxes",
+            name: 'mailboxes',
             params: { userId: this.name }
-          });
+          })
         },
         response => {
-          this.loginFailed = true;
+          this.loginFailed = true
         }
-      );
+      )
     }
   }
-};
+}
 </script>
 
 <style scoped lang="less">

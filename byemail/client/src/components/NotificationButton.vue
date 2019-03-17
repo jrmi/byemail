@@ -1,5 +1,5 @@
 <template>
-  <v-list-tile v-if="serviceWorkerRegistered()" @click>
+  <v-list-tile v-if="serviceWorkerRegistered()">
     <v-list-tile-action>
       <v-checkbox :value="notificationEnabled()"></v-checkbox>
     </v-list-tile-action>
@@ -19,33 +19,29 @@
 </template>
 
 <script>
-import { mapGetters, mapActions, mapMutations } from "vuex";
+import { mapGetters, mapActions } from 'vuex'
 
 export default {
-  name: "notification-button",
-  props: ["account"],
+  name: 'notification-button',
+  props: ['account'],
   created() {
-    this.checkNotificationStatus();
+    this.checkNotificationStatus()
   },
   data() {
-    return {};
+    return {}
   },
   methods: {
     togglePermission() {
       if (this.notificationEnabled()) {
-        this.unsubscribeNotification();
+        this.unsubscribeNotification()
       } else {
-        this.subscribeNotification();
+        this.subscribeNotification()
       }
     },
-    ...mapGetters(["notificationEnabled", "serviceWorkerRegistered"]),
-    ...mapActions([
-      "checkNotificationStatus",
-      "subscribeNotification",
-      "unsubscribeNotification"
-    ])
+    ...mapGetters(['notificationEnabled', 'serviceWorkerRegistered']),
+    ...mapActions(['checkNotificationStatus', 'subscribeNotification', 'unsubscribeNotification'])
   }
-};
+}
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

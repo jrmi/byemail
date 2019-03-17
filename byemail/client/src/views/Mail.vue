@@ -79,49 +79,49 @@
 
 <script>
 // import Moment from 'moment'
-import { mapGetters, mapActions } from "vuex";
-import MessageContent from "@/components/MessageContent";
-import QuickReply from "@/components/QuickReply";
+import { mapGetters, mapActions } from 'vuex'
+import MessageContent from '@/components/MessageContent'
+import QuickReply from '@/components/QuickReply'
 
 export default {
-  name: "mail",
+  name: 'mail',
   created() {
-    this.fetchData();
+    this.fetchData()
   },
   watch: {
     // call again the method if the route changes
-    $route: "fetchData"
+    $route: 'fetchData'
   },
   methods: {
     fetchData() {
-      this.showMail = true;
-      this.setLoading(true);
-      let mailId = this.$route.params.mailId;
-      let userId = this.$route.params.userId;
+      this.showMail = true
+      this.setLoading(true)
+      let mailId = this.$route.params.mailId
+      let userId = this.$route.params.userId
       this.getMail({ mailId, userId }).then(() => {
-        this.setLoading(false);
-      });
+        this.setLoading(false)
+      })
     },
     reply(data) {
-      this.setLoading(true);
+      this.setLoading(true)
       this.sendMail(data).then(response => {
-        this.showCompose = false;
-        this.setLoading(false);
-      });
+        this.showCompose = false
+        this.setLoading(false)
+      })
     },
     resend(to) {
-      this.setLoading(true);
+      this.setLoading(true)
       this.resendMail({ to }).then(response => {
-        this.setLoading(false);
-      });
+        this.setLoading(false)
+      })
     },
-    ...mapGetters(["currentMail", "currentMailbox"]),
+    ...mapGetters(['currentMail', 'currentMailbox']),
     ...mapActions([
-      "markMailRead",
-      "sendMail",
-      "resendMail",
-      "setLoading",
-      "getMail"
+      'markMailRead',
+      'sendMail',
+      'resendMail',
+      'setLoading',
+      'getMail'
     ])
   },
   components: {
@@ -133,10 +133,10 @@ export default {
       showCompose: false,
       showMail: true,
       dialog: false,
-      currentRecipient: { dest: "", status: {} }
-    };
+      currentRecipient: { dest: '', status: {} }
+    }
   }
-};
+}
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

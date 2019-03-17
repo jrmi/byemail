@@ -1,6 +1,6 @@
 import * as types from '../mutation-types'
 
-function urlBase64ToUint8Array (base64String) {
+function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
   const rawData = window.atob(base64)
@@ -12,12 +12,12 @@ function urlBase64ToUint8Array (base64String) {
   return outputArray
 }
 
-function pushRegister () {
+function pushRegister() {
   console.log('Start notification subscription process')
-  navigator.serviceWorker.ready.then(async function (registration) {
+  navigator.serviceWorker.ready.then(async function(registration) {
     registration.pushManager
       .getSubscription()
-      .then(async function (subscription) {
+      .then(async function(subscription) {
         if (subscription) {
           console.log('Push already registered')
           return subscription
@@ -69,14 +69,14 @@ const getters = {
 
 // mutations
 const mutations = {
-  [types.SET_NOTIFICATION] (state, status) {
+  [types.SET_NOTIFICATION](state, status) {
     state.notification = status
   }
 }
 
 // actions
 const actions = {
-  checkNotificationStatus ({ commit }) {
+  checkNotificationStatus({ commit }) {
     if ('serviceWorker' in navigator) {
       return navigator.serviceWorker.ready
         .then(registration => {
@@ -95,7 +95,7 @@ const actions = {
     }
   },
 
-  subscribeNotification ({ commit }) {
+  subscribeNotification({ commit }) {
     return Notification.requestPermission().then(result => {
       console.log('Notification result: ', result)
       if (result === 'granted') {
@@ -105,7 +105,7 @@ const actions = {
     })
   },
 
-  unsubscribeNotification ({ commit }) {
+  unsubscribeNotification({ commit }) {
     return navigator.serviceWorker.ready
       .then(registration => {
         return registration.pushManager.getSubscription()

@@ -18,12 +18,12 @@
 
 <script>
 export default {
-  name: "message-content",
-  props: ["message"],
+  name: 'message-content',
+  props: ['message'],
   data() {
-    return {};
+    return {}
   }
-};
+}
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

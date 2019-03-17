@@ -18,44 +18,44 @@
 </template>
 
 <script>
-import { mapGetters, mapActions, mapMutations } from "vuex";
-import _ from "lodash";
-import MessageList from "@/components/MessageList";
+import { mapGetters, mapActions, mapMutations } from 'vuex'
+import _ from 'lodash'
+import MessageList from '@/components/MessageList'
 
 export default {
-  name: "mailbox",
+  name: 'mailbox',
   created() {
-    this.fetchData();
+    this.fetchData()
   },
   watch: {
     // call again the method if the route changes
-    $route: "fetchData"
+    $route: 'fetchData'
   },
   methods: {
     fetchData() {
-      this.setLoading(true);
-      const mailboxId = this.$route.params.mailboxId;
-      const userId = this.$route.params.userId;
+      this.setLoading(true)
+      const mailboxId = this.$route.params.mailboxId
+      const userId = this.$route.params.userId
       this.getMailbox({
         mailboxId,
         userId
       }).then(() => {
-        this.setLoading(false);
-      });
+        this.setLoading(false)
+      })
     },
     writeMail() {
-      this.resetDraft();
+      this.resetDraft()
       const newRecipient = {
         id: _.uniqueId(),
         address: this.currentMailbox().address,
-        type: "to"
-      };
-      this.addDraftRecipient({ recipient: newRecipient });
-      this.$router.push({ name: "mailedit" });
+        type: 'to'
+      }
+      this.addDraftRecipient({ recipient: newRecipient })
+      this.$router.push({ name: 'mailedit' })
     },
-    ...mapGetters(["currentMailbox"]),
-    ...mapActions(["markAllMailRead", "setLoading", "getMailbox"]),
-    ...mapMutations(["resetDraft", "addDraftRecipient"])
+    ...mapGetters(['currentMailbox']),
+    ...mapActions(['markAllMailRead', 'setLoading', 'getMailbox']),
+    ...mapMutations(['resetDraft', 'addDraftRecipient'])
   },
   components: {
     MessageList
@@ -63,9 +63,9 @@ export default {
   data() {
     return {
       error: null
-    };
+    }
   }
-};
+}
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
