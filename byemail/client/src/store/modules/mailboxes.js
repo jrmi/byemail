@@ -9,7 +9,7 @@ var tagsToReplace = {
   '>': '&gt;'
 }
 
-function sanitizeText (str) {
+function sanitizeText(str) {
   return str.replace(/[&<>]/g, tag => {
     return tagsToReplace[tag] || tag
   })
@@ -37,16 +37,16 @@ const getters = {
 
 // mutations
 const mutations = {
-  [types.SET_MAILBOXES] (state, { mailboxes }) {
+  [types.SET_MAILBOXES](state, { mailboxes }) {
     state.all = mailboxes
   },
-  [types.SET_CURRENT_MAILBOX] (state, { mailbox }) {
+  [types.SET_CURRENT_MAILBOX](state, { mailbox }) {
     state.current = mailbox
   },
-  [types.SET_CURRENT_MAIL] (state, { mail }) {
+  [types.SET_CURRENT_MAIL](state, { mail }) {
     state.mail = mail
   },
-  [types.SET_ALL_MAIL_READ] (state) {
+  [types.SET_ALL_MAIL_READ](state) {
     for (let msg of state.current.messages) {
       if (msg.unread) {
         msg.unread = false
@@ -58,13 +58,13 @@ const mutations = {
     state.current.unreads = 0
     state.all.find(mb => mb.uid === state.current.uid).unreads = 0
   },
-  [types.SET_CURRENT_MAIL_READ] (state) {
+  [types.SET_CURRENT_MAIL_READ](state) {
     state.all.find(m => m.uid === state.current.uid).unreads--
     state.current.unreads--
     state.current.messages.find(m => m.uid === state.mail.uid).unread = false
     state.mail.unread = false
   },
-  [types.RESET_MAILBOXES] (state) {
+  [types.RESET_MAILBOXES](state) {
     Object.assign(state, {
       all: null,
       current: null,
@@ -75,7 +75,7 @@ const mutations = {
 
 // actions
 const actions = {
-  getAllMailboxes ({ commit }, { userId }) {
+  getAllMailboxes({ commit }, { userId }) {
     return Vue.http
       .get(`/api/users/${userId}/mailboxes`, { responseType: 'json' })
       .then(response => {
@@ -86,12 +86,12 @@ const actions = {
         return commit({ type: types.SET_MAILBOXES, mailboxes })
       })
   },
-  getMailbox ({ commit }, { userId, mailboxId }) {
+  getMailbox({ commit }, { userId, mailboxId }) {
     return Vue.http
       .get(`/api/users/${userId}/mailbox/${mailboxId}`, {
         responseType: 'json'
       })
-      .then(function (response) {
+      .then(function(response) {
         let mailbox = response.body
         for (let msg of mailbox.messages) {
           msg.date = Moment(msg.date)
@@ -100,10 +100,10 @@ const actions = {
         return commit({ type: types.SET_CURRENT_MAILBOX, mailbox })
       })
   },
-  getMail ({ commit }, { userId, mailId }) {
+  getMail({ commit }, { userId, mailId }) {
     return Vue.http
       .get(`/api/users/${userId}/mail/${mailId}`, { responseType: 'json' })
-      .then(function (response) {
+      .then(function(response) {
         const mail = response.body
         mail.date = Moment(mail.date)
         if (mail['body-type'] === 'text/html') {
@@ -114,30 +114,23 @@ const actions = {
         return commit({ type: types.SET_CURRENT_MAIL, mail })
       })
   },
-  markAllMailRead ({ commit }, { userId }) {
+  markAllMailRead({ commit }, { userId }) {
     let promises = []
     for (let msg of state.current.messages) {
       if (msg.unread) {
-        promises.push(
-          Vue.http.post(`/api/users/${userId}/mail/${msg.uid}/mark_read`)
-        )
+        promises.push(Vue.http.post(`/api/users/${userId}/mail/${msg.uid}/mark_read`))
       }
     }
     return Promise.all(promises).then(() => {
       return commit({ type: types.SET_ALL_MAIL_READ })
     })
   },
-  markMailRead ({ commit }, { userId }) {
-    return Vue.http
-      .post(`/api/users/${userId}/mail/${state.mail.uid}/mark_read`)
-      .then(response => {
-        return commit({ type: types.SET_CURRENT_MAIL_READ })
-      })
+  markMailRead({ commit }, { userId }) {
+    return Vue.http.post(`/api/users/${userId}/mail/${state.mail.uid}/mark_read`).then(response => {
+      return commit({ type: types.SET_CURRENT_MAIL_READ })
+    })
   },
-  sendMail (
-    { dispatch, commit },
-    { recipients, subject, content, attachments, replyTo, userId }
-  ) {
+  sendMail({ dispatch, commit }, { recipients, subject, content, attachments, replyTo, userId }) {
     return Vue.http
       .post(`/api/users/${userId}/sendmail/`, {
         recipients,
@@ -146,7 +139,7 @@ const actions = {
         attachments,
         replyTo
       })
-      .then(function (response) {
+      .then(function(response) {
         let promise = dispatch('getAllMailboxes', { userId })
         if (state.current) {
           promise.then(() => {
@@ -159,10 +152,10 @@ const actions = {
         return promise
       })
   },
-  resendMail ({ dispatch, commit }, { to, userId }) {
+  resendMail({ dispatch, commit }, { to, userId }) {
     return Vue.http
       .post(`/api/users/${userId}/mail/${state.mail.uid}/resend`, { to })
-      .then(function (response) {
+      .then(function(response) {
         let promise = dispatch('getAllMailboxes', { userId })
         if (state.current) {
           promise.then(() => {

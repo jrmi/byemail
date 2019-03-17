@@ -1,3 +1,5 @@
+/* global workbox */
+
 if (workbox) {
   console.log(`Yay! Workbox is loaded 🎉`)
   workbox.setConfig({ debug: true })
@@ -58,7 +60,7 @@ if (workbox) {
 }
 
 // Register event listener for the 'push' event.
-self.addEventListener('push', function (event) {
+self.addEventListener('push', function(event) {
   console.log('Get a push')
   // Retrieve the textual payload from event.data (a PushMessageData object).
   // Other formats are supported (ArrayBuffer, Blob, JSON), check out the documentation
@@ -67,9 +69,9 @@ self.addEventListener('push', function (event) {
 
   event.waitUntil(
     // Retrieve a list of the clients of this service worker.
-    self.clients.matchAll().then(function (clientList) {
+    self.clients.matchAll().then(function(clientList) {
       // Check if there's at least one focused client.
-      var focused = clientList.some(function (client) {
+      var focused = clientList.some(function(client) {
         return client.focused
       })
 
@@ -90,11 +92,11 @@ self.addEventListener('push', function (event) {
 })
 
 // Register event listener for the 'notificationclick' event.
-self.addEventListener('notificationclick', function (event) {
+self.addEventListener('notificationclick', function(event) {
   console.log('notif click')
   event.waitUntil(
     // Retrieve a list of the clients of this service worker.
-    self.clients.matchAll().then(function (clientList) {
+    self.clients.matchAll().then(function(clientList) {
       console.log('clients', clientList)
       // If there is at least one client, focus it.
       if (clientList.length > 0) {

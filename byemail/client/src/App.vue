@@ -9,12 +9,7 @@
       :color="getMessage().color"
     >
       {{ getMessage().message }}
-      <v-btn
-        flat
-        @click="snackbar = !snackbar"
-      >
-        Close
-      </v-btn>
+      <v-btn flat @click="snackbar = !snackbar">Close</v-btn>
     </v-snackbar>
   </v-app>
 </template>
@@ -26,23 +21,19 @@ export default {
   name: 'App',
   computed: {
     snackbar: {
-      get () {
+      get() {
         return this.getMessage().message
       },
-      set (val) {
+      set(val) {
         if (!val) {
-          this.setMessage({message: '', color: 'primary'})
+          this.setMessage({ message: '', color: 'primary' })
         }
       }
     }
   },
   methods: {
-    ...mapGetters([
-      'getMessage'
-    ]),
-    ...mapMutations([
-      'setMessage'
-    ])
+    ...mapGetters(['getMessage']),
+    ...mapMutations(['setMessage'])
   }
 }
 </script>

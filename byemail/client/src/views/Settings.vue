@@ -55,59 +55,59 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from "vuex";
-import { deferedPrompt } from "../registerServiceWorker.js";
-import NotificationButton from "@/components/NotificationButton";
+import { mapActions } from 'vuex'
+import { deferedPrompt } from '../registerServiceWorker.js'
+import NotificationButton from '@/components/NotificationButton'
 
 export default {
   data() {
     return {
-      account: { name: "" },
+      account: { name: '' },
       installable: false
-    };
+    }
   },
   components: {
     NotificationButton
   },
   created() {
-    this.fetchData();
-    this.installable = deferedPrompt !== null;
+    this.fetchData()
+    this.installable = deferedPrompt !== null
   },
   methods: {
     install() {
       if (this.installable) {
-        console.log("install");
-        deferedPrompt.prompt();
-        deferredPrompt.userChoice.then(choiceResult => {
-          if (choiceResult.outcome === "accepted") {
-            console.log("User accepted to install application");
+        console.log('install')
+        deferedPrompt.prompt()
+        deferedPrompt.userChoice.then(choiceResult => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('User accepted to install application')
           } else {
-            console.log("User dismissed installation");
+            console.log('User dismissed installation')
           }
-          deferredPrompt = null;
-        });
+          deferedPrompt = null
+        })
       } else {
-        console.log("Cant be installed");
+        console.log('Cant be installed')
       }
     },
 
     fetchData() {
-      this.setLoading(true);
-      this.$http.get("/api/account").then(
+      this.setLoading(true)
+      this.$http.get('/api/account').then(
         response => {
-          this.account = response.body;
-          this.setLoading(false);
+          this.account = response.body
+          this.setLoading(false)
         },
         response => {
-          this.$router.push({ name: "login" });
-          this.setLoading(false);
+          this.$router.push({ name: 'login' })
+          this.setLoading(false)
         }
-      );
+      )
     },
 
-    ...mapActions(["setLoading"])
+    ...mapActions(['setLoading'])
   }
-};
+}
 </script>
 
 <style scoped lang="less">

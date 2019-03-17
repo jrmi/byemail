@@ -19,13 +19,13 @@ const state = {
 }
 
 const mutations = {
-  [types.SET_LOADING] (state, status) {
+  [types.SET_LOADING](state, status) {
     state.isLoading = status
   },
-  [types.SET_SERVICE_WORKER] (state, status) {
+  [types.SET_SERVICE_WORKER](state, status) {
     state.serviceWorker = status
   },
-  [types.SET_MESSAGE] (state, status) {
+  [types.SET_MESSAGE](state, status) {
     state.message = status.message
     state.messageColor = status.color
   }

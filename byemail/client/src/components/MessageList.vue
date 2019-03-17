@@ -29,9 +29,9 @@
 
 <script>
 export default {
-  name: "message-list",
-  props: ["messages", "userId"]
-};
+  name: 'message-list',
+  props: ['messages', 'userId']
+}
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

@@ -10,9 +10,9 @@ Vue.config.productionTip = false
 
 Vue.use(VueResource)
 
-Vue.http.interceptors.push(function (request) {
+Vue.http.interceptors.push(function(request) {
   // return response callback
-  return function (response) {
+  return function(response) {
     /* Log network errors and show message */
     if (response.status >= 500) {
       console.log('Error while accessing backend. See error below...')

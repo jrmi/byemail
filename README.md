@@ -1,6 +1,6 @@
 # What is it ?
 
-Byemail is a complete stack for a personnal mail system including SMTP receiver, sender, webmail,
+Byemail is a complete stack for a personal mail system including SMTP receiver, sender, webmail,
 mailing list and more. Install only one tool to rules them all.
 
 E-mails are still a popular means of communication today. We use email to communicate in company, to send messages to our friends, to keep in touch with family members, etc.
@@ -11,7 +11,7 @@ If we believe in the decentralization of the web, it is difficult to believe tha
 Because, despite their long existence and the dependence of a large part of the population,
 mail servers are still difficult to install, configure and maintain mainly because they implement features that are not necessary for most end users and their architecture is no longer adapted to today's uses.
 
-To create a complet mail system, we have to install a SMTP server to receive/send emails then an IMAP or POP3 server to gather the mails and finally a client to read them. Don't forget to configure your DNS and pray that your IP will not be banned for misuse.
+To create a complete mail system, we have to install a SMTP server to receive/send emails then an IMAP or POP3 server to gather the mails and finally a client to read them. Don't forget to configure your DNS and pray that your IP will not be banned for misuse.
 
 To fulfill all ours needs we also need to add module like:
 
@@ -35,12 +35,14 @@ Some common use cases on the roadmap:
 -   Share huge attachment without thinking of it and without flooding the net,
 -   Send "burn after reading" email,
 -   Cancel mail sent by mistake,
--   Create tempory address on the fly for spam protection,
+-   Create temporary address on the fly for spam protection,
 -   Really secure mail even if the recipient doesn't have configured any gpg key,
 -   Auto update your DNS configuration,
 -   Spam protect you with captcha,
 -   Easy quitting by easily export all your data to import them in another instance,
 -   ActivityPub compatibility,
+-   Scheduled mails
+-   Scheduled mail acknowledgment (for privacy concern)
 -   and more ...
 
 Some technical advantages:
@@ -49,7 +51,7 @@ Some technical advantages:
 -   Easy configuration, everything in one python file,
 -   Middleware to filter/modify/... incoming and outgoing mails,
 -   Secure by design, open relay can't be done at all,
--   Use DKIM, SPF, DMARC to allow better receiveability,
+-   Use DKIM, SPF, DMARC to allow better receivability,
 -   ...
 
 # Installation
@@ -92,5 +94,6 @@ As root you can make a tunnel to the 25 port without root permission for the ser
 $ socat tcp-listen:25,reuseaddr,fork tcp:<hostname>:8025 > nohupsocket.out &
 ```
 
-DISCLAIMER: This is an early poorly functional version.
-Don't hope using it in production for now but don't be afraid to help me.
+DISCLAIMER: This is an early functional version.
+Don't hope using it in production for now but don't be afraid to try it and
+help us.

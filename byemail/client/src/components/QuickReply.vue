@@ -1,5 +1,5 @@
 <template>
-  <div class="mail-compose" >
+  <div class="mail-compose">
     <v-textarea v-model="composeContent"></v-textarea>
     <v-btn icon @click="reply()">
       <v-icon>send</v-icon>
@@ -8,12 +8,11 @@
 </template>
 
 <script>
-
 export default {
   name: 'quick-reply',
   props: ['mailbox', 'message'],
   methods: {
-    reply () {
+    reply() {
       let data = {
         subject: 'Re: ' + this.message.subject,
         reply_to: this.message.id,
@@ -29,7 +28,7 @@ export default {
       this.composeContent = ''
     }
   },
-  data () {
+  data() {
     return {
       composeContent: ''
     }
@@ -39,10 +38,10 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-.mail-compose{
+.mail-compose {
   display: flex;
   flex-flow: row;
-  textarea{
+  textarea {
     font-size: 1.2em;
     width: 100%;
     min-height: 100px;

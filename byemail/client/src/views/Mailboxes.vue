@@ -31,49 +31,49 @@
 </template>
 
 <script>
-import MailboxList from "@/components/MailboxList";
-import { mapGetters, mapActions } from "vuex";
-import VuePullRefresh from "vue-pull-refresh";
+import MailboxList from '@/components/MailboxList'
+import { mapGetters, mapActions } from 'vuex'
+import VuePullRefresh from 'vue-pull-refresh'
 
 export default {
-  name: "mailboxes",
+  name: 'mailboxes',
   data() {
     return {
       pull2RefreshConfig: {
-        errorLabel: "Refresh failed !",
-        startLabel: "Pull to refresh",
-        readyLabel: "Release now",
-        loadingLabel: "Loading...",
-        pullDownHeight: "100"
+        errorLabel: 'Refresh failed !',
+        startLabel: 'Pull to refresh',
+        readyLabel: 'Release now',
+        loadingLabel: 'Loading...',
+        pullDownHeight: '100'
       }
-    };
+    }
   },
   created() {
-    this.fetchData();
+    this.fetchData()
   },
   methods: {
     fetchData() {
-      this.refreshMailboxes({ userId: this.$route.params.userId });
+      this.refreshMailboxes({ userId: this.$route.params.userId })
     },
     refreshMailboxes() {
-      this.setLoading(true);
+      this.setLoading(true)
       this.getAllMailboxes({ userId: this.$route.params.userId }).then(
         () => {
-          this.setLoading(false);
+          this.setLoading(false)
         },
         () => {
-          console.log("Can't get mailboxes");
+          console.log("Can't get mailboxes")
         }
-      );
+      )
     },
-    ...mapGetters(["allMailboxes", "account"]),
-    ...mapActions(["getAllMailboxes", "setLoading"])
+    ...mapGetters(['allMailboxes', 'account']),
+    ...mapActions(['getAllMailboxes', 'setLoading'])
   },
   components: {
     MailboxList,
-    "vue-pull-refresh": VuePullRefresh
+    'vue-pull-refresh': VuePullRefresh
   }
-};
+}
 </script>
 
 <style scoped lang="less">

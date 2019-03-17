@@ -29,35 +29,35 @@
 </template>
 
 <script>
-import { mapGetters, mapActions, mapMutations } from "vuex";
+import { mapGetters, mapActions, mapMutations } from 'vuex'
 
 export default {
-  name: "webmail",
+  name: 'webmail',
   created() {
-    this.fetchData();
+    this.fetchData()
   },
   methods: {
     fetchData() {
-      this.setLoading(true);
+      this.setLoading(true)
       this.loadAccount({ userId: this.$route.params.userId }).then(
         response => {
-          this.setLoading(false);
+          this.setLoading(false)
         },
         response => {
-          this.$router.push({ name: "login" });
-          this.setLoading(false);
+          this.$router.push({ name: 'login' })
+          this.setLoading(false)
         }
-      );
+      )
     },
     logout() {
-      this.$http.get("/logout").then(response => {
-        this.resetMailboxes();
-        this.$router.push({ name: "login" });
-      });
+      this.$http.get('/logout').then(response => {
+        this.resetMailboxes()
+        this.$router.push({ name: 'login' })
+      })
     },
-    ...mapGetters(["isLoading", "account"]),
-    ...mapActions(["setLoading", "loadAccount"]),
-    ...mapMutations(["resetMailboxes"])
+    ...mapGetters(['isLoading', 'account']),
+    ...mapActions(['setLoading', 'loadAccount']),
+    ...mapMutations(['resetMailboxes'])
   },
   data() {
     return {
@@ -66,27 +66,27 @@ export default {
       fixed: false,
       items: [
         {
-          icon: "all_inbox",
-          title: "Home",
-          route: { name: "mailboxes" }
+          icon: 'all_inbox',
+          title: 'Home',
+          route: { name: 'mailboxes' }
         },
         {
-          icon: "mail",
-          title: "Compose message",
-          route: { name: "mailedit" }
+          icon: 'mail',
+          title: 'Compose message',
+          route: { name: 'mailedit' }
         },
         {
-          icon: "input",
-          title: "Log out",
+          icon: 'input',
+          title: 'Log out',
           action: () => {
-            this.logout();
+            this.logout()
           }
         }
       ],
       miniVariant: false
-    };
+    }
   }
-};
+}
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

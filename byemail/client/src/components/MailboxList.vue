@@ -30,23 +30,23 @@
 </template>
 
 <script>
-import md5 from "crypto-js/md5";
+import md5 from 'crypto-js/md5'
 
 export default {
-  name: "mailbox-list",
-  props: ["mailboxes", "userId"],
+  name: 'mailbox-list',
+  props: ['mailboxes', 'userId'],
   created() {},
   methods: {
     gravatarUrl(mailbox) {
-      let email = mailbox.address;
-      let hash = md5(email);
-      return "https://www.gravatar.com/avatar/" + hash + "?d=identicon";
+      let email = mailbox.address
+      let hash = md5(email)
+      return 'https://www.gravatar.com/avatar/' + hash + '?d=identicon'
     }
   },
   data() {
-    return {};
+    return {}
   }
-};
+}
 </script>
 
 <style scoped lang="less">

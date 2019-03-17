@@ -18,59 +18,59 @@
 </template>
 
 <script>
-import _ from "lodash";
+import _ from 'lodash'
 
 export default {
-  name: "message-composer",
-  props: ["initValue", "userId"],
+  name: 'message-composer',
+  props: ['initValue', 'userId'],
   data() {
     return {
       recipientTypes: [
-        { text: "To", value: "to" },
-        { text: "Cc", value: "cc" },
-        { text: "Bcc", value: "bcc" }
+        { text: 'To', value: 'to' },
+        { text: 'Cc', value: 'cc' },
+        { text: 'Bcc', value: 'bcc' }
       ],
-      type: "to",
+      type: 'to',
       entries: [],
       loading: false,
-      search: "",
-      value: ""
-    };
+      search: '',
+      value: ''
+    }
   },
   created() {
-    this.value = this.initValue;
+    this.value = this.initValue
   },
   watch: {
     search(val) {
-      val && this.querySelections(val);
+      val && this.querySelections(val)
     }
   },
   methods: {
     sendUpdate() {
-      let name = this.value;
+      let name = this.value
       if (_.isObject(name)) {
         // FIXME Autocomplete bug workaround ?
-        name = name.name;
+        name = name.name
       }
-      this.$emit("update", { type: this.type, address: name });
+      this.$emit('update', { type: this.type, address: name })
     },
     querySelections(val) {
-      this.loading = true;
-      const userId = this.userId;
+      this.loading = true
+      const userId = this.userId
       this.$http
         .get(`/api/users/${userId}/contacts/search`, {
-          responseType: "json",
+          responseType: 'json',
           params: { text: val }
         })
         .then(function(response) {
           this.entries = response.body.map(item => {
-            return { name: item };
-          });
-          this.loading = false;
-        });
+            return { name: item }
+          })
+          this.loading = false
+        })
     }
   }
-};
+}
 </script>
 
 <style scoped lang="less">
