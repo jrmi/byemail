@@ -55,7 +55,7 @@ def main(loop):
 
     # Start http server
     app = httpserver.get_app()
-    server = app.create_server(**settings.HTTP_CONF)
+    server = app.create_server(**settings.HTTP_CONF, return_asyncio_server=True)
     asyncio.ensure_future(server, loop=loop)
 
     try:

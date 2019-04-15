@@ -6,8 +6,8 @@ ACCOUNTS = []
 DEBUG = False
 
 STORAGE = {
-    "backend": "byemail.storage.tinydb.Backend",
-    "datadir": "data/"
+    "backend": "byemail.storage.sqldb.Backend",
+    "uri": "sqlite://db.sqlite"
 }
 
 DKIM_CONFIG = {
@@ -24,9 +24,9 @@ HTTP_CONF = {
 }
 
 SMTP_CONF = {
-    'hostname': 'localhost', # None for default
+    'host': 'localhost', # None for default
     'port': 8025,
-    'ssl_context': None, # For enabling SSL provide context
+    'ssl': None, # For enabling SSL provide context
 }
 
 OUTGOING_MIDDLEWARES = [

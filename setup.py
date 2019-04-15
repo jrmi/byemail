@@ -42,9 +42,12 @@ setup(name='byemail',
           'uvloop',
           'ujson',
           'aiodns',
+          'sanic',
           'sanic-auth',
+          'tortoise-orm',
           'py-vapid',
-          'pywebpush'
+          'pywebpush',
+          'uvloop',
       ],
       extras_require={
       },
