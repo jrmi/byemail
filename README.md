@@ -54,22 +54,10 @@ Some technical advantages:
 
 # Installation
 
-/!\ We are yet in dev mode so some technical steps are necessary /!\
-
-After cloning it, install byemail in a virtualenv:
+You can install byemail in a virtualenv by doing a:
 
 ```sh
-$ cd <clone_dir>
-$ python setup.py install
-```
-
-Now build the client:
-
-```sh
-$ cd byemail/client
-$ nvm use # If you have nvm
-$ npm i
-$ npm run build
+$ pip install byemail
 ```
 
 Create and move to any directory, then execute:
@@ -78,8 +66,11 @@ Create and move to any directory, then execute:
 $ byemail init
 ```
 
-A new set of file are created in the current directory. **Customize the settings.py**
-file for your needs then execute:
+A new set of file are created in the current directory.
+Now **Customize the settings.py**. You should at least add one account using the
+given example in the file.
+
+Then execute:
 
 ```sh
 $ byemail start
