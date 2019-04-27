@@ -1,1 +1,1 @@
-recursive-include client/dist/ *
+recursive-include byemail/client/dist/ *

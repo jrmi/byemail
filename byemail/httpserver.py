@@ -50,21 +50,23 @@ def init_app():
     BASE_DIR = os.path.dirname(__file__)
 
     # Static routes
-    app.static("/index.html", os.path.join(BASE_DIR, "../client/dist/index.html"))
-    app.static("/favicon.ico", os.path.join(BASE_DIR, "../client/dist/favicon.ico"))
+    app.static("/index.html", os.path.join(BASE_DIR, "client/dist/index.html"))
+    app.static("/favicon.ico", os.path.join(BASE_DIR, "client/dist/favicon.ico"))
     app.static(
         "/manifest.json",
         os.path.join(BASE_DIR, "../client/dist/manifest.json"),
         content_type="application/manifest+json",
     )
-    app.static("/robots.txt", os.path.join(BASE_DIR, "../client/dist/robots.txt"))
+    app.static("/robots.txt", os.path.join(BASE_DIR, "client/dist/robots.txt"))
     app.static(
-        "/service-worker.js", os.path.join(BASE_DIR, "../client/dist/service-worker.js")
+        "/service-worker.js", os.path.join(BASE_DIR, "client/dist/service-worker.js")
     )
-    app.static("/img", os.path.join(BASE_DIR, "../client/dist/img"))
-    app.static("/js", os.path.join(BASE_DIR, "../client/dist/js"))
-    app.static("/css", os.path.join(BASE_DIR, "../client/dist/css"))
-    app.static("/.well-known", os.path.join("./", ".well-known"))
+    app.static("/img", os.path.join(BASE_DIR, "client/dist/img"))
+    app.static("/js", os.path.join(BASE_DIR, "client/dist/js"))
+    app.static("/css", os.path.join(BASE_DIR, "client/dist/css"))
+    app.static(
+        "/.well-known", os.path.join("./", ".well-known")
+    )  # TODO find a way to do better
 
     auth = Auth(app)
     auth.user_loader(account_manager.get)

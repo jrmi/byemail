@@ -80,10 +80,10 @@ git push --tags
 -   [ ] Generate webclient:
 
 ```
-cd client
+cd byemail/client
 npm install
 npm run build
-cd ..
+cd ../..
 ```
 
 -   [ ] Generate packages:

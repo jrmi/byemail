@@ -66,8 +66,8 @@ $ python setup.py install
 Now build the client:
 
 ```sh
-$ cd client
-$ nvm use
+$ cd byemail/client
+$ nvm use # If you have nvm
 $ npm i
 $ npm run build
 ```
