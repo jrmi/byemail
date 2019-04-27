@@ -8,28 +8,28 @@ if (window.workbox) {
 
   workbox.routing.registerRoute(
     '/api/account',
-    workbox.strategies.cacheFirst({
+    workbox.strategies.networkFirst({
       cacheName: 'account-cache'
     })
   )
 
   workbox.routing.registerRoute(
     new RegExp('/api/mailboxes'),
-    workbox.strategies.cacheFirst({
+    workbox.strategies.networkFirst({
       cacheName: 'mailbox-cache'
     })
   )
 
   workbox.routing.registerRoute(
     new RegExp('/api/mailbox/.+'),
-    workbox.strategies.cacheFirst({
+    workbox.strategies.networkFirst({
       cacheName: 'mailbox-cache'
     })
   )
 
   workbox.routing.registerRoute(
     new RegExp('/api/mail/.+'),
-    workbox.strategies.cacheFirst({
+    workbox.strategies.networkFirst({
       cacheName: 'mail-cache'
     })
   )

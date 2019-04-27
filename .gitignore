@@ -15,6 +15,9 @@ site-packages/
 
 .pytest_cache/
 .tox
+.toxvenv/
 .venv
+build/
+dist/
 
 .vscode/
