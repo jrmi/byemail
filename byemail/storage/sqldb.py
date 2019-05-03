@@ -1,4 +1,5 @@
 import re
+import os
 import uuid
 import arrow
 import base64
@@ -22,6 +23,8 @@ from tortoise.transactions import in_transaction
 from byemail.storage import core, DoesntExists, MultipleResults
 
 logger = logging.getLogger(__name__)
+
+TESTDB_NAME = "__testdb__.sqlite"
 
 
 class DateTimeSerializer:
@@ -252,8 +255,19 @@ class Backend(core.Backend):
         self.config = config
         self.uri = uri
 
-    async def start(self):
-        if self.config:
+    async def start(self, test=False):
+        if test:
+            try:
+                os.remove(TESTDB_NAME)
+            except OSError:
+                pass
+            await Tortoise.init(
+                db_url=f"sqlite://{TESTDB_NAME}",
+                modules={"models": ["byemail.storage.sqldb"]},
+            )
+            from byemail.tests.emails import populate_with_test_data
+
+        elif self.config:
             config = {
                 "connections": self.config,
                 "apps": {
@@ -266,7 +280,7 @@ class Backend(core.Backend):
 
             await Tortoise.init(config=config)
 
-        if self.uri:
+        elif self.uri:
             await Tortoise.init(
                 db_url=self.uri, modules={"models": ["byemail.storage.sqldb"]}
             )
@@ -275,6 +289,9 @@ class Backend(core.Backend):
             await Tortoise.generate_schemas()
         except exceptions.OperationalError:
             logger.warning("No database initialisation, db seems existing...")
+
+        if test:
+            await populate_with_test_data(self)
 
     async def stop(self):
         await Tortoise.close_connections()
@@ -312,10 +329,9 @@ class Backend(core.Backend):
         address = address.lower()
 
         mailbox, _ = await Mailbox.get_or_create(
-            defaults=dict(uid=uuid.uuid4().hex),
+            defaults=dict(uid=uuid.uuid4().hex, name=name),
             account=account.name,
-            address=address,
-            name=name,
+            address=address
         )
 
         return mailbox

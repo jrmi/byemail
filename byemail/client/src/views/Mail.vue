@@ -11,7 +11,7 @@
       <v-btn icon @click="showMail = ! showMail">
         <v-icon>close</v-icon>
       </v-btn>
-      <v-btn icon v-if="currentMail().unread" @click="markMailRead()">
+      <v-btn icon v-if="currentMail().unread" @click="markThisMailRead()">
         <v-icon>visibility</v-icon>
       </v-btn>
     </v-toolbar>
@@ -20,7 +20,7 @@
       <span class="to" v-for="mail of currentMail().recipients" :key="mail.addr_spec">
         To: {{mail.addr_spec}}
         <span
-          v-if="!currentMail().incoming && currentMail().delivery_status[mail.addr_spec].status !== 'DELIVERED'"
+          v-if="!currentMail().incoming && currentMail().delivery_status && currentMail().delivery_status[mail.addr_spec].status !== 'DELIVERED'"
         >
           <v-icon
             color="error"
@@ -96,15 +96,17 @@ export default {
     fetchData() {
       this.showMail = true
       this.setLoading(true)
-      let mailId = this.$route.params.mailId
-      let userId = this.$route.params.userId
+      const mailId = this.$route.params.mailId
+      const userId = this.$route.params.userId
+
       this.getMail({ mailId, userId }).then(() => {
         this.setLoading(false)
       })
     },
     reply(data) {
       this.setLoading(true)
-      this.sendMail(data).then(response => {
+      const userId = this.$route.params.userId
+      this.sendMail({ ...data, userId }).then(response => {
         this.showCompose = false
         this.setLoading(false)
       })
@@ -115,14 +117,14 @@ export default {
         this.setLoading(false)
       })
     },
+    markThisMailRead() {
+      const mailId = this.$route.params.mailId
+      const userId = this.$route.params.userId
+
+      this.markMailRead({ mailId, userId })
+    },
     ...mapGetters(['currentMail', 'currentMailbox']),
-    ...mapActions([
-      'markMailRead',
-      'sendMail',
-      'resendMail',
-      'setLoading',
-      'getMail'
-    ])
+    ...mapActions(['markMailRead', 'sendMail', 'resendMail', 'setLoading', 'getMail'])
   },
   components: {
     MessageContent,

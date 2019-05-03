@@ -8,7 +8,7 @@ class Backend:
         # Get asyncio loop
         self.loop = loop or asyncio.get_event_loop()
 
-    async def start(self):
+    async def start(self, test=False):
         """ Allow backend specific initialisation """
         pass
 
@@ -118,4 +118,3 @@ class Backend:
     async def contacts_search(self, account, text):
         """ Search a contact from mailboxes """
         raise NotImplementedError()
-

@@ -125,8 +125,8 @@ const actions = {
       return commit({ type: types.SET_ALL_MAIL_READ })
     })
   },
-  markMailRead({ commit }, { userId }) {
-    return Vue.http.post(`/api/users/${userId}/mail/${state.mail.uid}/mark_read`).then(response => {
+  markMailRead({ commit }, { mailId, userId }) {
+    return Vue.http.post(`/api/users/${userId}/mail/${mailId}/mark_read`).then(response => {
       return commit({ type: types.SET_CURRENT_MAIL_READ })
     })
   },
