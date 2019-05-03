@@ -46,16 +46,16 @@ if (process.env.NODE_ENV === 'production') {
   })
 }
 
-let deferredPrompt = null
+const exportable = {
+  deferredPrompt: null
+}
 
 window.addEventListener('beforeinstallprompt', e => {
   console.log('before install launched')
   // Prevent Chrome 67 and earlier from automatically showing the prompt
   e.preventDefault()
   // Stash the event so it can be triggered later.
-  deferredPrompt = e
+  exportable.deferredPrompt = e
 })
 
-export default {
-  deferredPrompt: deferredPrompt
-}
+export default exportable

@@ -185,7 +185,9 @@ def init_app():
                 if not guessed_ext:
                     guessed_ext = ".bin"
                 att["filename"] = "file_{}{}".format(att["index"], guessed_ext)
-            att["url"] = f"/api/users/{user_id}/mail/{mail_id}/attachment/{att['index']}/{att['filename']}"
+            att[
+                "url"
+            ] = f"/api/users/{user_id}/mail/{mail_id}/attachment/{att['index']}/{att['filename']}"
 
         mail_to_return["date"] = mail_to_return["date"].isoformat()
 

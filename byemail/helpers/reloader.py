@@ -9,7 +9,6 @@ from asyncio import ensure_future
 
 
 async def check_for_newerfile(future, lockfile, interval, loop):
-
     def mtime(p):
         return os.stat(p).st_mtime
 
@@ -17,9 +16,9 @@ async def check_for_newerfile(future, lockfile, interval, loop):
     files = dict()
 
     for module in list(sys.modules.values()):
-        path = getattr(module, '__file__', '')
+        path = getattr(module, "__file__", "")
         if path:
-            if path[-4:] in ('.pyo', '.pyc'):
+            if path[-4:] in (".pyo", ".pyc"):
                 path = path[:-1]
             if exists(path):
                 files[path] = mtime(path)
@@ -29,12 +28,12 @@ async def check_for_newerfile(future, lockfile, interval, loop):
         await asyncio.sleep(interval)
 
         if not exists(lockfile) or mtime(lockfile) < time.time() - interval - 5:
-            status = 'error'
+            status = "error"
 
         for path, lmtime in list(files.items()):
             if not exists(path) or mtime(path) > lmtime:
-                status = 'reload'
-                print('Pending reload...')
+                status = "reload"
+                print("Pending reload...")
                 break
 
         if status:
@@ -45,21 +44,22 @@ async def check_for_newerfile(future, lockfile, interval, loop):
     ensure_future(reccur(), loop=loop)
 
 
-def reloader_opt(to_call, reload, interval , loop=None):
+def reloader_opt(to_call, reload, interval, loop=None):
 
     loop = loop if loop else asyncio.get_event_loop()
 
-    if reload and not os.environ.get('PROCESS_CHILD'):
+    if reload and not os.environ.get("PROCESS_CHILD"):
         import subprocess
+
         lockfile = None
         try:
-            fd, lockfile = tempfile.mkstemp(prefix='process.', suffix='.lock')
+            fd, lockfile = tempfile.mkstemp(prefix="process.", suffix=".lock")
             os.close(fd)  # We only need this file to exist. We never write to it.
             while os.path.exists(lockfile):
                 args = [sys.executable] + sys.argv
                 environ = os.environ.copy()
-                environ['PROCESS_CHILD'] = 'true'
-                environ['PROCESS_LOCKFILE'] = lockfile
+                environ["PROCESS_CHILD"] = "true"
+                environ["PROCESS_LOCKFILE"] = lockfile
                 p = subprocess.Popen(args, env=environ)
                 while p.poll() is None:  # Busy wait...
                     os.utime(lockfile, None)  # I am alive!
@@ -77,26 +77,28 @@ def reloader_opt(to_call, reload, interval , loop=None):
 
     try:
         if reload:
-            lockfile = os.environ.get('PROCESS_LOCKFILE')
+            lockfile = os.environ.get("PROCESS_LOCKFILE")
 
             future = asyncio.Future()
-            ensure_future(check_for_newerfile(future, lockfile, interval, loop), loop=loop)
+            ensure_future(
+                check_for_newerfile(future, lockfile, interval, loop), loop=loop
+            )
 
             def done(future):
                 # Stop event loop
-                
-                if loop.is_running() and future.result() != 'error':
+
+                if loop.is_running() and future.result() != "error":
                     loop.stop()
 
             future.add_done_callback(done)
 
-            to_call(loop)
+            to_call()
 
-            if future.done() and future.result() == 'reload':
+            if future.done() and future.result() == "reload":
                 sys.exit(3)
 
         else:
-            to_call(loop)
+            to_call()
 
     except KeyboardInterrupt:
         pass
