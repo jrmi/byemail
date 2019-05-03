@@ -256,16 +256,25 @@ class Backend(core.Backend):
         self.uri = uri
 
     async def start(self, test=False):
+
         if test:
-            try:
-                os.remove(TESTDB_NAME)
-            except OSError:
-                pass
-            await Tortoise.init(
-                db_url=f"sqlite://{TESTDB_NAME}",
-                modules={"models": ["byemail.storage.sqldb"]},
-            )
-            from byemail.tests.emails import populate_with_test_data
+            # Configure in memory database
+            config = {
+                "connections": {
+                    "default": {
+                        "engine": "tortoise.backends.sqlite",
+                        "credentials": {"file_path": ":memory:"},
+                    }
+                },
+                "apps": {
+                    "models": {
+                        "models": ["byemail.storage.sqldb"],
+                        "default_connection": "default",
+                    }
+                },
+            }
+
+            await Tortoise.init(config=config)
 
         elif self.config:
             config = {
@@ -291,6 +300,9 @@ class Backend(core.Backend):
             logger.warning("No database initialisation, db seems existing...")
 
         if test:
+
+            from byemail.tests.data_emails import populate_with_test_data
+
             await populate_with_test_data(self)
 
     async def stop(self):
@@ -331,7 +343,7 @@ class Backend(core.Backend):
         mailbox, _ = await Mailbox.get_or_create(
             defaults=dict(uid=uuid.uuid4().hex, name=name),
             account=account.name,
-            address=address
+            address=address,
         )
 
         return mailbox
@@ -415,7 +427,7 @@ class Backend(core.Backend):
             # print(await mailbox.messages.filter(unread=1).count()) # TODO fails
             # print(list(mailbox.messages.all())) # TODO fails
             # mailbox.unreads = len(list(await mailbox.messages.filter(unread=1)))
-            # mailbox.total = len(list(await mailbox.messages.filter(uid__icontains="")))
+            mailbox.total = len(list(await mailbox.messages.filter(uid__icontains="")))
 
             await mailbox.save()
 

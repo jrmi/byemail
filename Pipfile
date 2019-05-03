@@ -3,6 +3,9 @@ url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[pipenv]
+allow_prereleases = true
+
 [requires]
 python_version = "3.7"
 
@@ -40,3 +43,4 @@ rope = ">=0.11.0"
 ipython = "*"
 docutils = "*"
 black = "*"
+pytest-sanic = "*"

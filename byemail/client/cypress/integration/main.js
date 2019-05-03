@@ -117,7 +117,6 @@ describe('Can write emails', function() {
       .contains('send')
       .click()
 
-    //cy.get('.maillist > div:first', { timeout: 10000 }).contains('Re: My mail')
     cy.get('.maillist', { timeout: 10000 })
       .contains('Re: My mail')
       .parent()
