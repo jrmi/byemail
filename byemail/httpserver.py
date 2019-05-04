@@ -122,6 +122,10 @@ def init_app():
 
         raise Forbidden("Authentification failed. Check your credentials.")
 
+    @app.route("/check")
+    async def check(request):
+        return json("Ok")
+
     @app.route("/logout")
     @auth.login_required(handle_no_auth=handle_no_auth)
     async def logout(request):
