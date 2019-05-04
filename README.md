@@ -1,3 +1,11 @@
+# Welcome to byemail
+
+[![Build](https://travis-ci.org/jrmi/byemail.svg?branch=master)](https://travis-ci.org/jrmi/byemail)
+[![Build](https://badge.fury.io/py/byemail.svg)](https://badge.fury.io/py/byemail)
+[![GitHub license](https://img.shields.io/github/license/jrmi/byemail.svg)](https://github.com/jrmi/byemail/blob/master/LICENSE)
+[![Build](https://img.shields.io/pypi/wheel/byemail.svg)](https://github.com/jrmi/byemail)
+[![Build](https://img.shields.io/pypi/status/byemail.svg)](https://github.com/jrmi/byemail)
+
 # What is it ?
 
 Byemail is a complete stack for a personal mail system including SMTP receiver, sender, webmail,
