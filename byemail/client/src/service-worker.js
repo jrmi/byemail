@@ -7,29 +7,36 @@ if (workbox) {
   workbox.precaching.precacheAndRoute(self.__precacheManifest)
 
   workbox.routing.registerRoute(
-    '/api/account',
+    '/api/users/.+/account',
     workbox.strategies.networkFirst({
       cacheName: 'account-cache'
     })
   )
 
   workbox.routing.registerRoute(
-    new RegExp('/api/mailboxes'),
+    new RegExp('/api/users/.+/mailboxes'),
     workbox.strategies.networkFirst({
       cacheName: 'mailbox-cache'
     })
   )
 
   workbox.routing.registerRoute(
-    new RegExp('/api/mailbox/.+'),
+    new RegExp('/api/users/.+/unreads'),
     workbox.strategies.networkFirst({
       cacheName: 'mailbox-cache'
     })
   )
 
   workbox.routing.registerRoute(
-    new RegExp('/api/mail/.+'),
+    new RegExp('/api/users/.+/mailbox/.+'),
     workbox.strategies.networkFirst({
+      cacheName: 'mailbox-cache'
+    })
+  )
+
+  workbox.routing.registerRoute(
+    new RegExp('/api/users/.+/mail/.+'),
+    workbox.strategies.cacheFirst({
       cacheName: 'mail-cache'
     })
   )

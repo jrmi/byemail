@@ -58,7 +58,7 @@ export default new Router({
       ]
     },
     {
-      path: '/settings',
+      path: '/settings/:userId',
       name: 'settings',
       component: Settings
     }

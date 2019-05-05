@@ -93,7 +93,8 @@ export default {
 
     fetchData() {
       this.setLoading(true)
-      this.$http.get('/api/account').then(
+      const userId = this.$route.params.userId
+      this.$http.get(`/api/users/${userId}/account`).then(
         response => {
           this.account = response.body
           this.setLoading(false)
