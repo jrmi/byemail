@@ -311,7 +311,7 @@ def init_app():
         """
         GET returns vapid public key which clients uses to send around push notification
         """
-        pub = push.get_application_server_key()
+        pub = await push.get_application_server_key()
 
         return text(pub, headers={"Access-Control-Allow-Origin": "*"})
 

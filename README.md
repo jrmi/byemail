@@ -4,6 +4,7 @@
 [![Build](https://badge.fury.io/py/byemail.svg)](https://badge.fury.io/py/byemail)
 [![GitHub license](https://img.shields.io/github/license/jrmi/byemail.svg)](https://github.com/jrmi/byemail/blob/master/LICENSE)
 [![Build](https://img.shields.io/pypi/wheel/byemail.svg)](https://github.com/jrmi/byemail)
+[![Build](https://img.shields.io/badge/python-3.7-blue.svg)](https://github.com/jrmi/byemail)
 [![Build](https://img.shields.io/pypi/status/byemail.svg)](https://github.com/jrmi/byemail)
 
 # What is it ?
@@ -21,9 +22,9 @@ mail servers are still difficult to install, configure and maintain mainly becau
 
 To create a complete mail system, we have to install a SMTP server to receive/send emails then an IMAP or POP3 server to gather the mails and finally a client to read them. Don't forget to configure your DNS and pray that your IP will not be banned for misuse.
 
-To fulfill all ours needs we also need to add module like:
+To fulfill all ours needs we also need to add modules like:
 
--   an authentification system
+-   a user account manager
 -   a spam filter,
 -   a webmail,
 -   a mailing list manager,

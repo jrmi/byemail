@@ -47,7 +47,7 @@ async def notify_account(account, payload):
                 storage.remove_subscription(account, subscription)
 
 
-def get_application_server_key():
+async def get_application_server_key():
     """
     Get and prepare application server_key
     """
@@ -58,6 +58,16 @@ def get_application_server_key():
     )
 
     return b64urlencode(raw_pub)
+
+
+def gen_application_server_keys():
+    """
+    Generate Vapid key pair
+    """
+    vapid = Vapid()
+    vapid.generate_keys()
+    vapid.save_key(settings.VAPID_PRIVATE_KEY)
+    vapid.save_public_key(settings.VAPID_PUBLIC_KEY)
 
 
 # To generate with openssl command line

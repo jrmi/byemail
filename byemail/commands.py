@@ -24,6 +24,7 @@ from byemail.conf import settings
 from byemail import mailutils
 from byemail import storage
 from byemail.helpers import reloader
+from byemail import push
 
 # TODO: remove below if statement asap. This is a workaround for a bug in begins
 # TODO: which provokes an exception when calling command without parameters.
@@ -81,7 +82,7 @@ def start(
 
 
 @begin.subcommand
-def generatekeys():
+def generatedkimkeys():
     """ Generate DKIM specific keys """
     # TODO check exist to avoid accidental rewrite
     private_command = [
@@ -162,8 +163,18 @@ def init():
     print("Initialize directory...")
     setting_tpl = path.join(path.realpath(path.dirname(__file__)), "settings_tpl.py")
 
-    # Copy settings template
-    shutil.copy(setting_tpl, path.join(".", "settings.py"))
+    if not os.path.exists(path.join(".", "settings.py")):
+        # Copy settings template
+        shutil.copy(setting_tpl, path.join(".", "settings.py"))
+
+    vapid_exists = os.path.exists(path.join(".", settings.VAPID_PRIVATE_KEY))
+
+    if vapid_exists:
+        answer = input("VAPID key already exists. Do you want to overwrite them? (y/N)")
+        answer = answer.lower()[0] if answer else "n"
+
+    if not vapid_exists or answer == "y":
+        push.gen_application_server_keys()
 
     print("Done.")
 

@@ -39,8 +39,8 @@ INCOMING_MIDDLEWARES = [
     # 'byemail.middlewares.dkim.verify'
 ]
 
-VAPID_PUBLIC_KEY = ""
-VAPID_PRIVATE_KEY = ""
+VAPID_PUBLIC_KEY = "vapid_public_key.pem"
+VAPID_PRIVATE_KEY = "vapid_private_key.pem"
 VAPID_CLAIMS = {"sub": "mailto:youremail"}
 
 LOGGING = {
