@@ -1,5 +1,5 @@
 <template>
-  <v-card class="whole-mail" v-if="currentMail() && showMail">
+  <v-card class="whole-mail" v-if="currentMail() && currentMailbox() && showMail">
     <v-toolbar color="grey" dark flat>
       <v-toolbar-title>{{currentMail().subject}} ({{currentMail()['body-type']}})</v-toolbar-title>
 
@@ -11,7 +11,11 @@
       <v-btn icon @click="showMail = ! showMail">
         <v-icon>close</v-icon>
       </v-btn>
-      <v-btn icon v-if="currentMail().unread" @click="markThisMailRead()">
+      <v-btn
+        icon
+        v-if="allUnreads() && allUnreads()[currentMailbox().uid] && allUnreads()[currentMailbox().uid][currentMail().uid]"
+        @click="markThisMailRead()"
+      >
         <v-icon>visibility</v-icon>
       </v-btn>
     </v-toolbar>
@@ -123,7 +127,7 @@ export default {
 
       this.markMailRead({ mailId, userId })
     },
-    ...mapGetters(['currentMail', 'currentMailbox']),
+    ...mapGetters(['currentMail', 'currentMailbox', 'allUnreads']),
     ...mapActions(['markMailRead', 'sendMail', 'resendMail', 'setLoading', 'getMail'])
   },
   components: {

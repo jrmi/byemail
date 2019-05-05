@@ -114,8 +114,15 @@ def test_incoming_mail(
             # Check mailbox data
             assert len(mailbox["messages"]) == 1
             assert mailbox["total"] == 1
-            # assert mailbox["unreads"] == 1
             assert mailbox["last_message"] == mail["date"]
+
+            unreads = run(backend.get_unreads(fake_account))
+
+            assert len(unreads) == 1
+
+            assert unreads == [
+                {"mailbox": mailbox["uid"], "message": mailbox["messages"][0]["uid"]}
+            ]
 
             # Check security
             with pytest.raises(storage.DoesntExists):
@@ -191,6 +198,49 @@ def test_get_attachment(
                 attachment = run(
                     backend.get_mail_attachment(other_fake_account, uid, 1)
                 )
+
+
+def test_read_mail(
+    loop, fake_account, other_fake_account, backend, msg_test, fake_emails, settings
+):
+    run = loop.run_until_complete
+
+    from_addr = msg_test["From"].addresses[0]
+    to_addrs = [parse_email(fake_emails()), parse_email(fake_emails())]
+
+    print(f"From {from_addr}")
+    print(f"To {to_addrs}")
+
+    run(
+        backend.store_mail(
+            msg=msg_test,
+            account=fake_account,
+            from_addr=from_addr,
+            recipients=to_addrs,
+            incoming=True,
+        )
+    )
+
+    mailboxes = run(backend.get_mailboxes(fake_account))
+
+    for mailbox in mailboxes:
+        mailbox = run(backend.get_mailbox(fake_account, mailbox["uid"]))
+
+        if mailbox["address"] in from_addr.addr_spec:
+
+            msg_uid = mailbox["messages"][0]["uid"]
+
+            unreads = run(backend.get_unreads(fake_account))
+
+            assert len(unreads) >= 1
+
+            assert {"mailbox": mailbox["uid"], "message": msg_uid} in unreads
+
+            run(backend.mark_mail_read(fake_account, msg_uid))
+
+            unreads = run(backend.get_unreads(fake_account))
+
+            assert {"mailbox": mailbox["uid"], "message": msg_uid} not in unreads
 
 
 def test_session(loop, fake_account, backend):

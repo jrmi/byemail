@@ -159,12 +159,12 @@ def dnsconfig():
 
 @begin.subcommand
 def init():
-    """ Initialize a new directory for byemail """
+    """ Initialize a new directory for byemail can be replayed """
     print("Initialize directory...")
-    setting_tpl = path.join(path.realpath(path.dirname(__file__)), "settings_tpl.py")
 
+    # Copy settings template
+    setting_tpl = path.join(path.realpath(path.dirname(__file__)), "settings_tpl.py")
     if not os.path.exists(path.join(".", "settings.py")):
-        # Copy settings template
         shutil.copy(setting_tpl, path.join(".", "settings.py"))
 
     vapid_exists = os.path.exists(path.join(".", settings.VAPID_PRIVATE_KEY))

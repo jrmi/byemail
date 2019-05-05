@@ -120,7 +120,7 @@ def init_app():
 
             return response
 
-        raise Forbidden("Authentification failed. Check your credentials.")
+        raise Forbidden("Authentication failed. Check your credentials.")
 
     @app.route("/check")
     async def check(request):
@@ -159,6 +159,16 @@ def init_app():
         for mb in mbxs:
             if mb["last_message"]:
                 mb["last_message"] = mb["last_message"].isoformat()
+
+        return json(mbxs)
+
+    @app.route("/api/users/<user_id>/unreads")
+    @auth.login_required(user_keyword="account", handle_no_auth=handle_no_auth)
+    async def unreads(request, user_id, account):
+        if account.name != user_id:
+            raise Forbidden("You can't consult another person account.")
+
+        mbxs = await storage.get_unreads(account)
 
         return json(mbxs)
 
@@ -207,13 +217,14 @@ def init_app():
         if account.name != user_id:
             raise Forbidden("You can't consult another person account.")
 
-        mail_to_mark = await storage.get_mail(account, mail_id)
+        """mail_to_mark = await storage.get_mail(account, mail_id)
 
         mail_to_mark["unread"] = False
 
-        await storage.update_mail(account, mail_to_mark)
+        await storage.update_mail(account, mail_to_mark)"""
+        await storage.mark_mail_read(account, mail_id)
 
-        return json(mail_to_mark)
+        return json("Ok")
 
     @app.route(
         "/api/users/<user_id>/mail/<mail_id>/attachment/<att_index>/<filename>",

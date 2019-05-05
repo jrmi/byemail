@@ -9,6 +9,7 @@ export const SET_ACCOUNT = 'SET_ACCOUNT'
 
 // Mail
 export const SET_MAILBOXES = 'SET_MAILBOXES'
+export const SET_UNREADS = 'SET_UNREADS'
 export const RESET_MAILBOXES = 'resetMailboxes'
 export const SET_CURRENT_MAILBOX = 'SET_CURRENT_MAILBOX'
 export const SET_CURRENT_MAIL = 'SET_CURRENT_MAIL'

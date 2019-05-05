@@ -36,6 +36,10 @@ class Backend:
         """ Return all mailboxes in db with unread message count and total """
         raise NotImplementedError()
 
+    async def get_unreads(self, account, offset=0, limit=None):
+        """Return unread message list for this account"""
+        raise NotImplementedError()
+
     async def get_mailbox(self, account, mailbox_id, offset=0, limit=None):
         """ Return the selected mailbox """
         raise NotImplementedError()
@@ -92,7 +96,10 @@ class Backend:
         """ Update any mail """
         raise NotImplementedError()
 
-    async def mark_mail_read(self, account, mail):
+    async def mark_mail_read(self, account, mail_uid):
+        raise NotImplementedError()
+
+    async def mark_mail_unread(self, account, mail):
         raise NotImplementedError()
 
     async def save_user_session(self, session_key, session):

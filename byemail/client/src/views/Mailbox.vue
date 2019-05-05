@@ -13,7 +13,11 @@
       </v-btn>
     </v-toolbar>
 
-    <message-list :messages="currentMailbox().messages" :userId="$route.params.userId"/>
+    <message-list
+      :messages="currentMailbox().messages"
+      :unreads="(allUnreads()||{})[currentMailbox().uid]"
+      :userId="$route.params.userId"
+    />
   </v-card>
 </template>
 
@@ -53,7 +57,7 @@ export default {
       this.addDraftRecipient({ recipient: newRecipient })
       this.$router.push({ name: 'mailedit' })
     },
-    ...mapGetters(['currentMailbox']),
+    ...mapGetters(['currentMailbox', 'allUnreads']),
     ...mapActions(['markAllMailRead', 'setLoading', 'getMailbox']),
     ...mapMutations(['resetDraft', 'addDraftRecipient'])
   },

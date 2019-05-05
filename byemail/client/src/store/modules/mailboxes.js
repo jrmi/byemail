@@ -19,7 +19,8 @@ function sanitizeText(str) {
 const state = {
   all: null,
   current: null,
-  mail: null
+  mail: null,
+  unreads: null
 }
 
 // getters
@@ -31,6 +32,7 @@ const getters = {
       return null
     }
   },
+  allUnreads: state => state.unreads,
   currentMailbox: state => state.current,
   currentMail: state => state.mail
 }
@@ -46,23 +48,18 @@ const mutations = {
   [types.SET_CURRENT_MAIL](state, { mail }) {
     state.mail = mail
   },
+  [types.SET_UNREADS](state, { unreads }) {
+    state.unreads = unreads
+  },
   [types.SET_ALL_MAIL_READ](state) {
-    for (let msg of state.current.messages) {
-      if (msg.unread) {
-        msg.unread = false
-      }
-    }
-    if (state.mail) {
-      state.mail.unread = false
-    }
-    state.current.unreads = 0
-    state.all.find(mb => mb.uid === state.current.uid).unreads = 0
+    const newUnread = JSON.parse(JSON.stringify(state.unreads))
+    delete newUnread[state.current.uid]
+    state.unreads = newUnread
   },
   [types.SET_CURRENT_MAIL_READ](state) {
-    state.all.find(m => m.uid === state.current.uid).unreads--
-    state.current.unreads--
-    state.current.messages.find(m => m.uid === state.mail.uid).unread = false
-    state.mail.unread = false
+    const newUnread = JSON.parse(JSON.stringify(state.unreads))
+    delete newUnread[state.current.uid][state.mail.uid]
+    state.unreads = newUnread
   },
   [types.RESET_MAILBOXES](state) {
     Object.assign(state, {
@@ -85,6 +82,17 @@ const actions = {
         }
         return commit({ type: types.SET_MAILBOXES, mailboxes })
       })
+  },
+  getAllUnreads({ commit }, { userId }) {
+    return Vue.http.get(`/api/users/${userId}/unreads`, { responseType: 'json' }).then(response => {
+      const unreads = {}
+
+      for (let unr of response.body) {
+        unreads[unr.mailbox] = unreads[unr.mailbox] || {}
+        unreads[unr.mailbox][unr.message] = true
+      }
+      return commit({ type: types.SET_UNREADS, unreads })
+    })
   },
   getMailbox({ commit }, { userId, mailboxId }) {
     return Vue.http

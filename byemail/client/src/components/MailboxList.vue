@@ -12,12 +12,17 @@
         <v-list-tile-content>
           <v-list-tile-title v-if="mailbox.name" v-html="mailbox.name"></v-list-tile-title>
           <v-list-tile-title v-else v-html="mailbox.address"></v-list-tile-title>
-          <v-list-tile-sub-title>{{mailbox.last_message.fromNow()}} - {{mailbox.totals}} msgs</v-list-tile-sub-title>
+          <v-list-tile-sub-title>{{mailbox.last_message.fromNow()}} - {{mailbox.total}} msgs</v-list-tile-sub-title>
         </v-list-tile-content>
 
-        <v-list-tile-action v-if="mailbox.unreads">
-          <v-badge right overlap v-model="mailbox.unreads">
-            <span slot="badge" v-if="mailbox.unreads <= 9">{{mailbox.unreads}}</span>
+        <v-list-tile-action
+          v-if="unreads && unreads[mailbox.uid]&& Object.keys(unreads[mailbox.uid]).length"
+        >
+          <v-badge right overlap>
+            <span
+              slot="badge"
+              v-if="Object.keys(unreads[mailbox.uid]).length <= 9"
+            >{{Object.keys(unreads[mailbox.uid]).length}}</span>
             <span slot="badge" v-else>9+</span>
             <v-icon color="grey lighten-1">chat_bubble</v-icon>
           </v-badge>
@@ -34,7 +39,7 @@ import md5 from 'crypto-js/md5'
 
 export default {
   name: 'mailbox-list',
-  props: ['mailboxes', 'userId'],
+  props: ['mailboxes', 'unreads', 'userId'],
   created() {},
   methods: {
     gravatarUrl(mailbox) {

@@ -133,7 +133,7 @@ class Message(Model):
 
     status = fields.CharField(max_length=255)
     timestamp = fields.DatetimeField()
-    unread = fields.BooleanField()
+    # unread = fields.BooleanField()
     incoming = fields.BooleanField()
     # body = fields.TextField()
 
@@ -146,7 +146,7 @@ class Message(Model):
         data = dict(data)
         self.uid = data.pop("uid")
         self.status = data.pop("status")
-        self.unread = data.pop("unread")
+        # self.unread = data.pop("unread")
         self.timestamp = data.pop("date")
         self.incoming = data.pop("incoming")
         self.attachments = data.pop("attachments")
@@ -156,7 +156,7 @@ class Message(Model):
         data = dict(self.data)
         data["uid"] = self.uid
         data["status"] = self.status
-        data["unread"] = self.unread
+        # data["unread"] = self.unread
         data["date"] = self.timestamp
         data["incoming"] = self.incoming
         data["attachments"] = self.attachments
@@ -243,7 +243,7 @@ class Unread(Model):
         return f"<Unread mb({self.mailbox.uid}) - msg({self.message.uid})>"
 
     def as_dict(self):
-        return {"id": self.id, "mailbox": self.mailbox.uid, "account": self.message.uid}
+        return {"mailbox": self.mailbox.uid, "message": self.message.uid}
 
 
 class Backend(core.Backend):
@@ -349,8 +349,23 @@ class Backend(core.Backend):
         return mailbox
 
     @translate_exception()
+    async def get_unreads(self, account, offset=0, limit=None):
+        """ Return all unreads messages uids """
+
+        unread_query = (
+            Unread.filter(mailbox__account=account.name)
+            .offset(offset)
+            .prefetch_related("mailbox", "message")
+        )
+
+        if limit:
+            unread_query.limit(limit)
+
+        return [u.as_dict() for u in await unread_query]
+
+    @translate_exception()
     async def get_mailboxes(self, account, offset=0, limit=None):
-        """ Return all mailboxes in db with unread message count and total """
+        """ Return all mailboxes in db with total """
 
         mb_query = Mailbox.filter(account=account.name).offset(offset)
 
@@ -386,7 +401,7 @@ class Backend(core.Backend):
         # Add information
         msg["uid"] = uuid.uuid4().hex
         msg["incoming"] = incoming
-        msg["unread"] = incoming
+        # msg["unread"] = incoming
         msg["status"] = "new"
 
         # Create dbmessage
@@ -431,7 +446,8 @@ class Backend(core.Backend):
 
             await mailbox.save()
 
-            unread = await Unread.create(mailbox=mailbox, message=dbmsg)
+            if incoming:
+                unread = await Unread.create(mailbox=mailbox, message=dbmsg)
 
         return dbmsg.as_dict()
 
@@ -461,11 +477,22 @@ class Backend(core.Backend):
         return dbmsg.as_dict()
 
     @translate_exception()
-    async def mark_mail_read(self, account, mail):
+    async def mark_mail_read(self, account, mail_uid):
         """ Mark a mail as read for an account """
-        await Message.filter(
-            message__uid=mail["uid"], mailbox__account=account.name
-        ).delete()
+        unreads = await Unread.filter(
+            message__uid=mail_uid, mailbox__account=account.name
+        )
+        for u in unreads:
+            await u.delete()
+
+    @translate_exception()
+    async def mark_mail_unread(self, account, mail):
+        """ Mark a mail as unread for an account """
+        msg = await Message.get(
+            uid=mail["uid"], mailboxes__account=account.name
+        ).distinct()
+        mailbox = await Mailbox.get(account=account.name, address=account.address)
+        await Unread.create(message=msg, mailbox=mailbox)
 
     @translate_exception()
     async def get_mail_attachment(self, account, mail_uid, att_index):

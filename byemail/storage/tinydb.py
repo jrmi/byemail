@@ -205,6 +205,26 @@ class Backend(core.Backend):
 
         return mailboxes
 
+    async def get_unreads(self, account, offset=0, limit=None):
+        """ Return all unreads messages uids """
+
+        Mailbox = Query()
+        Message = Query()
+
+        mailboxes = list(
+            self.db.search(
+                (Mailbox.type == "mailbox") & (Mailbox["account"] == account.name)
+            )
+        )
+        unreads = []
+        for mailbox in mailboxes:
+            for message in mailbox["messages"]:
+                msg = await self.get(Message.uid == message["uid"])
+                if msg["unread"]:
+                    unreads.append({"mailbox": mailbox["uid"], "message": msg["uid"]})
+
+        return unreads
+
     async def get_mailbox(self, account, mailbox_id):
         """ Return the selected mailboxx """
         Mailbox = Query()
@@ -273,6 +293,21 @@ class Backend(core.Backend):
         self.db.update(
             mail, (Message.uid == mail["uid"]) & (Message["account"] == account.name)
         )
+
+        return mail
+
+    async def mark_mail_read(self, account, mail_uid):
+        """ Mark a mail as read for an account """
+
+        Message = Query()
+
+        mail = await self.get(
+            (Message.uid == mail_uid) & (Message["account"] == account.name)
+        )
+
+        mail["unread"] = False
+
+        await self.update_mail(account, mail)
 
         return mail
 
